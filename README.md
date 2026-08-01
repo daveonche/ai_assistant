@@ -6,160 +6,33 @@ The architecture leverages [OpenRouter](https://openrouter.ai) to process heavy 
 
 ------------------------------
 
-## 1. The Aider Global Aliased Container (Full Version Installation)
+## The Aider Docker Container (Full Version Installation)
 
-download the image once globally and use a bash alias to dynamically spin up a lightweight, ephemeral container that maps to whatever project folder you are currently sitting in.
+- Clone the repo
+  
+  `git clone git@github.com:daveonche/ai_architecture.git`
 
-- Create a *Dockerfile.aider* file from VSCode WSL: Ubuntu terminal:
-  `code ~/Dockerfile.aider`
+- Copy *.env.example* to *.env*
+  `cp .env.example .env`
 
-  - Copy and paste the code below in the file:
+- Generate API Keys
+- Make *ai-assistant.sh* executable and add the command to git repo so you don't have to run the execute command again in the repo
 
-    ```Dockerfile
-    FROM paulgauthier/aider-full:latest
+  `chmod +x ai-assistant.sh`
 
-    # Switch to root to install system requirements
-    USER root
-
-    # Install Docker CLI and the compose plugin so Aider can run docker commands
-    RUN apt-get update && \
-    apt-get install -y ca-certificates curl gnupg libpulse0 alsa-utils && \
-        install -m 0755 -d /etc/apt/keyrings && \
-        curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
-        chmod a+r /etc/apt/keyrings/docker.gpg && \
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
-        apt-get update && \
-        apt-get install -y docker-ce-cli docker-compose-plugin
-
-    # Grant the non-root user (1000:1000) ownership of /root so it can write cache files     
-    RUN chown -R 1000:1000 /root 
-    USER 1000:1000
-    ```
-
-- Open your WSL2 Ubuntu configuration file (~/.bashrc or ~/.zshrc):
-  `nano ~/.bashrc`
-
-- Paste the following smart global alias at the bottom of the file:
-
-  ```bash
-  ai_assistant() {
-      local TOOL_NAME="ai-assistant"
-      local DIR_NAME=$(basename "$(pwd)")
-      local WORKSPACE_HASH=$(pwd | md5sum | awk '{print $1}')
-      # Use VSCODE_PID as a session ID to group containers; fallback to 0 if not in VS Code
-      local SESSION_ID="${VSCODE_PID:-0}"
-      # Include SESSION_ID and shell PID ($$) to allow multiple concurrent containers per session
-      local CONTAINER_NAME="${TOOL_NAME}-${DIR_NAME}-${WORKSPACE_HASH:0:8}-${SESSION_ID}-${$}"
-      local DOCKER_GID=$(getent group docker | cut -d: -f3 2>/dev/null || echo 0)
-      local AIDER_IMAGE="aider-agent:latest"
-      local DOCKERFILE_PATH="$HOME/Dockerfile.aider"
-
-      # Clean up orphaned containers from previous sessions (e.g., after a VS Code window reload)
-      # This allows multiple concurrent containers in the current session, but clears old ones on reload
-      local ALL_DIR_CONTAINERS=$(docker ps --filter "label=aider.dir=${WORKSPACE_HASH}" --format "{{.ID}}\t{{.Label \"aider.session\"}}")
-      while IFS=$'\t' read -r id session; do
-          if [ "$session" != "$SESSION_ID" ]; then
-              docker rm -f "$id" > /dev/null 2>&1
-          fi
-      done <<< "$ALL_DIR_CONTAINERS"
-
-      if [ -f "$DOCKERFILE_PATH" ]; then
-          # Relying on Docker's layer cache, this is instant if nothing changed
-          # Suppress build output completely unless an error occurs
-          if ! docker build -t "$AIDER_IMAGE" -f "$DOCKERFILE_PATH" "$HOME" > /dev/null 2>&1; then
-              echo "Failed to build Aider image. Exiting."
-              return 1
-          fi
-      else
-          echo "Dockerfile.aider not found at $DOCKERFILE_PATH. Exiting."
-          return 1
-      fi
-
-      # Ensure the cache directory exists on the host to avoid permission issues
-      mkdir -p "$HOME/.cache/aider"
-
-      docker run -it --rm \
-          --name "$CONTAINER_NAME" \
-          --label "aider.dir=${WORKSPACE_HASH}" \
-          --label "aider.session=${SESSION_ID}" \
-          --user "$(id -u):$(id -g)" \
-          --group-add "$DOCKER_GID" \
-          --group-add audio \
-          --device /dev/snd \
-          -e HOME=/home \
-          -v "/var/run/docker.sock:/var/run/docker.sock" \
-          -v "$HOME/.docker:/home/.docker:ro" \
-          -v "$(pwd):$(pwd)" \
-          -w "$(pwd)" \
-          -v "$HOME/.bashrc:/home/.bashrc:ro" \
-          -v "$HOME/Dockerfile.aider:/home/Dockerfile.aider" \
-          -v "$HOME/.gitconfig:/home/.gitconfig:ro" \
-          -v "$HOME/.cache/aider:/home/.cache" \
-          -v "/run/user/$(id -u)/pulse/native:/run/user/1000/pulse/native" \
-          -v "/dev/shm:/dev/shm" \
-          -e PULSE_SERVER=unix:/run/user/1000/pulse/native \
-          ${RFILE:---env-file .env} \
-          "$AIDER_IMAGE" "$@"
-  }
-  ```
-
-- Save the file (*CTRL + X*, and hit *Enter* or if if using vi, type *:wq*) and reload your shell:
-  `source ~/.bashrc`
-
-------------------------------
-
-## 2. Project Environment Variables
-
-Make sure your local project **.env** file contains all your preferences formatted like this:
-
-- [Generate Your Free OpenRouter API Key](https://openrouter.ai/)
-- [Generate Your Free Google AI Studio API Key](https://aistudio.google.com/)
-
-```env
-# AIDER (AI Assistant)
-OPENAI_API_KEY=sk-proj-...
-OPENROUTER_API_KEY=sk-or-v1-...
-AIDER_OPENROUTER_API_KEY='sk-or-v1-...
-HF_TOKEN=hf_...
-AIDER_HF_TOKEN=hf_...
-GEMINI_API_KEY=AIzaSy...
-AIDER_GEMINI_API_KEY=AIzaSy...
-
-LITELLM_NUM_RETRIES=5
-```
+  `git update-index --chmod=+x ai-assistant.sh`
 
 - Launch aider from any project directory that contains this variables in a **.env** file
-  `ai_assistant`
+
+  `./ai_assistant`
 
   *NOTE:** *Docker will pull down the single global aider-full image layer, inject all the variables, spin up the multi-model OpenRouter setup, parse the defined conventions instantly, and vanish from your system resources the second you exit the chat*
 
 ------------------------------
 
-## 3. Automation Scripts (~/.local/bin/)
+## Use The AI Assistant in your Ptojects
 
-### Script A: Configuration Auto-Rewriter & Logger (ai-update-models)
-
-This script queries OpenRouter's live API to fetch active free-tier Qwen model tags. It then automatically updates your global and local configuration profiles, preventing 404 Not Found model deprecation crashes.
-
-`cp ./bin/ai-update-models ~/.local/bin`
-
-### Script B: Workspace Prompt Cleaner (ai-clean)
-
-Removes temporary prompt engineering documentation blocks from your directory after a successful feature commit.
-
-`cp ./bin/ai-clean ~/.local/bin`
-
-Make both script files executable:
-
-`chmod +x ~/.local/bin/ai-update-models ~/.local/bin/ai-clean`
-
-------------------------------
-
-## 4. Global Configuration Layers
-
-### Global Aider Profile & Custom Metadata Overrides (~/.aider/aider.conf.yml and ~/.aider/.aider.model.metadata.json)
-
-Configures a silent dual-model architecture: Gemma 4 31B serves as the system Architect (handling project mapping), while Qwen 3.6 Plus writes edits via OpenRouter. Qwen 3 Coder handles concise Git commit formatting.
+Copy.
 
 `cp ./global-configs/.aider.conf.yml ~/`
 
