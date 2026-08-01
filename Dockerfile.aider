@@ -1,0 +1,17 @@
+FROM paulgauthier/aider-full:latest
+
+# Switch to root to install system requirements
+USER root
+
+# Install Docker CLI and the compose plugin so Aider can run docker commands
+RUN apt-get update && \
+apt-get install -y ca-certificates curl gnupg libpulse0 alsa-utils && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli docker-compose-plugin
+
+# Ensure /home exists and is writable by any user (since host UID is dynamic)                                 
+RUN mkdir -p /home && chmod 777 /home

@@ -1,0 +1,25 @@
+- name: openrouter/z-ai/glm-5.2
+  edit_format: diff
+  extra_params:
+    extra_body:
+      provider:
+        # Forces OpenRouter to strictly select the lowest-cost candidate endpoint
+        sort: "price"
+        # Disables high-cost safety fallback routes if the cheap host fails
+        allow_fallbacks: false
+        # Denies providers from logging your code data for training metrics
+        data_collection: "deny"
+        # Pin reliable caching endpoints explicitly if budget is strictly $10
+        order:
+          - "DeepInfra"
+          - "Novita"
+
+- name: openrouter/poolside/laguna-xs-2.1
+  edit_format: diff
+  extra_params:
+    extra_body:
+      provider:
+        # Keeps editor operations anchored to the absolute cheapest endpoint
+        sort: "price"
+        allow_fallbacks: false
+        data_collection: "deny"

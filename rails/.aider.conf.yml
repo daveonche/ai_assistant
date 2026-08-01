@@ -1,0 +1,33 @@
+##########################################################
+# yaml-language-server: $schema=none
+# Sample .aider.conf.yml
+# This file lists *all* the valid configuration entries.
+# Place in your home dir, or at the root of your git repo.
+##########################################################
+
+# Note: You can only put OpenAI and Anthropic API keys in the YAML
+# config file. Keys for all APIs can be stored in a .env file
+# https://aider.chat/docs/config/dotenv.html
+
+########################
+# Fixing and committing:
+
+## Specify command to run tests
+test-cmd: docker compose -f docker-compose.test.yml run --rm api bundle exec rspec
+
+## Specify multiple values like this:
+# lint-cmd:
+#   - ruby: docker exec unitingurantia_api bundle exec rubocop -A --fail-level E
+#   - javascript: docker exec unitingurantia_api yarn run eslint --fix
+#   - json: jsonlint -q
+
+#################
+# Other settings:
+
+## Specify multiple values like this:
+read:
+  - .aider-conventions/AIDER.md
+  - .aider-conventions/rails-conventions.md
+  - .aider-conventions/ruby-conventions.md
+  - .aider-conventions/rspec-conventions.md
+  - project_notes.md

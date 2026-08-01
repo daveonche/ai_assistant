@@ -1,0 +1,55 @@
+# This configuration maps your sensitive variables directly out of GitHub's encrypted vault (secrets.DB_PASSWORD) and binds them into the pipeline container instances.
+
+name: Containerized Feature Validation Suite
+
+on:
+  push:
+    branches: [ main, master, development ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code Repository
+      uses: actions/checkout@v4
+
+    - name: Initialize Docker Compose Architecture with Secrets
+      env:
+        # Securely pass encrypted secrets from vault to runtime container environment
+        DATABASE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        RAILS_ENV: test
+      run: |
+        if [ -f docker-compose.yml ] || [ -f docker-compose.yaml ]; then
+          docker compose up -d --build
+        else
+          echo "ℹ No root docker-compose mapping found. Skipping container initialization."
+        fi
+
+    - name: Execute Multi-Framework Pipeline Test Verification
+      env:
+        DATABASE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: |
+        # 1. Evaluate Ruby on Rails App stacks
+        if [ -f Gemfile ] && grep -q "rails" Gemfile; then
+          echo "🚀 Running Remote Rails Docker Execution Stack..."
+          docker compose exec -T web bundle exec rails test
+          
+        # 2. Evaluate Elgg PHP Framework stacks
+        elif [ -f elgg-config.php ] || [ -d htdocs/mod ]; then
+          echo "🚀 Running Remote Elgg PHPUnit Execution Stack..."
+          docker compose exec -T php ./vendor/bin/phpunit --configuration htdocs/phpunit.xml
+          
+        else
+          echo "ℹ No framework matches detected. Executing simple syntax smoke test."
+          python3 -m compileall .
+        fi
+
+    - name: Teardown Live Container Infrastructure
+      if: always()
+      run: |
+        if [ -f docker-compose.yml ] || [ -f docker-compose.yaml ]; then
+          docker compose down
+        fi
