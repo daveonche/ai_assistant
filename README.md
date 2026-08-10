@@ -20,7 +20,7 @@ The architecture leverages [OpenRouter](https://openrouter.ai) to process heavy 
     - [Generate Your Free Hugging Face (HF_TOKEN) Token Key](https://huggingface.co/)
     - [Generate Your Free OpenAI API Key](https://platform.openai.com/)
 
-4. Launch aider from any project directory that contains this variables in a **.env** file
+4. Launch aider
    `./ai_assistant`
 
   *NOTE:** *Docker will pull down the single global aider-full image layer, inject all the variables, spin up the multi-model OpenRouter setup, parse the defined conventions instantly, and vanish from your system resources the second you exit the chat*
@@ -29,14 +29,16 @@ The architecture leverages [OpenRouter](https://openrouter.ai) to process heavy 
 
 ## Use The AI Assistant in your Projects
 
-- Copy *.env.example* to *.env* in your project root
+- Copy *.env.example* to *.env* in your project root or merge the values with the project's **.env** variables
   `cp .env.example path/to/project/root`
 
-- Copy files to the project root
+- Copy the following files to the project root
   `cp ./aider.conf.yml ./.aider.model.settings.yml ./ai-assistant.sh ./Dockerfile.aider path/to/project/root`
 
 - Make *ai-assistant.sh* executable and add the command to git repo so you don't have to run the execute command again in the repo
+  `git init`
   `chmod +x ai-assistant.sh`
+  `git add .`
   `git update-index --chmod=+x ai-assistant.sh`
 
   See [Aider docs](https://aider.chat/docs/) for more info
