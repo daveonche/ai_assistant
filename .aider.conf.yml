@@ -21,6 +21,15 @@ model: openrouter/z-ai/glm-5.2
 ## Specify a file with aider model settings for unknown models
 model-settings-file: .aider.model.settings.yml
 
+## Add a model alias (can be used multiple times)
+#alias: "architect:openrouter/z-ai/glm-5.2"
+
+## Specify multiple values like this:
+alias:
+ - "architect:openrouter/z-ai/glm-5.2"
+ - "gemini:gemini/gemini-3.1-flash-lite"
+#  - "zzz"
+
 ## Specify a file with context window and costs for unknown models
 #model-metadata-file: .aider.model.metadata.json
 
@@ -97,9 +106,9 @@ show-release-notes: false
 # Other settings:
 
 ## Specify multiple values like this:
-# read:
-# - .aider-conventions/AIDER.md
-# - .aider-conventions/xxx-conventions.md
-# - .aider-conventions/xxx-conventions.md
-# - .aider-conventions/xxx-conventions.md
-# - project_notes.md
+read:
+- .aider.skills/AGENT.md
+# - project_docs/requirements.md
+# - project_docs/user_stories.md
+# - project_docs/implementation_status.md
+# - project_docs/vision/project_vision.md
