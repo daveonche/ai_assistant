@@ -2,30 +2,23 @@
 
 ## Purpose
 
-To provide an instant, portable, and containerized AI coding assistant (aider via Docker) that can be easily spun up inside any local repository using a single shell script.
+AIAssistant provides developers with a Dockerized, token-optimized environment to launch [aider](https://aider.chat/) via a single .sh script from any local project repository. It solves the problem of inefficient, context-heavy AI coding workflows that waste tokens and lose coherence on complex tasks. By leveraging the integrated [software-dev-prompt-library](https://github.com/codingthefuturewithai/software-dev-prompt-library/tree/main) and an AGENT.md orchestration file, the application enforces SDLC best practices, breaking down large development efforts into atomic, manageable steps. This ensures high-quality, structured outputs while drastically minimizing token usage and reducing API costs.
 
 ## Target Users
 
-Primary: Individual developers, polyglot software engineers, and development teams who want to seamlessly inject AI pair-programming (aider) into any local repository.
-Secondary: DevOps or engineering managers seeking a standardized, containerized method to enforce consistent AI development tools across multiple projects without host machine overhead.
-
-## Key Stakeholders & Environment
-
-- End Users: Developers running the initialization shell script.
-- Environment: Local workstations (Linux, macOS, Windows via WSL) equipped with Docker and an API key for the chosen LLM provider.
+AIAssistant targets software developers, AI-assisted coders, and technical founders who value structured software development, SDLC compliance, and cost efficiency. It is specifically designed for those who want to leverage [aider](https://aider.chat/) across multiple local project repositories without the hassle of local environment setup, while strictly enforcing atomic task breakdown and minimizing API token usage.
 
 ## Value Proposition
 
-Zero-Friction, Repository-Agnostic Portability: Unlike global CLI installations or IDE-locked extensions, your wrapper lets any codebase instantly leverage an isolated, pre-configured aider environment via a single shell script, ensuring zero pollution of the host environment and consistent AI behavior across different projects and machines.
+AIAssistant provides a frictionless, Dockerized [aider](https://aider.chat/) environment paired with an orchestrated prompt library (AGENT.md) that forces the LLM to follow strict SDLC best practices. Its unique value lies in systematically breaking down complex development tasks into atomic, context-isolated steps, which drastically reduces token consumption and API costs while delivering high-quality, modular code modifications from any local repository.
 
 ## Key Features
 
-- Containerized Sandboxing: Runs safely inside Docker, isolating dependencies, API keys, and language toolchains.
-- Universal Repository Launch: Can be dropped or executed from any project directory instantly.
-- Structured Prompt Integration: Leverages structured engineering workflows (inspired by the [software-dev-prompt-library](https://github.com/codingthefuturewithai/software-dev-prompt-library/tree/main)) rather than ad-hoc prompting.
+1. One-Command Dockerized Environment: A .sh startup script that instantly builds and runs an isolated [aider](https://aider.chat/) environment mapped to any local project repository, eliminating local dependency conflicts.
+2. SDLC Prompt Library Integration: Pre-packaged access to the [software-dev-prompt-library](https://github.com/codingthefuturewithai/software-dev-prompt-library/tree/main), providing standardized, chained prompts for every phase of the software development lifecycle.
+3. AGENT.md Workflow Orchestration: A central orchestration file that guides [aider](https://aider.chat/) through the prompt library, ensuring a seamless, start-to-finish workflow that adheres to SDLC best practices.
+4. Atomic Task Execution & Token Optimization: A structured approach that breaks complex development tasks into highly focused, manageable steps, ensuring minimal context window bloat and drastically reducing API token usage.
 
 ## Future Vision
 
-- Automated Context Injection: Automatically pulling architectural guidelines, coding standards, and structured workflow prompts into the container context on launch.
-- Multi-Model Support & Routing: Allowing dynamic switching between LLM providers (e.g., Anthropic, OpenAI, local open-source models via Ollama) inside the Docker container configuration.
-- CI/CD Integration: Extending the wrapper to run audit checks, test coverage scans, or code health reports via aider in automated pipeline environments.
+AIAssistant will evolve from a developer-initiated Docker wrapper into an autonomous, continuous development agent. Future iterations will include integration with CI/CD pipelines (like GitHub Actions), support for local LLMs via Ollama for zero-cost, highly secure offline iterations, and advanced codebase indexing (RAG) to further optimize context retrieval. It will also feature customizable AGENT.md profiles, allowing teams to create specialized atomic workflows for different domains like DevSecOps, data engineering, or refactoring legacy code.
