@@ -58,4 +58,4 @@ docker run -it --rm \
     -v "/dev/shm:/dev/shm" \
     -e PULSE_SERVER=unix:/run/user/1000/pulse/native \
     ${RFILE:---env-file .env} \
-    "$AIDER_IMAGE" "$@"
+    "$AIDER_IMAGE" --chat-mode ask "$@"

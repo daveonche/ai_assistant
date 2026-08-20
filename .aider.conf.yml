@@ -37,7 +37,10 @@ alias:
 edit-format: diff
 
 ## Use architect edit format for the main chat
-architect: true
+architect: false
+
+## Enable/disable automatic acceptance of architect changes (default: True)
+auto-accept-architect: false
 
 ## Specify the model to use for commit messages and chat history summarization (default depends on --model)
 weak-model: gemini/gemini-3.1-flash-lite
@@ -107,7 +110,7 @@ show-release-notes: false
 
 ## Specify multiple values like this:
 read:
-- .aider.skills/AGENT.md
+- .aider.prompt/AGENT.md
 # - project_docs/requirements.md
 # - project_docs/user_stories.md
 # - project_docs/implementation_status.md

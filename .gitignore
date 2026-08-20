@@ -4,4 +4,4 @@
 !.aider.conf.yml
 !.aider.model.settings.yml
 !.aider.model.metadata.json
-!.aider.skills/
+!.aider.prompt/
