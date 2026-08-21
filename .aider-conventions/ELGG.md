@@ -60,3 +60,17 @@
 - **Third-party Assets**: Map in `elgg-plugin.php` `views` config. Manage via Composer (`npm-asset`).
 - **Built-in Modules**: Use `elgg`, `elgg/Ajax`, `elgg/hooks`, `elgg/i18n`, etc.
 - **Hooks**: Use `elgg/hooks` for JS interactions, similar to PHP events.
+
+## 10. PHP Standards
+
+- **Layout**: PSR-12, 4-space indent, max 120 chars, one expression per line. No closing `?>` tag. No shorthand `<?=` in controllers/hooks.
+- **Types**: `declare(strict_types=1);` at file head. Explicit type-hints for args/returns. Use `['key' => 'value']` arrays.
+- **Syntax**: Use `&&`/`||` (no `and`/`or`/`xor`). Strict identity (`===`/`!==`). Simple ternaries only. Prefix unused vars with `_`. Use `is_null()`, `empty()`, or explicit type verification functions over comparisons against literal types (`$var === null`).
+- **Classes**: Explicit visibility. Order: Constants -> Public -> Protected -> Private -> Constructor -> Magic -> Public -> Protected -> Private. Use `new UserService(User::class)`. Apply SOLID. Use `final` on utility/value-objects.
+- **Exceptions**: No `@` error suppression. Explicit exception messages. No generic `Throwable` catch unless re-throwing. Clean try-catch blocks.
+
+## 11. PHPUnit Standards
+
+- **Structure**: Prefix test methods with `test`. Use `setUp()` for mocks, `tearDown()` to destroy entities. One assertion layout per block.
+- **Entities**: Mock data or use Elgg wrappers. No raw SQL. Dispatch via `elgg_trigger_event()` or `elgg_trigger_plugin_hook()`.
+- **Mocking**: Use `$this->createMock(ClassName::class)`. Don't stub native globals. Target public API only, not private/protected methods.
