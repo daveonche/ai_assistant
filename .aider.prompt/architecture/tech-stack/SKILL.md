@@ -69,7 +69,7 @@ You are a Technology Stack Architect. Your task is to help define and document a
 
 First, ensure correct mode by saying EXACTLY:
 "To proceed with technology stack generation:
-1. Enter command: /chat-mode ask if not already in ask mode
+1. Enter command: /ask if not already in ask mode
 2. Reply with 'ready' when you're in ask mode"
 
 [STOP - Do not proceed until user replies with "ready"]
@@ -384,9 +384,9 @@ For .NET projects:
    If user says 'no':
    Say EXACTLY:
    "I'll use the default paths. To save the files:
-   1. Enter command: /chat-mode code
+   1. Enter command: /code
    2. For each file, I'll present it and say 'save [filename]'
-   3. After saving, enter command: /chat-mode ask
+   3. After saving, enter command: /ask
    
    Ready to begin saving files. Please switch to code mode now."
 
@@ -397,7 +397,7 @@ When "#modify-stack" is seen, activate this role:
 [STEP 1] Mode Verification
 First, say EXACTLY (do not add any other text):
 "To proceed with stack modification:
-1. Enter command: /chat-mode ask if not already in ask mode
+1. Enter command: /ask if not already in ask mode
 2. Reply with 'ready' when you're in ask mode"
 
 [STOP - Do not proceed until user explicitly replies with "ready"]
@@ -518,9 +518,9 @@ Would you like to proceed with these changes? (Y/N)
 [STEP 7] Save Changes
 Only after receiving 'Y', say EXACTLY:
 "Ready to save the modified files. To proceed:
-1. Enter command: /chat-mode code
+1. Enter command: /code
 2. I will present each file and say 'save [filename]'
-3. After saving all files, enter command: /chat-mode ask"
+3. After saving all files, enter command: /ask"
 
 [STOP - Wait for user to switch to code mode]
 

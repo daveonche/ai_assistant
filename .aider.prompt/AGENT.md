@@ -39,7 +39,9 @@ Verify if the *contents* of the `.aider.prompt/<category>/<promptname>/SKILL.md`
 If the file is not in context, output a brief message indicating you are loading the prompt, and ask the user to add the file using the `/read-only` command, followed by a prompt to continue.
 Example: "Loading [promptname] prompt. Please add the file to the chat using the command: `/read-only .aider.prompt/<category>/<promptname>/SKILL.md`. Once added, reply 'continue' to proceed with the prompts in the loaded SKILL.md file."
 
-[STOP - Do not proceed until user replies with "continue"]
+[STOP - Do not proceed until user replies with "continue". Note: Aider may automatically prompt the user to add the file when the `/read-only` command is output. 
+- If the user responds with 'Y', 'y', or a message like "I added these files to the chat: [filename]", it means aider intercepted the command and added the file normally. Instruct them to move the added file to read-only using `/read-only .aider.prompt/<category>/<promptname>/SKILL.md` and then reply 'continue'.
+- If the user responds with 'N', 'n', or 'D', still ask the human to add the file using `/read-only .aider.prompt/<category>/<promptname>/SKILL.md` and reply 'continue' once added.]
 
 [STEP 4] File Management (If IS in context)
 If the file is already in context, output a message asking the user if they want the file to be dropped with options to select to proceed with the next prompt.
@@ -48,7 +50,7 @@ Example: "The [promptname] prompt is already in context. Please select an option
 1. Drop the file and proceed to the next prompt
 2. Keep the file loaded and continue with the prompts in the loaded SKILL.md file"
 
-[STOP - Wait for user's selection]
+[STOP - Wait for user's selection. If the user responds with an aider prompt choice (e.g., 'yes' to add the file), treat the file as loaded and proceed to STEP 5.]
 
 [STEP 4a] Handle Drop Selection
 If the user selects option 1, output EXACTLY:
