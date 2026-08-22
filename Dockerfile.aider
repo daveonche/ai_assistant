@@ -3,15 +3,30 @@ FROM paulgauthier/aider-full:latest
 # Switch to root to install system requirements
 USER root
 
-# Install Docker CLI and the compose plugin so Aider can run docker commands
+# Install system dependencies, Node.js repo prerequisites, and a lean system browser (Chromium)
 RUN apt-get update && \
-apt-get install -y ca-certificates curl gnupg libpulse0 alsa-utils && \
+    apt-get install -y ca-certificates curl gnupg libpulse0 alsa-utils chromium && \
     install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
-    apt-get update && \
-    apt-get install -y docker-ce-cli docker-compose-plugin
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Ensure /home exists and is writable by any user (since host UID is dynamic)                                 
+# Add Node.js v22 repository
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+
+# Install Node.js, Docker CLI, and Docker Compose plugin
+RUN apt-get update && \
+    apt-get install -y nodejs docker-ce-cli docker-compose-plugin
+
+# Tell Puppeteer to skip its default bulky download and use the installed system browser
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Install Mermaid CLI safely and quickly
+RUN npm install -g @mermaid-js/mermaid-cli
+
+# Ensure /home exists and is writable by any user                                 
 RUN mkdir -p /home && chmod 777 /home
+
+# Create Puppeteer config to run Chromium without sandbox in container
+RUN echo '{"args": ["--no-sandbox"]}' > /home/puppeteer-config.json

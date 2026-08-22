@@ -1,0 +1,8 @@
+graph TD
+    User[User] -->|Executes| BashScript[ai-assistant.sh]
+    BashScript -->|Builds/Runs| DockerContainer[Docker Container]
+    DockerContainer -->|Executes| Aider[Aider AI Engine]
+    Aider -->|Reads| AgentMd[AGENT.md]
+    Aider -->|Loads/Drops| PromptLibrary[Prompt Library SKILL.md]
+    Aider -->|Modifies| LocalRepo[Local Git Repository]
+    DockerContainer -->|Volume Map| LocalRepo

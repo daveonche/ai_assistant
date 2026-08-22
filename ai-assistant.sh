@@ -14,7 +14,6 @@ AIDER_IMAGE="aider-agent:latest"
 DOCKERFILE_PATH="$(pwd)/Dockerfile.aider"
 
 # Clean up orphaned containers from previous sessions (e.g., after a VS Code window reload)
-# This allows multiple concurrent containers in the current session, but clears old ones on reload
 ALL_DIR_CONTAINERS=$(docker ps --filter "label=aider.dir=${WORKSPACE_HASH}" --format "{{.ID}}\t{{.Label \"aider.session\"}}")
 
 while IFS=$'\t' read -r id session; do
@@ -24,12 +23,49 @@ while IFS=$'\t' read -r id session; do
 done <<< "$ALL_DIR_CONTAINERS"
 
 if [ -f "$DOCKERFILE_PATH" ]; then
-    # Relying on Docker's layer cache, this is instant if nothing changed
-    # Suppress build output completely unless an error occurs
-    if ! docker build -t "$AIDER_IMAGE" -f "$DOCKERFILE_PATH" "$(pwd)" > /dev/null 2>&1; then
-        echo "Failed to build Aider image. Exiting."
+    BUILD_LOG=$(mktemp)
+    
+    # Run docker build in the background, piping output to log
+    docker build -t "$AIDER_IMAGE" -f "$DOCKERFILE_PATH" "$(pwd)" > "$BUILD_LOG" 2>&1 &
+    BUILD_PID=$!
+
+    SPIN_CHARS="-\|/."
+    i=0
+
+    # Loop while the build process is active
+    while kill -0 $BUILD_PID 2>/dev/null; do
+        LATEST_LINE=$(grep -oE '(RUN|COPY|FROM|Installing|Extracting|Downloading)[^[:cntrl:]]*' "$BUILD_LOG" | tail -n 1)
+        
+        if [ -z "$LATEST_LINE" ]; then
+            STATUS_MSG="Initializing build environment..."
+        else
+            STATUS_MSG="${LATEST_LINE:0:45}"
+        fi
+
+        CHAR="${SPIN_CHARS:i%${#SPIN_CHARS}:1}"
+        printf "\r[%s] Loading AI Assistant... %-50s" "$CHAR" "$STATUS_MSG"
+        
+        i=$((i+1))
+        sleep 0.1
+    done
+
+    # Wait for completion and fetch exit status
+    wait $BUILD_PID
+    BUILD_STATUS=$?
+
+    if [ $BUILD_STATUS -ne 0 ]; then
+        printf "\r[✖] Loading AI Assistant... failed.                                              \n\n"
+        echo -e "\033[31m--- Last lines of build log (Error Details) ---\033[0m"
+        tail -n 25 "$BUILD_LOG"
+        echo -e "\033[31m-------------------------------------------------\033[0m"
+        rm -f "$BUILD_LOG"
         exit 1
+    else
+        # Added extra padding spaces at the end to completely clear out long previous lines like mkdir
+        printf "\r[✔] Loading AI Assistant... done.                                                  \n"
     fi
+
+    rm -f "$BUILD_LOG"
 else
     echo "Dockerfile.aider not found at $DOCKERFILE_PATH. Exiting."
     exit 1
@@ -47,6 +83,7 @@ docker run -it --rm \
     --group-add audio \
     --device /dev/snd \
     -e HOME=/home \
+    -e PYTHONUNBUFFERED=1 \
     -v "/var/run/docker.sock:/var/run/docker.sock" \
     -v "$HOME/.docker:/home/.docker:ro" \
     -v "$(pwd):$(pwd)" \
