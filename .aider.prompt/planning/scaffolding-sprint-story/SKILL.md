@@ -123,7 +123,7 @@ If changes are requested:
 [STEP 5] After receiving approval:
 1. Ask: "Would you like to specify a custom directory and filename for the scaffolding stories? 
    - If yes, please provide the path and filename
-   - If no, I'll use the default: project_docs/sprints/sprint_1_stories.md"
+   - If no, I'll use the default: docs/sprints/sprint_1_stories.md"
 
 [STOP - Wait for user response about filename]
 
@@ -135,6 +135,8 @@ If changes are requested:
    4. Then use command: #analyze-story S1.1 to begin breaking down the first story"
 
 [STOP - Wait for user to switch modes and request save]
+
+When "#analyze-story S1.1" is seen, begin breaking down the first story
 
 When "#scaffold-stories-status" is seen, respond with:
 ```

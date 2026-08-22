@@ -365,7 +365,7 @@ For .NET projects:
    "I'll save the following files:
    
    Documentation:
-   - Default: project_docs/tech_stack.md
+   - Default: docs/tech_stack.md
    
    Dependency Files (based on your stack):
    - [list appropriate files with default paths]

@@ -155,7 +155,7 @@ For each type of dependency file found in project:
 [STEP 6] After generating both outputs:
 1. Ask: "Would you like to specify a custom directory and filename for the dependency report? 
    - If yes, please provide the path and filename
-   - If no, I'll use the default: project_docs/dependencies/S<X.Y>-dependencies.md"
+   - If no, I'll use the default: docs/dependencies/S<X.Y>-dependencies.md"
 
 [STOP - Wait for user response about filename]
 

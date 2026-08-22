@@ -134,7 +134,7 @@ Use this format:
 [STEP 5] After receiving approval:
 1. Ask: "Would you like to specify a custom directory and filename for the requirements? 
    - If yes, please provide the path and filename
-   - If no, I'll use the default: project_docs/requirements/core_requirements.md"
+   - If no, I'll use the default: docs/requirements/core_requirements.md"
 
 [STOP - Wait for user's filename choice]
 

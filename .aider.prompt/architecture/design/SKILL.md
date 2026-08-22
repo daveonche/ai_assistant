@@ -224,9 +224,9 @@ npm list -g @mermaid-js/mermaid-cli || npm install -g @mermaid-js/mermaid-cli
 
 2. Create files:
 ```bash
-mkdir -p project_docs/architecture/diagrams
-echo "[mermaid script]" > project_docs/architecture/diagrams/architecture-overview.mmd
-mmdc -p /home/puppeteer-config.json -i project_docs/architecture/diagrams/architecture-overview.mmd -o project_docs/architecture/diagrams/architecture-overview.png
+mkdir -p docs/architecture/diagrams
+echo "[mermaid script]" > docs/architecture/diagrams/architecture-overview.mmd
+mmdc -p /home/puppeteer-config.json -i docs/architecture/diagrams/architecture-overview.mmd -o docs/architecture/diagrams/architecture-overview.png
 ```
 
 3. Generate documentation with:

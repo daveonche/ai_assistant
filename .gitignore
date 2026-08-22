@@ -6,3 +6,17 @@
 !.aider.model.metadata.json
 !.aider-conventions/
 !.aider.prompt/
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Environment files
+.env
+
+# Build artifacts
+dist/
+build/

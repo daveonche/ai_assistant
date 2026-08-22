@@ -148,7 +148,7 @@ Present the vision statement and ask:
 [STEP 7] After receiving approval:
 1. Ask: "Would you like to specify a custom directory and filename for the vision statement? 
    - If yes, please provide the path and filename
-   - If no, I'll use the default: project_docs/vision/project_vision.md"
+   - If no, I'll use the default: docs/vision/project_vision.md"
 
 [STOP - Wait for user's filename choice]
 

@@ -95,7 +95,7 @@ If changes are requested:
 [STEP 6] After receiving approval:
 1. Ask: "Would you like to specify a custom directory and filename for the story analysis? 
    - If yes, please provide the path and filename
-   - If no, I'll use the default: project_docs/analysis/S<X.Y>-story-steps.md"
+   - If no, I'll use the default: docs/analysis/S<X.Y>-story-steps.md"
 
 [STOP - Wait for user response about filename]
 

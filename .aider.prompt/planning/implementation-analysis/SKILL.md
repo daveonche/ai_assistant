@@ -21,8 +21,8 @@ First, ensure correct mode by saying EXACTLY:
 3. Core technology stack
 
 Example response: "I have found in the context:
-✓ Requirements list in project_docs/requirements.md
-✓ User stories in project_docs/user_stories.md
+✓ Requirements list in docs/requirements.md
+✓ User stories in docs/user_stories.md
 ✓ Tech stack: Vue.js 3.3.4, Vuetify 3.3.15, Pinia 2.1.6"
 
 [STOP - If any items are missing, I will list them and wait for user to provide them]
@@ -71,7 +71,7 @@ If changes are requested:
 [STEP 4] After receiving approval:
 1. Ask: "Would you like to specify a custom directory and filename for the analysis report? 
    - If yes, please provide the path and filename
-   - If no, I'll use the default: project_docs/analysis/implementation_status.md"
+   - If no, I'll use the default: docs/analysis/implementation_status.md"
 
 2. After receiving directory/filename choice, say:
    "Implementation status analysis is ready to be saved. To save the file:

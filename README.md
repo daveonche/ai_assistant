@@ -177,3 +177,10 @@ This workflow file acts as your automated pipeline infrastructure. Whenever you 
   `wsl --manage Ubuntu-24.04 --set-sparse true --allow-unsafe`
 
 ------------------------------
+# AIAssistant
+
+A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant.
+
+## Getting Started
+
+(Instructions to be added)
