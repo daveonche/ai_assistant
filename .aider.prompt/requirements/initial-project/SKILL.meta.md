@@ -6,9 +6,11 @@ Generates structured core requirements for a new software project, focusing on a
 
 ## Usage
 
-1. Load the prompt into context using the shorthand command: `$requirements-initial-project`
-2. Trigger the generation workflow by entering: `#generate-requirements`
-3. Follow the interactive, step-by-step instructions provided by the AI assistant.
+1. Activate the workflow using: `$requirements-initial-project`
+2. Follow the assistant's mode and context setup instructions.
+3. For a new project, enter: `#generate-requirements`
+4. To update existing requirements, enter: `#modify-requirements`
+5. To check progress, enter: `#requirements-status`
 
 ## Best suited for
 
@@ -19,25 +21,26 @@ Generates structured core requirements for a new software project, focusing on a
 
 ## Output format
 
-- Categorized requirements
+- Categorized functional and additional requirements
 - Unique reference numbers
 - Markdown formatted document
-- Focus on architectural impact
+- `[Assumed]` markers on assumption-based requirements
+- Focus on explicit user needs rather than implementation or architecture details
+- Provides input that helps later architecture and technology choices
 
 ## AI Assistant Compatibility
 
 - Tested With:
   - Aider
-  - LLM: Claude 3.5 Sonnet (October 22, 2024 release)
-- Potential Compatible Assistants:
-  - Other modern Claude models (e.g., Claude 3 Opus, Claude 3 Haiku)
-  - Other modern LLMs (e.g., GPT-4o) with adaptations
+  - Current Claude models available as of the last test date
+- Potentially Compatible:
+  - Other modern LLMs, but the interactive workflow may require minor prompt adaptations
 
 ## SDLC Phase
 
 - Phase: Planning
 - Sub-Phase: Requirements Analysis
-- Workflow: Initial Project Setup
+- Workflow: Initial Requirements Definition
 
 ## Complexity Rating
 
@@ -47,12 +50,13 @@ Generates structured core requirements for a new software project, focusing on a
 
 ## Usage Guidelines
 
-- Prerequisite: Project idea or problem statement
-- Requires:
+- Prerequisite: project idea or problem statement
+- Helpful inputs:
   - Clear project vision
   - Basic project context
   - Understanding of target users
   - Desired feature set outline
+- Note: The workflow can also start from a minimal or ambiguous idea and ask clarifying questions.
 - Note: This prompt requires interactive, step-by-step execution and involves switching between `/ask` and `/code` modes as directed by the workflow.
 
 ## Prompt Characteristics
@@ -69,7 +73,8 @@ Generates structured core requirements for a new software project, focusing on a
 - Use consistent ID formatting
 - Keep requirements atomic
 - Avoid technical implementation details
-- Mark assumptions clearly
+- Mark assumptions clearly with the `[Assumed]` prefix
+- Only mark assumptions when the user explicitly chooses the assumption option
 - Support iterative refinement
 
 ## Potential Challenges
@@ -79,7 +84,7 @@ Generates structured core requirements for a new software project, focusing on a
 - Maintaining requirement atomicity
 - Managing requirement dependencies
 - Balancing detail vs. clarity
-- Avoiding implementation specifics
+- Tendency to drift into implementation or technical details
 
 ## Recommended Mitigation Strategies
 
@@ -87,12 +92,27 @@ Generates structured core requirements for a new software project, focusing on a
 - Clear assumption marking
 - Interactive refinement process
 - Explicit user confirmation steps
-- Complete requirement listing after changes
+- Show the complete updated requirements list after every modification
 - Separate functional/additional requirements
-- Maintain clear modification history
+
+## Inputs
+
+- Project idea or problem statement
+- Optional: existing requirements file for modification
+- Optional: category names and requirement descriptions
+- Optional: custom output path
+
+## Outputs
+
+- Markdown requirements document
+- Requirement IDs
+- Optional custom save location
 
 ## Version
 
 - Current Version: 1.2.0
 - Last Updated: 2026-08-24
 - Stability: Beta
+- Changelog:
+  - 1.2.0: Aligned commands, clarified assumptions, improved modification loop
+  - 1.1.0: Initial interactive requirements workflow
