@@ -13,7 +13,8 @@ First, ensure correct mode by saying EXACTLY:
 1. Enter command: /ask if not already in ask mode
 2. Reply with 'ready' when you're in ask mode"
 
-[STOP - Do not proceed until user replies with "ready". DO NOT proceed with STEP 1 below until the user confirms they are in "ask" mode]
+[STOP]
+Do not proceed until user replies with "ready". DO NOT proceed with STEP 1 below until the user confirms they are in "ask" mode
 
 [STEP 1] First, check for these essential items in the available project context:
 1. Project requirements list
@@ -40,7 +41,8 @@ Document format validation:
 ✓ Implementation status contains prioritized features
 ```
 
-[STOP - If any items are missing, list them and wait for user to provide them]
+[STOP]
+If any items are missing, list them and ask the user to add them using the `/read-only` command. Wait for user to provide them
 
 [STEP 2] Ask for sprint number:
 ```
@@ -48,7 +50,8 @@ What sprint number should I use for story generation?
 (Previous sprint stories found in: sprint_X_stories.md)
 ```
 
-[STOP - Wait for user to provide sprint number before proceeding]
+[STOP]
+Wait for user to provide sprint number before proceeding
 
 [STEP 3] Once sprint number is provided and all documents are available, perform technical analysis:
 1. Map dependencies between features
@@ -73,7 +76,8 @@ Recommended story count for sprint: 3 stories
 (Based on minimal dependency chain for core functionality)
 ```
 
-[STOP - Present analysis and wait for user approval or revision requests. If changes requested, update and present again until approved]
+[STOP]
+Present analysis and wait for user approval or revision requests. If changes requested, update and present again until approved
 
 [STEP 4] Generate user stories following this format:
 
@@ -112,25 +116,31 @@ If changes are requested:
 2. Present the updated stories
 3. Return to the start of Step 5 for your review"
 
-[STOP - Wait for user review. Loop through Step 5 until approved]
+[STOP]
+Wait for user review. Loop through Step 5 until approved
 
 [STEP 6] After receiving approval:
 1. Ask: "Would you like to specify a custom directory and filename for the sprint stories? 
    - If yes, please provide the path and filename
    - If no, I'll use the default: docs/sprints/sprint_[number]_stories.md"
 
-[STOP - Wait for user response about filename]
+[STOP]
+Wait for user response about filename
 
 2. After receiving directory/filename choice:
    a. First say: "Sprint stories are ready to be saved. To save the file:
       1. Enter command: /code
-      2. Then simply say: 'save to file'
+      2. Then reply with: 'save to file'
       3. After saving, enter command: /ask 
-      4. Then use command: #manage-dependencies to proceed with dependency management"
+      4. Then use command: #manage-dependencies to proceed with dependency management (requires loading the `$coding-dependency-management` prompt)"
    
-   b. Then STOP - Wait for user to switch modes and request save
+   b. Then 
+[STOP]
+Wait for user to switch modes and request save
 
 DO NOT attempt to save the file directly - wait for user to switch to code mode and request the save.
+
+**State Tracking:** As you progress through each step, internally track the completion status of each step to accurately respond to the `#generate-sprint-stories-status` command.
 
 When "#generate-sprint-stories-status" is seen, respond with:
 "Sprint Story Generation Progress:
