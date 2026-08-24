@@ -1,4 +1,4 @@
-# Metadata: # Unit Test Generation Prompt
+# Unit Test Generation Prompt Metadata
 
 ## AI Assistant Compatibility
 - Tested With: 
@@ -30,7 +30,7 @@
 - Input Driven: Yes
 - State Dependent: Yes
 - Requires Contextual Awareness: Critical
-- Command Driven: Yes (#generate-tests, #test-status)
+- Command Driven: Yes ($testing-unit-test, $testing-unit-test-status)
 
 ## Best Practices
 - Analyze test environment before implementation
@@ -57,6 +57,6 @@
 - Support for manual test execution
 
 ## Version
-- Current Version: 1.0.0
-- Last Updated: 2024-12-02
+- Current Version: 1.0.1
+- Last Updated: 2026-08-24
 - Stability: Experimental
