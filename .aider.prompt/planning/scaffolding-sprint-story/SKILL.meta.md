@@ -1,4 +1,4 @@
-# Metadata: # Scaffolding Sprint Story Generation Prompt
+# Metadata: Scaffolding Sprint Story Generation Prompt
 
 ## AI Assistant Compatibility
 
@@ -7,8 +7,8 @@
   - Claude 3.5 Sonnet (October 22, 2024 release)
 - Potential Compatible Assistants:
   - Other Claude models
-  - GitHub Copilot (with modifications)
-  - GPT-4 (with adaptations)
+  - GitHub Copilot — requires prompt reformatting
+  - GPT-4 — requires command-handoff adaptation
 
 ## SDLC Phase
 
@@ -24,13 +24,19 @@
 
 ## Usage Guidelines
 
-- Prerequisite: Core project requirements (can be generated using `$requirements-initial-project`, `$architecture-tech-stack`, `$architecture-design`)
+- Prerequisites:
+  - Core requirements — can be generated using `$requirements-initial-project`
+  - Technology stack — can be generated using `$architecture-tech-stack`
+  - Architecture documentation — can be generated using `$architecture-design`
 - Requires:
   - Technology stack documentation
   - Architecture documentation
   - Development environment needs
   - Technical dependencies
   - Project structure requirements
+- Mode requirements:
+  - `/ask` for story generation and review
+  - `/code` only when saving the finalized story file
 
 ## Prompt Characteristics
 
@@ -40,6 +46,11 @@
 - Command Driven: Yes (`$planning-scaffolding-sprint-story`, `$planning-scaffolding-sprint-story-status`)
 - Story Format: Standardized templates
 - Dependency Tracking: Technical sequencing
+- Output Format: Markdown sprint stories
+- Review Checkpoints:
+  - Foundation analysis review
+  - Story set review before saving
+- Saving Mode: `/code`
 
 ## Best Practices
 
@@ -52,30 +63,26 @@
 - Core architecture focus
 - Development workflow establishment
 
-## Potential Challenges
+## Challenges and Mitigations
 
-- Technical dependency ordering
-- Environment setup completeness
-- Version compatibility
-- Story scope control
-- Infrastructure requirements
-- Development workflow definition
-- Tool chain integration
-- Configuration management
-
-## Recommended Mitigation Strategies
-
-- Structured foundation analysis
-- Clear dependency graphing
-- Standard story categories
-- Explicit verification points
-- Detailed acceptance criteria
-- Environment setup checklist
-- Configuration documentation
-- Tool chain verification
+| Challenge | Mitigation |
+|---|---:|
+| Technical dependency ordering | Clear dependency graphing |
+| Environment setup completeness | Environment setup checklist |
+| Version compatibility | Version specification guidance |
+| Story scope control | Standard story categories |
+| Infrastructure requirements | Verification checkpoints |
+| Development workflow definition | Detailed acceptance criteria |
+| Tool chain integration | Tool chain verification |
+| Configuration management | Configuration documentation |
 
 ## Version
 
-- Current Version: 1.0.1
+- Current Version: 1.1.0
 - Last Updated: 2026-08-24
 - Stability: Experimental
+
+## Changelog
+
+- 1.1.0: Added logging/config category, Definition of Done, version fallback, ASCII status indicators
+- 1.0.1: Initial metadata version
