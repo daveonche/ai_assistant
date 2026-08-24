@@ -29,19 +29,25 @@ Example response: "I have found in the context:
 
 DO NOT PROCEED WITH ANY ANALYSIS until all essential files are loaded into the conversation context.
 
-[STEP 2] Once all essential files are available, I will analyze the codebase (including source files, configurations, and scripts) and provide a structured breakdown in this format:
+[STOP - Wait for user to provide missing files]
+
+[STEP 2] Once all essential files are available, I will analyze the codebase (including source files, configurations, and scripts). If key source files, configs, or scripts are not yet in context, ask the user to add them with `/read-only` or `/add`, then wait for confirmation before continuing.
+
+Provide a structured breakdown in this format:
 
 IMPLEMENTATION STATUS:
 A. Completed Features
-   • [Feature name]: [Supporting evidence from codebase, citing specific files and implementations]
-   • [Feature name]: [Supporting evidence from codebase, citing specific files and implementations]
+   • [Feature name] ([Requirement ID], [User Story ID]): [Supporting evidence from codebase, citing specific files and implementations]
+   • [Feature name] ([Requirement ID], [User Story ID]): [Supporting evidence from codebase, citing specific files and implementations]
 
 B. Partially Implemented Features
-   • [Feature name]: [Current progress details with specific file references and remaining work]
-   • [Feature name]: [Current progress details with specific file references and remaining work]
+   • [Feature name] ([Requirement ID], [User Story ID]): [Current progress details with specific file references and remaining work]
+   • [Feature name] ([Requirement ID], [User Story ID]): [Current progress details with specific file references and remaining work]
 
 C. Not Yet Implemented Features
    • [Feature list in order of dependency and priority, mapped to specific requirements]
+
+Evidence rule: each feature must cite at least one source file. If no source evidence exists, classify it as Not Yet Implemented, not Partially Implemented.
 
 PRIORITY ORDER FOR NEXT IMPLEMENTATION PHASE:
 Priority 1 - [Category Name]:
@@ -71,16 +77,22 @@ If changes are requested:
 [STEP 4] After receiving approval:
 1. Ask: "Would you like to specify a custom directory and filename for the analysis report? 
    - If yes, please provide the path and filename
-   - If no, I'll use the default: docs/analysis/implementation_status.md"
+   - If no, I'll use the default: docs/implementation_status.md"
 
 [STOP - Wait for user response about filename]
 
 2. After receiving directory/filename choice, say:
    "Implementation status analysis is ready to be saved. To save the file:
    1. Enter command: /code
-   2. Then simply say: 'save to file'
+   2. Then say: 'Write the approved implementation status report to <file path>', using the file path chosen in step 1
    3. After saving, enter command: /ask 
    4. Then use command: #generate-sprint-stories to proceed with sprint planning"
+
+   If a status report already exists at the chosen path, compare against the existing file and update only the sections that have changed. Do not overwrite historical records unless explicitly requested.
+
+The saved report must end with:
+
+   Next workflow step: `#generate-sprint-stories`
 
 Example Implementation Status Report:
 ```markdown
@@ -89,12 +101,26 @@ Example Implementation Status Report:
 ## Current Implementation Status
 
 ### A. Completed Features
-• Project Setup: Basic Vue.js project with required dependencies
-   - Vue.js 3.3.4
-   - Vuetify 3.3.15
-   [Continue with actual completed features...]
+• Authentication (REQ-AUTH-1, US-01): Implemented login and JWT handling in src/auth/LoginView.vue and src/store/auth.ts
+• Project Setup (REQ-PROJ-1, US-00): Vue.js 3.3.4 and Vuetify 3.3.15 are installed and configured
 
-[Rest of example status report structure...]
+### B. Partially Implemented Features
+• User Profile (REQ-PROFILE-1, US-04): Profile display is implemented in src/views/ProfileView.vue; editing and avatar upload are still pending.
+
+### C. Not Yet Implemented Features
+• Search (REQ-SEARCH-1, US-05)
+• Notifications (REQ-NOTIF-1, US-06)
+
+## Priority Order for Next Implementation Phase
+
+Priority 1 - Core Functionality:
+- Complete User Profile editing (REQ-PROFILE-1, US-04)
+- Add search feature (REQ-SEARCH-1, US-05)
+
+Priority 2 - Enhancements:
+- Add notifications (REQ-NOTIF-1, US-06)
+
+Next workflow step: `#generate-sprint-stories`
 ```
 
 When "#analyze-impl-status" is seen, respond with:

@@ -39,7 +39,7 @@ Analyzes the current codebase to determine the implementation status of features
 
 ## Outputs
 
-- Default Output File: `docs/analysis/implementation_status.md`
+- Default Output File: `docs/implementation_status.md`
 - Next Workflow Step: `#generate-sprint-stories`
 
 ## Prompt Characteristics
@@ -71,6 +71,6 @@ Analyzes the current codebase to determine the implementation status of features
 
 ## Version
 
-- Current Version: 1.0.1
+- Current Version: 1.1.0
 - Last Updated: 2026-08-24
 - Stability: Experimental
