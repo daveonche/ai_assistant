@@ -1,4 +1,4 @@
-# Code Explanation Tutor Prompt
+# AI Code Tutor Prompt
 
 ## Description
 
@@ -6,8 +6,9 @@ Interactive tutorial system that guides developers through understanding a codeb
 
 ## Usage
 
-1. Share your codebase with the AI assistant
-2. Use: "Review and explain this codebase using the code explanation tutor prompt"
+1. Ensure you are in `/ask` mode.
+2. Use the shorthand command: `$learning-project-tutor`
+3. Follow the interactive prompts to load files and progress through the tutorial.
 
 ## Best suited for
 
@@ -17,10 +18,10 @@ Interactive tutorial system that guides developers through understanding a codeb
 - Technology stack education
 - Architecture comprehension
 
-## Output format
+## Workflow / Output format
 
-- Interactive dialogue
-- Progressive explanation structure
-- Code snippets with context
-- Technology deep dives
-- Architecture analysis
+- Mode and context verification
+- High-level overview of technologies and architecture
+- Component deep dives with code snippets
+- Improvement analysis and learning path recommendations
+- Interactive dialogue with explicit stop points for user feedback
