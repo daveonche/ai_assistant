@@ -4,10 +4,12 @@
 
 - Tested With:
   - Aider
-  - LLM: Claude 3.5 Sonnet (October 22, 2024 release)
+  - LLM: Claude 3.5 Sonnet (October 22, 2024 release) — historical baseline; retest recommended against current Claude models
 - Potential Compatible Assistants:
   - Other Claude models
   - GitHub Copilot (with modifications)
+
+  Note: The current `SKILL.md` includes updated verification commands and eco-system-specific dependency handling. Compatibility should be re-verified on the assistants used in practice.
 
 ## SDLC Phase
 
@@ -41,9 +43,12 @@
 - Always verify compatibility with existing dependencies
 - Use exact versions, never ranges
 - Treat existing dependencies as immutable
-- Document all dependency decisions
+- Document all dependency decisions with concrete evidence sources (e.g., `npm view`, `pip index versions`)
 - Maintain clean separation between analysis and implementation phases
 - Update both documentation and dependency files
+- Use `$coding-dependency-management S<X.Y>` and `$coding-dependency-status` command aliases consistently
+- Run post-change verification using the project’s dependency manager (lockfile, dependency resolution, etc.)
+- Handle the “no new dependencies required” path as an explicit no-op, not an empty update
 
 ## Potential Challenges
 
@@ -54,21 +59,28 @@
 - Breaking changes in dependency updates
 - Mode switching complexity
 - Maintaining consistency across dependency files
+- Unsupported or project-specific dependency file formats
+- Failed post-update dependency-manager verification
+- Command syntax drift between `#` aliases and `$` shorthand
+- Metadata drift from workflow updates
 
 ## Recommended Mitigation Strategies
 
 - Strict version control (no ranges)
 - Comprehensive compatibility testing
-- Clear documentation of decisions
+- Clear documentation of decisions with evidence output recorded
 - Explicit mode switching instructions
-- Verification steps for dependency updates
-- Return path validation to implementation
+- Mandatory post-change verification commands (`npm install --package-lock-only`, `pip install -r`, `bundle lock --update`, `mvn dependency:resolve`, `gradle dependencies`)
+- Define both `#` and `$coding` aliases consistently in prompts
+- Add an explicit no-op branch for “no new dependencies required”
+- Keep metadata version and notes synchronized with the prompt workflow
 
 ## Version
 
-- Current Version: 1.0.1
-- Last Updated: 2026-08-23
+- Current Version: 1.1.0
+- Last Updated: 2026-08-24
 - Stability: Experimental
+- Changes: Synced with `SKILL.md` v1.1 enhancements (evidence-based compatibility, `$coding` aliases, post-change verification, no-op path)
 
 ## Integration Points
 
@@ -76,14 +88,17 @@
 - Story Analysis Prompt
 - Project Setup Workflow
 - Build/Deploy Pipeline Configuration
+- AGENTS.md shorthand command mapping (`$coding-dependency-management`, `$coding-dependency-status`)
+- Code Review Workflow (`.aider.prompt/coding/code-review/SKILL.md`)
 
 ## Success Metrics
 
-- Clean dependency resolution
-- No version conflicts
-- Successful return to implementation
-- Minimal dependency-related implementation blocks
-- Clear documentation trail
+- Dependency analysis successfully uses documented ecosystem commands and cites evidence
+- No unresolved peer dependency conflicts with existing locked versions
+- Dependency files and lockfiles are updated/committed where required
+- Post-change dependency manager verification command succeeds
+- No-op path is selected for “no new dependencies required” when applicable
+- Successful return to implementation with `$coding-implementation S<X.Y>` command
 
 ## Failure Modes
 
@@ -92,3 +107,7 @@
 - Incomplete dependency updates
 - Lost context during mode switching
 - Implementation blocking due to missing dependencies
+- Post-update verification fails or is skipped
+- Unsupported dependency file format not handled
+- Metadata drift after SKILL.md enhancements
+- Empty dependency-file changes when no new dependencies are required
