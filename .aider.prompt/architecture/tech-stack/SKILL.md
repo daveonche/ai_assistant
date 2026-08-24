@@ -28,7 +28,23 @@ I have found in the context:
 ✓/✗ Existing dependencies in [filename(s)]
 ```
 
-[STOP - If requirements are missing, ask user to provide them]
+If any requirements or dependency files are missing, ask the user to add them to the chat using:
+`/read-only <path-to-file>`
+
+[STOP - Wait for the user to add the missing file(s). Do not proceed until they reply that the files have been added.]
+
+Once all required files are present, display their exact contents and ask:
+"Here is the current content of the provided file(s):
+
+[filename]:
+[exact content]
+
+[filename]:
+[exact content]
+
+Is this the correct file set to use for this stack? (Y/N)"
+
+[STOP - Wait for user confirmation. If Y, proceed to STEP 2. If N, ask the user to correct the files and add them again.]
 
 [STEP 2] Application Type Assessment
 Ask: "What type of application are you building?
@@ -47,13 +63,20 @@ B) Let me analyze the requirements and recommend an application type
 
 Please choose A or B"
 
-[STOP - Wait for user response]
+[STOP - Wait for user response.]
+
+Once the user responds, determine the selected application type:
+- If they chose A with a number, set app_type to that selection.
+- If they chose A with "Other", ask them to describe the application type, then set app_type accordingly.
+- If they chose B, analyze the requirements and tell the user the recommended app_type before continuing. Wait for user to confirm or modify that recommendation before continuing.
+
+[STOP - Wait for any needed confirmation from the user before moving to STEP 3.]
 
 [STEP 3] Core Technology Selection
-Based on application type, either:
+Based on the confirmed application type, determine the selection mode:
 
-If user chose an app type:
-1. First present technology options:
+If the user chose the application type themselves:
+1. Present these technology options:
 ```
 Please specify which core technology you prefer for your [app type] from these common choices:
 1. [technology 1]
@@ -70,7 +93,7 @@ C) Let me recommend based on the requirements
 Please choose A, B, or C"
 ```
 
-2. After user selects a technology:
+2. After the user selects a technology:
 ```
 You've selected [technology]. What version would you like to use?
 
@@ -78,12 +101,12 @@ You can either:
 A) Specify an exact version (e.g., "3.8.0")
 B) Let me recommend the latest stable version that best fits your requirements
    Current latest stable: [version]
-   
+
 Please choose A or B"
 ```
 
-If user defers to AI for either choice:
-1. Present recommendation with rationale:
+If the user defers to AI for either the app type or the core technology:
+1. Present the AI recommendation with rationale:
 ```
 Based on the requirements, I recommend:
 [technology] [exact-version] because:
@@ -94,7 +117,10 @@ Based on the requirements, I recommend:
 Shall I proceed with this recommendation? (Y/N)"
 ```
 
-[STOP - Wait for user response]
+2. If the user answers Y, record that recommendation as the confirmed core technology.
+3. If the user answers N, return to the appropriate selection prompt and ask them to choose manually.
+
+[STOP - Wait for user response. Do not proceed until both the core technology and exact version are confirmed.]
 
 [STEP 4] Dependency Analysis
 Once core technology is selected, analyze requirements to identify needed capabilities:
@@ -176,6 +202,9 @@ Analyzing: [library] [exact-version]
 Continue to next dependency? (Y/N)
 ```
 
+If the user answers Y, present the next dependency using the same format.
+If the user answers N, stop the detailed compatibility review and proceed directly to STEP 7.
+
 [STEP 7] Generate Documentation and Dependency Files
 First, generate documentation:
 ```markdown
@@ -217,37 +246,17 @@ For Node.js/JavaScript/TypeScript projects:
 }
 ```
 
-For Deno Fresh projects:
+For Deno Fresh projects (illustrative only — replace URLs and versions with the current lockfile values; do not include tasks, permissions, or compilerOptions in the dependency file):
 ```
 {
   "imports": {
-    "$fresh/": "https://deno.land/x/fresh@1.7.3/",
-    "preact": "https://esm.sh/preact@10.19.2",
-    "preact/": "https://esm.sh/preact@10.19.2/",
-    "preact-render-to-string": "https://esm.sh/*preact-render-to-string@6.2.2",
-    "@preact/signals": "https://esm.sh/*@preact/signals@1.2.1",
-    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.0",
-    "zod": "https://esm.sh/zod@3.21.4",
-    "tailwindcss": "https://esm.sh/tailwindcss@3.3.4",
-    "daisyui": "https://esm.sh/daisyui@3.9.4",
-    "@firebase/app": "https://esm.sh/@firebase/app@0.10.15",
-    "@firebase/auth": "https://esm.sh/@firebase/auth@1.8.0",
-    "@firebase/firestore": "https://esm.sh/@firebase/firestore@4.7.4"
-  },
-  "tasks": {
-    "start": "deno run -A --no-check --watch=static/,routes/ dev.ts",
-    "build": "deno run -A --no-check dev.ts build",
-    "preview": "deno run -A --no-check main.ts"
-  },
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "preact"
-  },
-  "permissions": {
-    "allow-read": ["static/", "routes/"],
-    "allow-net": ["deno.land", "esm.sh", "firebase.googleapis.com"],
-    "allow-write": [],
-    "allow-env": true
+    "$fresh/": "https://deno.land/x/fresh@<exact-version>/",
+    "preact": "https://esm.sh/preact@<exact-version>",
+    "preact/": "https://esm.sh/preact@<exact-version>/",
+    "preact-render-to-string": "https://esm.sh/*preact-render-to-string@<exact-version>",
+    "@preact/signals": "https://esm.sh/*@preact/signals@<exact-version>",
+    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@<exact-version>",
+    "zod": "https://esm.sh/zod@<exact-version>"
   }
 }
 ```
@@ -355,10 +364,10 @@ I have found in the context:
   [list any found files]
 
 [If any files are missing, add this line:]
-Please provide the following files to proceed with modification:
+Please add the following files to the chat using /read-only so I can read them:
 [list missing files]
 
-After providing the files, use #modify-stack to try again.
+After adding the files, use #modify-stack to try again.
 ```
 
 [STOP - If ANY files are missing, exit the command here. Do not proceed.]
@@ -477,6 +486,8 @@ Tech Stack Generation Progress:
 
 Use #generate-stack to continue
 ```
+
+Note: Progress is currently stored only in this conversation. If you need persistence across sessions, create a small state file (e.g., `tech_stack_progress.md`) and update it after each step.
 
 CRITICAL Rules:
 1. Always use exact versions, never ranges
