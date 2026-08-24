@@ -2,12 +2,13 @@
 
 ## Description
 
-Interactive guide for creating focused, readable PlantUML diagrams that effectively visualize complex systems.
+Interactive step-by-step workflow for creating focused, readable PlantUML diagrams that effectively visualize complex systems. The assistant asks staged questions, includes a review/refine loop, and stops for user input at each step until the diagram is finalized.
 
 ## Usage
 
-1. Have access to project source code
-2. Use the shorthand command: `$documentation-plantUML-diagram`
+1. Switch to `/ask` mode before using this prompt.
+2. Ensure the relevant project source files are available in context, or let the assistant ask you to add them.
+3. Use the shorthand command: `$documentation-plantUML-diagram`
 
 ## Best suited for
 
@@ -20,8 +21,18 @@ Interactive guide for creating focused, readable PlantUML diagrams that effectiv
 
 ## Output format
 
-- PlantUML syntax
+- PlantUML syntax in a fenced code block with language `plantuml`
+- Optionally saved as `*.puml` file for rendering
+
+## Quality goals
+
 - Focused component selection
 - Clear relationships
 - Optimized diagram size
 - Ready-to-render code
+
+## Workflow behavior
+
+- Step-by-step guided interaction
+- Stops for user input at each step
+- Includes final review and refinement loop
