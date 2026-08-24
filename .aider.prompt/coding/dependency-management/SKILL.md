@@ -12,7 +12,7 @@ CRITICAL: You MUST follow each step exactly and STOP at each [STOP] point for us
 
 First, ensure correct mode:
 Say EXACTLY: "To proceed with dependency analysis:
-1. Enter command: /chat-mode ask if not already in ask mode
+1. Enter command: /ask if not already in ask mode
 2. Reply with 'ready' when you're in ask mode"
 
 [STOP - Do not proceed until user replies with "ready"]
@@ -28,7 +28,7 @@ IMPORTANT: Do NOT analyze or suggest changes to existing dependencies. Treat the
 
 [STEP 1] First, check for these essential items in the available project context:
 1. Sprint stories for the upcoming sprint
-2. Project's dependency definition file (e.g., package.json, requirements.txt, pom.xml, etc.)
+2. Project's dependency definition file (e.g., package manifests, lock files, etc.)
 
 Present findings exactly like this:
 ```
@@ -147,9 +147,7 @@ All versions are locked and verified compatible.
 
 2. Dependency File Updates:
 For each type of dependency file found in project:
-- package.json: New dependencies in npm format
-- requirements.txt: New dependencies in pip format
-- pom.xml: New dependencies in Maven format
+- Update the file using the appropriate format for the project's dependency management system
 [etc. for other dependency formats]
 
 [STEP 6] After generating both outputs:
@@ -163,16 +161,16 @@ For each type of dependency file found in project:
    "Let's update the project's dependencies:
    
    First, save the documentation:
-   1. Enter command: /chat-mode code
+   1. Enter command: /code
    2. Then say: 'save to file'
-   3. Enter command: /chat-mode ask
+   3. Enter command: /ask
    
    Next, update dependency files:
-   1. Enter command: /chat-mode code
+   1. Enter command: /code
    2. Review these dependency file changes:
       [Show exact changes to be made to dependency files]
    3. Say 'update dependencies' to apply these changes
-   4. Enter command: /chat-mode ask
+   4. Enter command: /ask
    
    Finally:
    Resume implementation with command: #implement-step S<X.Y> [step-number]"

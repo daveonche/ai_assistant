@@ -1,3 +1,27 @@
+# Switch with /model genius
+- name: openrouter/z-ai/glm-5.3
+  edit_format: diff
+  extra_params:
+    extra_body:
+      reasoning:
+        # Forces maximum brilliant thinking when invoked
+        effort: "max"
+      provider:
+        sort: "price"
+        allow_fallbacks: false
+        data_collection: "deny"
+
+# Switch with /model pro
+- name: openrouter/deepseek/deepseek-v4-pro-0813
+  edit_format: diff
+  extra_params:
+    extra_body:
+      provider:
+        sort: "price"
+        allow_fallbacks: false
+        data_collection: "deny"
+
+# Switch with /model architect
 - name: openrouter/z-ai/glm-5.2
   edit_format: diff
   extra_params:
@@ -9,17 +33,26 @@
         allow_fallbacks: false
         # Denies providers from logging your code data for training metrics
         data_collection: "deny"
-        # Pin reliable caching endpoints explicitly if budget is strictly $10
-        order:
-          - "DeepInfra"
-          - "Novita"
 
-- name: openrouter/poolside/laguna-xs-2.1
+# Switch with /model coder
+- name: openrouter/deepseek/deepseek-v4-flash-0731
   edit_format: diff
   extra_params:
     extra_body:
       provider:
         # Keeps editor operations anchored to the absolute cheapest endpoint
+        sort: "price"
+        allow_fallbacks: false
+        data_collection: "deny"
+    temperature: 0.1
+    max_tokens: 4096
+
+# Switch with /model gemini
+- name: gemini/gemini-3.1-flash-lite
+  edit_format: diff
+  extra_params:
+    extra_body:
+      provider:
         sort: "price"
         allow_fallbacks: false
         data_collection: "deny"

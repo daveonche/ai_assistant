@@ -32,6 +32,27 @@
   - Capability requirements
   - Version compatibility constraints
 
+## Purpose
+This prompt guides the user through defining a compatible, version-locked technology stack based on project requirements and user preferences. It also supports modifying an existing stack.
+
+## Usage
+Use this prompt when starting a new project to select the core technology, frameworks, and dependencies, or when you need to modify an existing technology stack.
+
+### Commands
+- `#generate-stack`: Starts new technology stack generation.
+- `#modify-stack`: Allows modification of an existing tech stack.
+- `#stack-status`: Shows current progress in stack generation workflow.
+
+### Workflow
+1. **Mode Verification**: Ensure you are in `/ask` mode.
+2. **Requirements Verification**: Check for project requirements and existing dependency files.
+3. **Application Type Assessment**: Determine the type of application being built.
+4. **Core Technology Selection**: Select the core technology and version.
+5. **Dependency Analysis**: Identify required capabilities and recommend or select dependencies.
+6. **Compatibility Verification**: Verify compatibility between core technology and dependencies.
+7. **Generate Documentation and Dependency Files**: Create the tech stack documentation and appropriate dependency files.
+8. **Save Files**: Switch to `/code` mode to save the generated files.
+
 ## Prompt Characteristics
 
 - Input Driven: Yes

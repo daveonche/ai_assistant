@@ -68,6 +68,8 @@ CRITICAL:
 
 [STEP 2] Analyze technical requirements:
 
+First, identify the project's primary package manager and ecosystem based on existing files (e.g., package.json, requirements.txt, Gemfile).
+
 1. **Core Tool Verification:**
    - Review technology stack requirements
    - For each required tool:
@@ -165,7 +167,7 @@ CRITICAL:
    Acceptance Criteria Addressed: [Which ones]
    ```
 
-2. Propose implementation details
+2. Propose implementation details, including any necessary unit/integration tests for this increment
 3. Wait for approval
 4. Implement changes
 5. Request user verification
@@ -196,11 +198,14 @@ CRITICAL:
 1. Confirm all acceptance criteria met
 2. Verify all dependencies properly used
 3. Request user to confirm implementation is complete
+4. Remind the user to drop the prompt file to free up context:
+   "Story implementation complete. You can drop this prompt using /drop .aider.prompt/coding/user-story-implementation/SKILL.md to free up context."
 
 [STOP - Wait for final approval]
 
 ## Important Implementation Notes
 
+- If the user requests changes or rejects a proposal, update your approach based on their feedback and re-present the revised version for approval.
 - Assume the AI coding assistant handles file operations
 - Focus on logical implementation steps
 - Let the assistant handle project scanning

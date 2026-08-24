@@ -7,7 +7,7 @@ Interactive guide for creating focused, readable PlantUML diagrams that effectiv
 ## Usage
 
 1. Have access to project source code
-2. Use: "Help me create a PlantUML diagram using the PlantUML generator prompt"
+2. Use the shorthand command: `$documentation-plantUML-diagram`
 
 ## Best suited for
 

@@ -1,74 +1,3 @@
-# General
-
-1. Review Inputs
-- Analyze core requirements
-- Review technology stack
-- Identify key system capabilities
-
-2. Determine Architecture Style
-Based on requirements and tech stack, recommend architecture pattern, for example:
-- Layered/N-tier
-- Microservices
-- Event-driven
-- Modular monolith
-- Serverless
-- Client-server
-- Pipeline
-- Library
-
-Present recommendation with rationale.
-
-3. Define Core Components
-For each major requirement:
-- Map to system component
-- Assign technology from stack
-- Define component responsibilities
-- Establish component boundaries
-
-4. Design Component Relationships
-- Define data flow
-- Establish communication patterns
-- Identify integration points
-- Map dependencies
-
-5. Generate Architecture Document
-
-# System Architecture
-
-## Overview
-[High-level architecture description]
-
-## Core Components
-[For each component]:
-- Purpose
-- Technologies used
-- Key responsibilities
-- Integration points
-
-## Component Relationships
-[Interaction patterns and data flow]
-
-## Project Structure
-```plaintext
-project/
-├── [component1]/
-│   ├── core files
-│   └── tests
-├── [component2]/
-│   ├── core files
-│   └── tests
-└── shared/
-    └── common utilities
-```
-## Technology Mapping
-[How tech stack items map to components]
-
-## Development Guidelines
-Component boundaries
-Communication patterns
-State management
-Error handling
-
 # Architecture Design Generator Prompt
 
 This role responds to two commands:
@@ -127,26 +56,11 @@ Present architectural decisions:
 ```
 Core Architectural Decisions:
 
-1. Core Layers
-   Domain Layer:
-   - Entities: [core domain objects]
-   - Interfaces: [core contracts]
-   - Business Rules: [invariants/constraints]
-
-   Application Layer:
-   - Use Cases: [core functionality]
-   - Services: [business operations]
-   - State Management: [approach]
-
-   Infrastructure Layer:
-   - External Services: [integrations]
-   - Persistence: [data storage]
-   - Communication: [protocols]
-
-   Optional Layers (based on requirements):
-   - Presentation Layer (if UI needed)
-   - API Layer (if service endpoints needed)
-   - CLI Layer (if command line needed)
+1. Core Components/Layers
+   [Based on the chosen architecture pattern, define the core components or layers]
+   - Component/Layer 1: [responsibilities]
+   - Component/Layer 2: [responsibilities]
+   - Component/Layer 3: [responsibilities]
    
 2. Cross-cutting Concerns
    - Error Handling: [strategy]
@@ -216,44 +130,10 @@ Say EXACTLY:
 
 Implementation Details:
 When in code mode and 'implement documentation' is received:
-1. Check/install dependencies:
-```bash
-which npm || command -v npm
-npm list -g @mermaid-js/mermaid-cli || npm install -g @mermaid-js/mermaid-cli
-```
-
-2. Create files:
-```bash
-mkdir -p docs/architecture/diagrams
-echo "[mermaid script]" > docs/architecture/diagrams/architecture-overview.mmd
-mmdc -p /home/puppeteer-config.json -i docs/architecture/diagrams/architecture-overview.mmd -o docs/architecture/diagrams/architecture-overview.png
-```
-
-3. Generate documentation with:
-```markdown
-## Architecture Overview
-![Architecture Diagram](./diagrams/architecture-overview.png)
-
-<details>
-<summary>Diagram Source</summary>
-[mermaid source]
-</details>
-
-## Core Layers
-[Detailed layer descriptions]
-
-## Cross-cutting Concerns
-[Detailed cross-cutting implementations]
-
-## Integration Patterns 
-[Detailed integration approaches]
-
-## Component Interactions
-[Detailed interaction patterns]
-
-## Interface Contracts
-[Core interface specifications]
-```
+1. Ensure Mermaid CLI is installed (if diagram generation is needed).
+2. Create the architecture documentation file (e.g., `docs/architecture/architecture.md`) using the approved outline and Mermaid script.
+3. Generate the diagram image from the Mermaid script if required.
+4. Ensure the documentation accurately reflects the approved architectural decisions.
 
 When "#architecture-status" is seen, respond with:
 ```

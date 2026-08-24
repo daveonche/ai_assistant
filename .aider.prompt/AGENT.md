@@ -30,18 +30,13 @@ Ensure the user is in `/ask` mode. If they are not, or if you are unsure, say EX
 [STOP - Do not proceed until user replies with "ready"]
 
 [STEP 2] Context Verification
-Verify if the *contents* of the `.aider.prompt/<category>/<promptname>/SKILL.md` file are actually in your context window. A file is considered "in context" if:
-
-- The user explicitly states they have added the file to the chat (e.g., "I have added these files to the chat").
-- The full contents of the file are visible in the recent chat history.
+Verify if the *contents* of the `.aider.prompt/<category>/<promptname>/SKILL.md` file are actually in your context window. If you are unsure, ask the user: "Is the file `.aider.prompt/<category>/<promptname>/SKILL.md` currently loaded in your context? (Y/N)"
 
 [STEP 3] File Loading (If NOT in context)
 If the file is not in context, output a brief message indicating you are loading the prompt, and ask the user to add the file using the `/read-only` command, followed by a prompt to continue.
 Example: "Loading [promptname] prompt. Please add the file to the chat using the command: `/read-only .aider.prompt/<category>/<promptname>/SKILL.md`. Once added, reply 'continue' to proceed with the prompts in the loaded SKILL.md file."
 
-[STOP - Do not proceed until user replies with "continue". Note: Aider may automatically prompt the user to add the file when the `/read-only` command is output. 
-- If the user responds with 'Y', 'y', or a message like "I added these files to the chat: [filename]", it means aider intercepted the command and added the file normally. Instruct them to move the added file to read-only using `/read-only .aider.prompt/<category>/<promptname>/SKILL.md` and then reply 'continue'.
-- If the user responds with 'N', 'n', or 'D', still ask the human to add the file using `/read-only .aider.prompt/<category>/<promptname>/SKILL.md` and reply 'continue' once added.]
+[STOP - Do not proceed until user replies with "continue".]
 
 [STEP 4] File Management (If IS in context)
 If the file is already in context, output a message asking the user if they want the file to be dropped with options to select to proceed with the next prompt.
@@ -50,7 +45,7 @@ Example: "The [promptname] prompt is already in context. Please select an option
 1. Drop the file and proceed to the next prompt
 2. Keep the file loaded and continue with the prompts in the loaded SKILL.md file"
 
-[STOP - Wait for user's selection. If the user responds with an aider prompt choice (e.g., 'yes' to add the file), treat the file as loaded and proceed to STEP 5.]
+[STOP - Wait for user's selection.]
 
 [STEP 4a] Handle Drop Selection
 If the user selects option 1, output EXACTLY:
@@ -62,7 +57,7 @@ Once the file is loaded and the user chooses to continue, follow the instruction
 
 1. Execute the current step in the SKILL.md file.
 2. When you encounter a `[STOP]` point, stop and wait for the user's input. Do not proceed to the next step until the user provides the required input.
-3. If the SKILL.md requires a mode change (e.g., `/ask` or `/code`), ask the user to switch modes and wait for explicit confirmation before proceeding.
+3. If the SKILL.md requires a mode change (e.g., `/ask` or `/code`), explicitly instruct the user to switch modes (e.g., "Please enter `/code` mode to apply changes") and wait for explicit confirmation before proceeding.
 4. Continue this stage-by-stage execution until all steps in the SKILL.md file are completed.
 
 CRITICAL Rules:
@@ -70,6 +65,7 @@ CRITICAL Rules:
 1. Do NOT output the `/read-only` or `/drop` commands on a new line for the user to execute. The user will run it directly.
 2. Do NOT output any other conversational text or explanations.
 3. Always wait for explicit user input at [STOP] points.
+4. If a shorthand command is unknown or malformed, inform the user and list available prompts if possible.
 
 **Behavioral Guidelines:**
 
@@ -77,12 +73,9 @@ CRITICAL Rules:
 - If uncertain, just ask the human user for clarification or request additional files to prevent falling into a thinking loop or using up excess tokens.
 - Thinking and answer output should go straight to the point.
 
-**File Editing Protocol:**
-Use strict format:
-
-  ```text
-  <<<<<<< ORIGINAL
-  old_code
+  new_code
+  >>>>>>> UPDATED
+```
   =======
   new_code
   >>>>>>> UPDATED

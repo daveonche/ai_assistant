@@ -1,14 +1,16 @@
 # Metadata: # Implementation Prompt
 
+## Description
+
+Guides the implementation of a specific step from a story analysis report, enforcing strict planning and implementation phase separation.
+
 ## AI Assistant Compatibility
 
 - Tested With:
   - Aider
   - Claude 3.5 Sonnet (October 22, 2024 release)
 - Potential Compatible Assistants:
-  - Other Claude models
-  - GitHub Copilot (with modifications)
-  - GPT-4 (with adaptations)
+  - Should be compatible with most advanced LLMs capable of following complex, multi-step instructions.
 
 ## SDLC Phase
 
@@ -24,7 +26,7 @@
 
 ## Usage Guidelines
 
-- Prerequisite: Story steps report
+- Prerequisite: Story steps report file (e.g., `docs/analysis/S<X.Y>-story-steps.md`)
 - Requires:
   - Sprint story documentation
   - Story step requirements
@@ -75,6 +77,6 @@
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-12-02
-- Stability: Experimental
+- Current Version: 1.0.1
+- Last Updated: 2026-08-23
+- Stability: Beta

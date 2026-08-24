@@ -26,7 +26,7 @@
 - Prerequisite: Story Analysis Complete
 - Requires:
   - Sprint Stories
-  - Project Dependency Definition File (package.json, requirements.txt, etc.)
+  - Project Dependency Definition File (package manifests, lock files, etc.)
   - Current Technology Stack Information
 
 ## Prompt Characteristics
@@ -34,7 +34,7 @@
 - Input Driven: Yes
 - State Dependent: Yes
 - Requires Contextual Awareness: Critical
-- Mode Sensitive: Yes (switches between ask/code modes)
+- Mode Sensitive: Yes (switches between /ask and /code modes)
 
 ## Best Practices
 
@@ -66,8 +66,8 @@
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-11-29
+- Current Version: 1.0.1
+- Last Updated: 2026-08-23
 - Stability: Experimental
 
 ## Integration Points

@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
+# Print exact failure details before exiting on error
+trap 'echo -e "\033[31m[ERROR] Script failed at line $LINENO: command \"$BASH_COMMAND\" exited with status $?\033[0m"' ERR
+
+# Optional: Uncomment the line below to print EVERY command as it runs (verbose debugging)
+# set -x
 
 TOOL_NAME="ai-assistant"
 DIR_NAME=$(basename "$(pwd)")
@@ -24,7 +31,12 @@ done <<< "$ALL_DIR_CONTAINERS"
 
 if [ -f "$DOCKERFILE_PATH" ]; then
     BUILD_LOG=$(mktemp)
+    # Ensure the build log is removed on exit or interrupt
+    trap 'rm -f "$BUILD_LOG"' EXIT
     
+    # Enable BuildKit for faster, cached builds
+    export DOCKER_BUILDKIT=1
+
     # Run docker build in the background, piping output to log
     docker build -t "$AIDER_IMAGE" -f "$DOCKERFILE_PATH" "$(pwd)" > "$BUILD_LOG" 2>&1 &
     BUILD_PID=$!
@@ -34,7 +46,7 @@ if [ -f "$DOCKERFILE_PATH" ]; then
 
     # Loop while the build process is active
     while kill -0 $BUILD_PID 2>/dev/null; do
-        LATEST_LINE=$(grep -oE '(RUN|COPY|FROM|Installing|Extracting|Downloading)[^[:cntrl:]]*' "$BUILD_LOG" | tail -n 1)
+        LATEST_LINE=$(grep -oE '(RUN|COPY|FROM|Installing|Extracting|Downloading)[^[:cntrl:]]*' "$BUILD_LOG" | tail -n 1 || true)
         
         if [ -z "$LATEST_LINE" ]; then
             STATUS_MSG="Initializing build environment..."
@@ -64,8 +76,6 @@ if [ -f "$DOCKERFILE_PATH" ]; then
         # Added extra padding spaces at the end to completely clear out long previous lines like mkdir
         printf "\r[✔] Loading AI Assistant... done.                                                  \n"
     fi
-
-    rm -f "$BUILD_LOG"
 else
     echo "Dockerfile.aider not found at $DOCKERFILE_PATH. Exiting."
     exit 1
@@ -73,6 +83,12 @@ fi
 
 # Ensure the cache directory exists on the host to avoid permission issues
 mkdir -p "$HOME/.cache/aider"
+
+# Check if .env file exists to conditionally include it
+ENV_FILE_ARG=""
+if [ -f ".env" ]; then
+    ENV_FILE_ARG="--env-file .env"
+fi
 
 docker run -it --rm \
     --name "$CONTAINER_NAME" \
@@ -91,8 +107,8 @@ docker run -it --rm \
     -v "$HOME/.bashrc:/home/.bashrc:ro" \
     -v "$HOME/.gitconfig:/home/.gitconfig:ro" \
     -v "$HOME/.cache/aider:/home/.cache" \
-    -v "/run/user/$(id -u)/pulse/native:/run/user/1000/pulse/native" \
+    -v "/run/user/$(id -u)/pulse/native:/run/user/$(id -u)/pulse/native" \
     -v "/dev/shm:/dev/shm" \
-    -e PULSE_SERVER=unix:/run/user/1000/pulse/native \
-    ${RFILE:---env-file .env} \
+    -e PULSE_SERVER=unix:/run/user/$(id -u)/pulse/native \
+    $ENV_FILE_ARG \
     "$AIDER_IMAGE" --chat-mode ask "$@"

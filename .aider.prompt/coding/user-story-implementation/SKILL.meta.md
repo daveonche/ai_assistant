@@ -13,6 +13,7 @@ Guides the systematic implementation of user stories through a structured workfl
 2. Use command: "#implement-story S<X.Y>" to start or resume implementation
    - Replace X.Y with specific story number (e.g., S2.1)
 3. Use command: "#implement-story-status" to check progress
+4. After completion, use the /drop command to remove the prompt from context and free up tokens.
 
 ## Best suited for
 
@@ -33,6 +34,7 @@ Guides the systematic implementation of user stories through a structured workfl
 
 - Story validation report
 - Technical requirements analysis:
+  - Ecosystem detection
   - Core tool verification
   - Dependency analysis matrix
   - Version lock enforcement
@@ -42,6 +44,8 @@ Guides the systematic implementation of user stories through a structured workfl
   - Criteria coverage
 - Implementation tracking:
   - Increment progress
+  - Test proposals
+  - Revision handling
   - Verification checkpoints
   - Stability confirmations
 - Completion verification:

@@ -73,3 +73,21 @@
 - Current Version: 1.0.0
 - Last Updated: 2024-12-02
 - Stability: Experimental
+
+## Purpose
+This prompt guides the user through defining the core architectural components for a project. It focuses on fundamental structures, cross-cutting concerns, and integration patterns that are difficult to change later in the development lifecycle.
+
+## Usage
+Use this prompt when starting a new project or when a major architectural pivot is required.
+
+### Commands
+- `#generate-architecture`: Starts or resumes the architecture design workflow.
+- `#architecture-status`: Shows the current progress in the architecture workflow.
+
+### Workflow
+1. **Mode Verification**: Ensure you are in `/ask` mode.
+2. **Context Verification**: The prompt will check for core requirements and technology stack documents.
+3. **Scope Confirmation**: Defines the boundaries of the scaffolding design (what is and isn't included).
+4. **Core Architecture Generation**: Defines layers, cross-cutting concerns, and integration patterns.
+5. **Documentation Planning**: Outlines the architecture document and Mermaid diagram.
+6. **Implementation**: Switches to `/code` mode to generate the documentation files and diagrams.

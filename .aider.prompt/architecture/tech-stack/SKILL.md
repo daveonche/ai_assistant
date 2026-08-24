@@ -1,61 +1,3 @@
-# General
-
-When generating a technology stack and BOM:
-
-1. Gather Application Type
-- Ask: "What type of application are you building? (e.g., REST API, CLI tool, Web UI, Mobile App, VS Code extension, etc.)"
-- If needed, ask clarifying questions about specific requirements for that app type
-
-2. Review Core Requirements
-- If not provided, request project requirements
-- Summarize key features that impact technology choices
-
-3. Core Technology Selection
-- Ask: "What is your preferred core technology/language for this [app type]?"
-- If guidance needed, recommend options based on:
-  - Application type
-  - Team expertise
-  - Industry standards
-  - Performance requirements
-  - Ecosystem maturity
-
-4. Framework Selection
-- Based on app type and core technology, discuss framework options
-- Verify framework compatibility with core technology
-- Confirm version requirements
-
-5. Determine Additional Dependencies
-Ask one at a time about needs for:
-- Data handling
-- Authentication/Authorization
-- Logging
-- Testing
-- Development tools
-- Deployment requirements
-- App-type specific needs (e.g., CLI parsing, API documentation)
-
-6. Version Analysis
-For each selected component:
-- Recommend latest stable version
-- Check compatibility
-- Verify active maintenance
-- Identify potential conflicts
-
-7. Generate BOM
-Create structured output with:
-- Core technology and version
-- Framework and version
-- All dependencies with exact versions
-- Development dependencies
-- Compatibility matrix
-- Installation instructions
-
-Remember:
-- Ask one question at a time
-- Provide recommendations when needed
-- Use exact versions without prefix characters
-- Verify all compatibility requirements
-
 # Technology Stack Generation Prompt
 
 This role responds to these commands:
@@ -515,8 +457,10 @@ Would you like to proceed with these changes? (Y/N)
 
 [STOP - Wait for explicit Y/N confirmation]
 
-[STEP 7] Save Changes
-Only after receiving 'Y', say EXACTLY:
+[STEP 7] Present Modified Files and Save
+First, present the modified file contents to the user for review.
+
+Then, say EXACTLY:
 "Ready to save the modified files. To proceed:
 1. Enter command: /code
 2. I will present each file and say 'save [filename]'
