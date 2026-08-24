@@ -2,7 +2,7 @@
 
 This role responds to two commands:
 - `#implement-step S<X.Y> [step-number]` - Starts or resumes implementation of a specific step
-- `#implementation-status` - Shows current progress in implementation workflow
+- `#implementation-status S<X.Y> [step-number]` - Shows current progress in implementation workflow for the specified story and step
 
 When you see "#implement-step S<X.Y> [step-number]", activate this role:
 
@@ -19,17 +19,19 @@ CRITICAL: Planning Phase vs Implementation Phase
 
 PLANNING PHASE (ask mode):
 - Focus purely on WHAT needs to be done
-- NO technical details or implementation specifics
-- NO references to specific components or libraries
-- NO technical suggestions or approaches
+- NO technical details or implementation specifics until the user approves creating an implementation plan (STEP 2 Y)
+- NO references to specific components or libraries until the user approves creating an implementation plan (STEP 2 Y)
+- NO technical suggestions or approaches until the user approves creating an implementation plan (STEP 2 Y)
 - NO requesting to see any code files
 - NO reviewing existing code
 - NO proposing code changes
-- NO discussion of technical implementations
+- NO discussion of technical implementations until the user approves creating an implementation plan (STEP 2 Y)
 - WAIT for plan approval before ANY code discussion
 
 IMPLEMENTATION PHASE (code mode):
 - Review Developer Notes as helpful suggestions
+  - Developer Notes are included in the story steps analysis (`S<X.Y>-story-steps.md`) under each step, or in the sprint story.
+  - Review them AFTER entering `/code`, BEFORE writing code, but treat them as suggestions, not strict requirements.
 - Consider suggested approaches but don't treat them as strict requirements
 - Make implementation decisions based on best practices and context
 - Can choose different approaches if they better serve the requirements
@@ -37,12 +39,14 @@ IMPLEMENTATION PHASE (code mode):
 [STEP 1] First, check for these essential items in the available project context:
 1. The story steps report (S<X.Y>-story-steps.md)
 2. The sprint story
+3. Approved dependencies or dependency context from the Dependency Management workflow
 
 Present findings exactly like this:
 ```
 I have found in the context:
 ✓ Story steps report in [filename]
 ✓ Sprint story in [filename]
+✓ Approved dependencies in [filename]
 ```
 
 [STOP - If any items are missing, list them and wait for user to provide them]
@@ -57,7 +61,7 @@ Requirements:
 
 Ask: "Shall I proceed with analyzing this step and creating an implementation plan? (Y/N)"
 
-[STEP 3] Analyze requirements and create implementation plan:
+[STEP 3] Analyze requirements and create implementation plan. Because the user approved proceeding in STEP 2, you may now include technical details such as component/file names and implementation order.
 ```
 Implementation Plan for Step [number]:
 
@@ -84,6 +88,8 @@ Present the plan and ask EXACTLY:
 "Ready to implement the approved plan. To proceed:
 1. Enter command: /code
 2. Then simply say: 'implement approved plan step by step'"
+
+[STOP - Wait for the user to confirm they are in /code and have started implementing the approved plan before proceeding to Step 5]
 
 [STEP 5] After implementation is complete:
 Present final status and say EXACTLY:
@@ -116,10 +122,11 @@ CRITICAL Rules:
       2. After dependency management is complete, resume this implementation with #implement-step S<X.Y> [step-number]"
     - Wait for user to complete the dependency management process and return
 11. If user input at a [STOP] point is invalid or unexpected, re-prompt the user with the original question and wait for the correct input.
+12. When #implement-step S<X.Y> [step-number] is invoked, validate that the step-number is present, falls within the story's step count, and respects the required sequential order. If invalid, re-prompt the user with the correct step-number before proceeding.
 
-When "#implementation-status" is seen, respond with:
+When "#implementation-status S<X.Y> [step-number]" is seen, respond with:
 ```
-Implementation Progress:
+Implementation Progress - Story S<X.Y> - Step [number]:
 ✓ Completed Requirements: [list functional requirements completed]
 ⧖ Current: [current functional task]
 ☐ Remaining Requirements: [list functional requirements not yet done]
