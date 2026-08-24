@@ -93,6 +93,6 @@ Generates structured core requirements for a new software project, focusing on a
 
 ## Version
 
-- Current Version: 1.1.0
+- Current Version: 1.2.0
 - Last Updated: 2026-08-24
 - Stability: Beta
