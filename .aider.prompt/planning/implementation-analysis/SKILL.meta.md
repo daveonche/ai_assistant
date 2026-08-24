@@ -3,6 +3,10 @@
 ## Description
 Analyzes the current codebase to determine the implementation status of features, comparing what has been built against project requirements and user stories. It generates a prioritized list of remaining features for the next implementation phase.
 
+## Prompt File
+
+- Path: `.aider.prompt/planning/implementation-analysis/SKILL.md`
+
 ## Trigger Commands
 - `#analyze-impl`: Starts or resumes the implementation analysis.
 - `#analyze-impl-status`: Shows the current progress in the analysis workflow.
@@ -30,17 +34,32 @@ Analyzes the current codebase to determine the implementation status of features
 
 ## Usage Guidelines
 
-- Prerequisite: Previous sprint's user stories
+- Prerequisite: Project requirements and current user stories available in context
+- Previous implementation status report may be used for comparison
 - Requires:
   - Project requirements list (e.g., `docs/requirements.md`)
   - Current set of user stories (e.g., `docs/user_stories.md`)
   - Technology stack documentation (e.g., `docs/tech_stack.md`)
   - Previous implementation artifacts
 
+## Modes
+
+- Analysis Mode: `/ask`
+- Save Mode: `/code`
+
 ## Outputs
 
 - Default Output File: `docs/implementation_status.md`
+- Output Behavior:
+  - Compare with existing status file
+  - Update only changed sections
+  - Preserve historical records unless explicitly overwritten
+
+## Workflow Chain
+
+- Current Prompt: `#analyze-impl`
 - Next Workflow Step: `#generate-sprint-stories`
+- Previous Workflow Step: `#scaffolding-sprint-story` (verify for this repository)
 
 ## Prompt Characteristics
 
@@ -53,6 +72,8 @@ Analyzes the current codebase to determine the implementation status of features
 - Conduct thorough review of existing project state
 - Identify both completed and pending features
 - Prioritize features based on technical dependencies
+- Require at least one source-file citation per feature before classifying it as Complete or Partially Implemented
+- Classify features with no source evidence as Not Yet Implemented
 - Maintain clear, structured output
 
 ## Potential Challenges
@@ -71,6 +92,6 @@ Analyzes the current codebase to determine the implementation status of features
 
 ## Version
 
-- Current Version: 1.1.0
+- Current Version: 1.1.1
 - Last Updated: 2026-08-24
 - Stability: Experimental
