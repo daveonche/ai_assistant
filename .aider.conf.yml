@@ -81,7 +81,7 @@ dark-mode: true
 # Git settings:
 
 ## Enable/disable auto commit of LLM changes (default: True)
-auto-commits: false
+# auto-commits: false
 
 ## Attribute aider edits using the Co-authored-by trailer in the commit message (default: True). If True, this takes precedence over default --attribute-author and --attribute-committer behavior unless they are explicitly set to True.
 attribute-co-authored-by: false
