@@ -34,8 +34,8 @@ The assistant MUST NEVER suggest direct package installation commands (e.g., "np
    [EXAMPLE using npm]
    ```
    After updating package.json:
-   1. Delete node_modules (recommended)
-   2. Delete package-lock.json (recommended)
+   1. If needed, delete node_modules to force a clean resolution
+   2. If dependency resolution requires it, delete package-lock.json
    3. Run: npm install
    ```
    [EXAMPLE using Python]
@@ -100,6 +100,9 @@ First, identify the project's primary package manager and ecosystem based on exi
       3. Perform compatibility analysis:
          - Check compatibility with core framework version
          - Check compatibility with all existing dependencies
+         - Check peer dependency requirements
+         - Check engine/runtime constraints
+         - Check platform-specific constraints
          - Analyze all transitive dependencies and their versions
          - Generate compatibility matrix
       4. Provide update steps following Critical Dependency Management Rules above
@@ -125,8 +128,8 @@ First, identify the project's primary package manager and ecosystem based on exi
       }
       
       After updating package.json:
-      1. Delete node_modules directory
-      2. Delete package-lock.json
+      1. If needed, delete node_modules directory to force a clean resolution
+      2. If dependency resolution requires it, delete package-lock.json
       3. Run npm install
       ```
 
@@ -185,6 +188,7 @@ First, identify the project's primary package manager and ecosystem based on exi
    - Changes work as expected
    - Application remains stable
    - No unintended side effects
+   - Rollback plan if verification fails (how to revert or isolate this increment)
    
    Shall I proceed to the next increment?
    ```
@@ -195,7 +199,7 @@ First, identify the project's primary package manager and ecosystem based on exi
 
 [STEP 6] Final verification:
 
-1. Confirm all acceptance criteria met
+1. Confirm all acceptance criteria met; for each acceptance criterion, identify which increment and/or test validates it.
 2. Verify all dependencies properly used
 3. Request user to confirm implementation is complete
 4. Remind the user to drop the prompt file to free up context:
@@ -211,7 +215,7 @@ First, identify the project's primary package manager and ecosystem based on exi
 - Let the assistant handle project scanning
 - Maintain incremental stability
 - Follow existing project patterns
-- Let user handle all testing and verification
+- The assistant may propose and write tests, but the user runs and verifies all tests.
 - Proceed only after user confirms each step
 - Always use exact versions for all dependencies
 - Verify dependency compatibility before suggesting new ones
