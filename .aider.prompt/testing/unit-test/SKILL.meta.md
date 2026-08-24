@@ -2,15 +2,18 @@
 
 ## Description
 
-Creates comprehensive unit tests matching project patterns and covering key scenarios.
+Creates story-step-aware unit tests that map directly to `Must Support` requirements and stay inside step scope. Activated with `#generate-tests S<X.Y> [step-number]`; progress can be checked with `#test-status`.
 
 ## Usage
 
-1. Have source code ready
-2. Use: "Generate unit tests using the test generator prompt"
+1. Have the story steps report for the target story step.
+2. Provide implementation files for that step.
+3. Provide any existing test files or confirm none exist.
+4. Use: `#generate-tests S<X.Y> [step-number]`
 
 ## Best suited for
 
+- Story-step unit testing driven by `Must Support` items
 - New component testing
 - Coverage improvement
 - Test maintenance
@@ -20,11 +23,15 @@ Creates comprehensive unit tests matching project patterns and covering key scen
 
 ## Output format
 
+- Test scenario analysis
 - Test suites
 - Test cases
 - Setup/teardown
 - Assertions
-- Coverage analysis
+- Manual verification mappings
+- Exact test execution commands
+- Test execution output and status
+- Final test implementation summary
 
 ## AI Assistant Compatibility
 
@@ -55,22 +62,28 @@ Creates comprehensive unit tests matching project patterns and covering key scen
   - Existing test files (if any)
   - Project structure context
   - Testing environment details
+- Mode switching: The workflow requires switching between `/ask` and `/code` modes for test generation and implementation.
 
 ## Prompt Characteristics
 
 - Input Driven: Yes
 - State Dependent: Yes
 - Requires Contextual Awareness: Critical
-- Command Driven: Yes (#generate-tests, #test-status)
+- Command Driven: Yes (`#generate-tests`, `#test-status`)
+- Mode Dependent: Yes (`/ask`, `/code`)
 
 ## Best Practices
 
+- Check test applicability before generating tests
 - Analyze test environment before implementation
 - Map tests directly to story requirements
+- Keep each test independent and side-effect-free
+- Implement and verify one test at a time
 - Verify test execution results
 - Maintain strict scope adherence
 - Follow project-specific testing patterns
 - Handle dependencies systematically
+- Allow skip-execution mode for external environments
 
 ## Potential Challenges
 
@@ -80,6 +93,7 @@ Creates comprehensive unit tests matching project patterns and covering key scen
 - Dependency management complexity
 - Test execution verification
 - Manual vs. automated test balance
+- Mixed `/ask` and `/code` mode switching
 
 ## Recommended Mitigation Strategies
 
@@ -89,9 +103,10 @@ Creates comprehensive unit tests matching project patterns and covering key scen
 - Step-by-step test implementation
 - Regular test status checks
 - Support for manual test execution
+- Clear mode-switch instructions
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-12-02
+- Current Version: 1.0.1
+- Last Updated: 2026-08-24
 - Stability: Experimental
