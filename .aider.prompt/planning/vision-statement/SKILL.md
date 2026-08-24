@@ -103,6 +103,9 @@ Example Key Features:
 4. Team Collaboration Tools
 ```
 
+If user chooses suggestions:
+Present 3-4 relevant feature suggestions based on previous answers.
+
 [STOP - Wait for user's key features]
 
 [STEP 5] Future Vision Definition
@@ -114,6 +117,16 @@ You can either:
 2. See an example
 3. Let me suggest some options
 ```
+
+If user chooses example, show:
+```
+Example Future Vision:
+TodoApp will evolve to integrate with calendar systems, offer cross-platform support, 
+and introduce team analytics to help organizations optimize their workflow and productivity.
+```
+
+If user chooses suggestions:
+Present 3-4 relevant future vision suggestions based on previous answers.
 
 [STOP - Wait for user's future vision]
 
@@ -155,23 +168,25 @@ Present the vision statement and ask:
 2. After receiving directory/filename choice, say EXACTLY:
    "Vision statement is ready to be saved. To save the file:
    1. Enter command: /code
-   2. Then simply say: 'save to file'"
+   2. Then simply say: 'save to [chosen filename]'"
 
 [STOP - Do not proceed until user confirms they have switched to code mode]
 
 3. After file is saved, say EXACTLY:
-   "To continue:
-   1. Enter command: /ask
-   2. Reply with 'ready' when in ask mode"
-
-[STOP - Do not proceed until user confirms they are in ask mode]
-
-4. Only after user confirms ask mode:
    "You can modify the vision statement later using #modify-vision"
 
 When "#modify-vision" is seen, activate this modification role:
 
-[Follow similar modification workflow as seen in other prompts, with appropriate STOP points and mode checks]
+1. Ask: "Which section of the vision statement would you like to modify? (Purpose, Target Users, Value Proposition, Key Features, Future Vision)"
+[STOP - Wait for user's section choice]
+2. Ask: "Please provide the new content for the [chosen section]:"
+[STOP - Wait for user's new content]
+3. Present the updated vision statement and ask: "Please review the updated vision statement. Reply with 'approved' to save or 'changes' to make further edits."
+[STOP - Wait for user review. Loop through revisions until approved]
+4. After receiving approval, say EXACTLY:
+   "Vision statement is ready to be saved. To save the file:
+   1. Enter command: /code
+   2. Then simply say: 'save to file'"
 
 When "#vision-status" is seen, respond with:
 ```
