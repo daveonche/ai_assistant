@@ -32,6 +32,7 @@
   - Value proposition
   - Key feature concepts
   - Future growth vision
+- Default Output Location: `docs/vision/project_vision.md` (unless custom path is specified)
 
 ## Prompt Characteristics
 
@@ -39,6 +40,7 @@
 - State Dependent: Yes
 - Requires Contextual Awareness: Moderate
 - Command Driven: Yes (#generate-vision, #modify-vision, #vision-status)
+- Modification Workflow: Yes (Interactive loop for updating specific sections)
 - Example Based: Provides clear examples for each section
 - Interactive Guidance: Multi-option input approach
 
@@ -75,8 +77,14 @@
 - Consistent structure
 - Regular alignment checks
 
+## Outputs
+
+- Default File: `docs/vision/project_vision.md`
+- Format: Markdown
+- Structure: Purpose, Target Users, Value Proposition, Key Features, Future Vision
+
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-12-02
+- Current Version: 1.0.1
+- Last Updated: 2026-08-24
 - Stability: Experimental
