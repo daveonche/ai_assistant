@@ -1,4 +1,4 @@
-# Metadata: # Vision Statement Generation Prompt
+# Metadata: Vision Statement Generation Prompt (v1.1.0)
 
 ## AI Assistant Compatibility
 
@@ -9,7 +9,7 @@
 - Potential Compatible Assistants:
   - Claude models
   - Other GPT-4o models
-  - GitHub Copilot (with modifications)
+  - GitHub Copilot (with modifications: may require manual handling of /ask and /code commands)
 
 ## SDLC Phase
 
@@ -26,18 +26,24 @@
 ## Usage Guidelines
 
 - Prerequisite: Project concept or idea
-- Requires:
-  - Clear problem statement
-  - Target audience understanding
+- Required User Inputs:
+  - Problem statement / purpose
+  - Target audience
   - Value proposition
   - Key feature concepts
   - Future growth vision
+- Mode Requirements:
+  - `/ask` for generation/modification
+  - `/code` for saving
+- File Dependency:
+  - Existing vision file (`docs/vision/project_vision.md`) must be loaded for `#modify-vision`
 - Default Output Location: `docs/vision/project_vision.md` (unless custom path is specified)
 
 ## Prompt Characteristics
 
 - Input Driven: Yes
-- State Dependent: Yes
+- State Dependent: Yes (conversation-scoped only)
+- Persistence: None
 - Requires Contextual Awareness: Moderate
 - Command Driven: Yes (#generate-vision, #modify-vision, #vision-status)
 - Modification Workflow: Yes (Interactive loop for updating specific sections)
@@ -54,6 +60,10 @@
 - Technical neutrality
 - Structured documentation
 - Interactive refinement
+- Require explicit user approval of full draft before saving
+- Verify `/ask` mode before beginning workflows
+- Confirm existing file is loaded before modifying
+- Keep modifications section-scoped
 
 ## Potential Challenges
 
@@ -65,6 +75,10 @@
 - Audience specificity
 - Vision scope control
 - Technical detail avoidance
+- Losing generated draft when switching from `/ask` to `/code`
+- Saving when the target file already exists
+- Modifying a vision file that is not loaded in context
+- Accidentally changing more than one section during `#modify-vision`
 
 ## Recommended Mitigation Strategies
 
@@ -76,6 +90,10 @@
 - Value-focused questions
 - Consistent structure
 - Regular alignment checks
+- Output full markdown content at save time to avoid context loss
+- Require explicit overwrite or rename confirmation before writing
+- Require `/read-only` + user confirmation before modification
+- Restrict `#modify-vision` edits to the selected section only
 
 ## Outputs
 
@@ -83,8 +101,14 @@
 - Format: Markdown
 - Structure: Purpose, Target Users, Value Proposition, Key Features, Future Vision
 
+## Related Skills
+
+- `requirements/initial-project`
+- `architecture/design`
+- `planning/story-analysis`
+
 ## Version
 
 - Current Version: 1.1.0
 - Last Updated: 2026-08-24
-- Stability: Experimental
+- Stability: Beta
