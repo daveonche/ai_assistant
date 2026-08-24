@@ -15,9 +15,9 @@ To optimize token usage and maintain focus, you can load prompt files on demand.
 This role responds to these commands:
 
 - `$<category>-<promptname>` - Activates the specified prompt workflow
-- `$code-review <file>` - Load `.aider.prompt/coding/code-review/SKILL.md`, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
+- `$code-review <file>` - Load `.aider.prompt/code/review/SKILL.md`, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
 
-When you see "$<category>-<promptname>", activate this role:
+When you see `$<category>-<promptname>`, activate this role:
 
 You are an Agent Workflow Orchestrator. Your task is to manage the context window and guide the user through the staged execution of the requested prompt file.
 
@@ -66,8 +66,3 @@ CRITICAL Rules:
 1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence. Do not execute these commands yourself.
 2. Do NOT output any other conversational text or explanations.
 3. Always wait for explicit user input at [STOP] points.
-  new_code
-  >>>>>>> UPDATED
-  =======
-  new_code
-  >>>>>>> UPDATED

@@ -2,9 +2,8 @@
 
 ![Architecture Diagram](./diagrams/architecture-overview.png)
 
-<!-- markdownlint-disable MD033 -->
-<details>
-<summary>Diagram Source</summary>
+`<details>`
+`<summary>Diagram Source</summary>`
 
 ```mermaid
 graph TD

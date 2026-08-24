@@ -239,7 +239,7 @@ Break down user stories into atomic, implementable functional steps.
 
 ### Phase 7A: Implementation (`$coding-implementation S<X.Y> [step-number]`)
 
-[Implementation Prompt](../../coding/implementation/SKILL.md)
+[Implementation Prompt](../../code/implementation/SKILL.md)
 
 #### Phase 7A Purpose
 

@@ -174,7 +174,7 @@ Break down user stories into atomic, implementable functional steps.
 
 ### Phase 4A: Implementation (`$coding-implementation S<X.Y> [step-number]`)
 
-[Implementation Prompt](../../coding/implementation/SKILL.md)
+[Implementation Prompt](../../code/implementation/SKILL.md)
 
 #### Phase 4A Purpose
 
@@ -218,7 +218,7 @@ Generate and verify unit tests for the implemented story step, ensuring comprehe
 
 During the implementation phase, if the Implementation Prompt determines that new dependencies may be required to implement a user story step, it will prompt the user to execute the Dependency Management Prompt. This ensures that all necessary dependencies are evaluated and approved before proceeding with the implementation.
 
-[Reference: Dependency Management Prompt](../../coding/dependency-management/SKILL.md)
+[Reference: Dependency Management Prompt](../../code/dependency-management/SKILL.md)
 
 ## Workflow Chain Execution
 
