@@ -112,7 +112,7 @@ show-release-notes: false
 
 ## Specify multiple values like this:
 read:
-- .aider.prompt/AGENT.md
+- .aider.prompt/AGENTS.md
 # - CONVENTIONS-FILENAME.md
 # - docs/user_stories.md
 # - docs/implementation_status.md
