@@ -6,8 +6,9 @@ Generates structured core requirements for a new software project, focusing on a
 
 ## Usage
 
-1. Share your project idea with the AI assistant. Include details on the project's purpose, scope, and the foundational requirements.
-2. Use: "Generate core requirements using the requirements generator prompt"
+1. Load the prompt into context using the shorthand command: `$requirements-initial-project`
+2. Trigger the generation workflow by entering: `#generate-requirements`
+3. Follow the interactive, step-by-step instructions provided by the AI assistant.
 
 ## Best suited for
 
@@ -29,10 +30,8 @@ Generates structured core requirements for a new software project, focusing on a
   - Aider
   - LLM: Claude 3.5 Sonnet (October 22, 2024 release)
 - Potential Compatible Assistants:
-  - Other Claude models
-  - GitHub Copilot (with modifications)
-  - Anthropic Claude 2
-  - GPT-4 (with adaptations)
+  - Other modern Claude models (e.g., Claude 3 Opus, Claude 3 Haiku)
+  - Other modern LLMs (e.g., GPT-4o) with adaptations
 
 ## SDLC Phase
 
@@ -54,6 +53,7 @@ Generates structured core requirements for a new software project, focusing on a
   - Basic project context
   - Understanding of target users
   - Desired feature set outline
+- Note: This prompt requires interactive, step-by-step execution and involves switching between `/ask` and `/code` modes as directed by the workflow.
 
 ## Prompt Characteristics
 
@@ -93,6 +93,6 @@ Generates structured core requirements for a new software project, focusing on a
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-12-02
-- Stability: Experimental
+- Current Version: 1.1.0
+- Last Updated: 2026-08-24
+- Stability: Beta
