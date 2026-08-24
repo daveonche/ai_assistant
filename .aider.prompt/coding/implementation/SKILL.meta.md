@@ -31,17 +31,16 @@ Guides the implementation of a specific step from a story analysis report, enfor
   - Sprint story documentation
   - Story step requirements
   - Implementation context
-  - Approved dependencies
-  - Previous steps completion
+  - Approved dependencies or dependency context
 
 ## Prompt Characteristics
 
 - Input Driven: Yes
 - State Dependent: Yes
 - Requires Contextual Awareness: Critical
-- Command Driven: Yes (#implement-step, #implementation-status)
+- Command Driven: Yes (#implement-step S<X.Y> [step-number], #implementation-status S<X.Y> [step-number])
 - Phase Separation: Strict planning vs. implementation phases
-- Sequential Execution: Enforced step order
+- Sequential Execution: Enforced step order with validation (step-number presence, range, and order)
 
 ## Best Practices
 
@@ -77,6 +76,7 @@ Guides the implementation of a specific step from a story analysis report, enfor
 
 ## Version
 
-- Current Version: 1.0.1
-- Last Updated: 2026-08-23
+- Current Version: 1.0.2
+- Last Updated: 2026-08-24
 - Stability: Beta
+- Keep metadata synchronized with changes to SKILL.md; update version and date when SKILL.md changes
