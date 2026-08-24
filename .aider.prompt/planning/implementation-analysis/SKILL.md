@@ -29,7 +29,7 @@ Example response: "I have found in the context:
 
 DO NOT PROCEED WITH ANY ANALYSIS until all essential files are loaded into the conversation context.
 
-[STEP 2] Once all essential files are available, I will analyze the codebase and provide a structured breakdown in this format:
+[STEP 2] Once all essential files are available, I will analyze the codebase (including source files, configurations, and scripts) and provide a structured breakdown in this format:
 
 IMPLEMENTATION STATUS:
 A. Completed Features
@@ -72,6 +72,8 @@ If changes are requested:
 1. Ask: "Would you like to specify a custom directory and filename for the analysis report? 
    - If yes, please provide the path and filename
    - If no, I'll use the default: docs/analysis/implementation_status.md"
+
+[STOP - Wait for user response about filename]
 
 2. After receiving directory/filename choice, say:
    "Implementation status analysis is ready to be saved. To save the file:

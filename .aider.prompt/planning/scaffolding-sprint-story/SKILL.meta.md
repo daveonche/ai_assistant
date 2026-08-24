@@ -24,7 +24,7 @@
 
 ## Usage Guidelines
 
-- Prerequisite: Core project requirements
+- Prerequisite: Core project requirements (can be generated using `$requirements-initial-project`, `$architecture-tech-stack`, `$architecture-design`)
 - Requires:
   - Technology stack documentation
   - Architecture documentation
@@ -37,7 +37,7 @@
 - Input Driven: Yes
 - State Dependent: Yes
 - Requires Contextual Awareness: High
-- Command Driven: Yes (#generate-scaffold-stories, #scaffold-stories-status)
+- Command Driven: Yes (`$planning-scaffolding-sprint-story`, `$planning-scaffolding-sprint-story-status`)
 - Story Format: Standardized templates
 - Dependency Tracking: Technical sequencing
 
@@ -76,6 +76,6 @@
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-12-02
+- Current Version: 1.0.1
+- Last Updated: 2026-08-24
 - Stability: Experimental

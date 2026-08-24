@@ -1,5 +1,12 @@
 # Metadata: Implementation Status Analysis Prompt
 
+## Description
+Analyzes the current codebase to determine the implementation status of features, comparing what has been built against project requirements and user stories. It generates a prioritized list of remaining features for the next implementation phase.
+
+## Trigger Commands
+- `#analyze-impl`: Starts or resumes the implementation analysis.
+- `#analyze-impl-status`: Shows the current progress in the analysis workflow.
+
 ## AI Assistant Compatibility
 
 - Tested With:
@@ -25,9 +32,15 @@
 
 - Prerequisite: Previous sprint's user stories
 - Requires:
-  - Project requirements list
-  - Technology stack documentation
+  - Project requirements list (e.g., `docs/requirements.md`)
+  - Current set of user stories (e.g., `docs/user_stories.md`)
+  - Technology stack documentation (e.g., `docs/tech_stack.md`)
   - Previous implementation artifacts
+
+## Outputs
+
+- Default Output File: `docs/analysis/implementation_status.md`
+- Next Workflow Step: `#generate-sprint-stories`
 
 ## Prompt Characteristics
 
@@ -58,6 +71,6 @@
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-11-09
+- Current Version: 1.0.1
+- Last Updated: 2026-08-24
 - Stability: Experimental
