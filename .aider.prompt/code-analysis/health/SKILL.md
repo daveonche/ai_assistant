@@ -18,11 +18,12 @@ Ensure the user is in `/ask` mode. If they are not, or if you are unsure, say EX
 [STEP 2] Context Verification
 Verify if the relevant source code files are in your context window. If you are unsure, ask the user: "Are the source code files you want to analyze currently loaded in your context? (Y/N)"
 
-If the files are not in context, ask the user to add them using the `/add` command.
+If the user answers "N" or indicates the files are not included, ask them to provide the file paths or glob patterns to add using the `/add` command. After the files have been added, ask them to confirm when they are ready to continue.
 [STOP - Wait for user confirmation]
 
 [STEP 3] File Collection
 - Scan the loaded context for source code files.
+- If no source code files are found, inform the user that no source files are loaded. Ask them to add files using the `/add` command and then return to the beginning of Step 3.
 - Exclude documentation files (.md, etc.) and configuration files if not relevant.
 - Build a complete file list for review.
 - Present the list to the user and ask: "Please review the file list. Shall I proceed with the analysis? (Y/N)"
@@ -34,8 +35,13 @@ For each source file:
 - Evaluate performance characteristics
 - Scan for security issues
 - Review error handling patterns
-- Assess dependency usage
+- Record import statements for later analysis
 - Examine code structure
+
+After per-file review, perform a project/import-level dependency analysis:
+- Deprecated packages
+- Version conflicts
+- Unused imports
 
 [STEP 5] Issue Categorization
 Track findings under:
@@ -75,17 +81,25 @@ Present a summary of the categorized findings to the user. Ask: "I have found is
 2. Generate the full health report
 3. Focus on critical issues only"
 
-[STOP - Wait for user selection. If user selects 1, provide details for the chosen category and return to Step 6. If user selects 2 or 3, proceed to Step 7.]
+[STOP - Wait for user selection. If user selects 1, provide details for the chosen category and then ask: "Would you like to return to the category list (option 1), generate the full health report (option 2), or focus on critical issues only (option 3)?" If they choose to return to the category list, return to the beginning of Step 6. If they choose option 2 or 3, proceed to Step 7.]
 
 [STEP 7] Generate Report
+Before generating the report, classify each finding by severity:
+- Critical: Requires immediate attention; may cause major failures or security breaches.
+- High: Important but not blocking.
+- Medium: Moderate impact.
+- Low: Minor or cosmetic.
+
+When the user selected option 3 (Focus on critical issues only), include only Critical findings in the report. The Critical Issues section should be a concise summary, while Issue Details contains the detailed findings.
+
 Generate the report in the format below based on the user's choice:
 
 Codebase Health Analysis
 Files Reviewed
 [List of analyzed files]
 
-Critical Issues
-[Priority findings requiring immediate attention]
+Critical Issues Summary
+[Concise summary of critical findings requiring immediate attention]
 
 Issue Details
 [Categorized findings with file locations and recommendations]
