@@ -18,19 +18,24 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 ## Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone <repository-url>
    cd <repository-directory>
    ```
 
 2. **Configure Environment Variables:**
+
    Copy the example environment file and update it with your API keys.
+
    ```bash
    cp .env.example .env
    ```
+
    Edit `.env` and fill in your `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, and `HF_TOKEN`.
 
 3. **Make the launch script executable (if not already):**
+
    ```bash
    chmod +x ai-assistant.sh
    ```
@@ -72,20 +77,22 @@ If using with other projects that are built with Docker Compose, all the Docker 
 
 ## Continuous Integration (CI)
 
-This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that automatically runs tests on push or pull request events. 
+This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that automatically runs tests on push or pull request events.
 
 **Supported Frameworks:**
+
 - **Ruby on Rails:** Detected if `RAILS.md` exists in the project root. Runs `bundle exec rails test`.
 - **Elgg:** Detected if `ELGG.md` exists in the project root. Runs `phpunit`.
 - **Odoo:** Detected if `ODOO.md` exists in the project root. Runs `odoo --test-enable --stop-after-init`.
 
 **Setup:**
+
 1. Ensure the `ci.yml` file is located in `.github/workflows/` in your repository.
 2. Add `DB_PASSWORD` to your repository's GitHub Actions Secrets.
 
 ## Project Structure
 
-```
+```txt
 .
 ├── ai-assistant.sh          # Bash script to build and run the Docker container
 ├── Dockerfile.aider         # Dockerfile for the Aider environment
