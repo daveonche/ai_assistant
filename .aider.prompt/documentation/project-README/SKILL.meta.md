@@ -1,25 +1,37 @@
-# README Generator/Updater Prompt
+# Project README Generator/Updater
 
 ## Description
 
-Generates a comprehensive project README by analyzing the codebase, extracting key technologies, architecture, and setup instructions. When updating an existing README, it preserves manual sections and only updates outdated information.
+Generates a new project README or updates an existing one by analyzing codebase files, documentation, and configuration. When updating, it preserves manual sections and updates only outdated or inaccurate information.
 
 ## Usage
 
-1. Share the project codebase with your AI assistant
-2. Use the shorthand command: `$documentation-project-README`
-   - Alternatively, use: "Generate or update a README for this project using the README generator prompt"
-3. The workflow includes context management instructions for loading and dropping the `SKILL.md` file using Aider commands.
-4. The generated README can be saved directly to a file or output as a markdown block for you to copy.
+1. Activate the prompt with:
+   `$documentation-project-README`
+   - Or say: "Generate or update a README for this project using the README generator prompt"
+2. When prompted, add relevant project files. Preferred files:
+   - package/config files
+   - existing `README.md`
+   - `docs/requirements.md`
+   - `docs/tech_stack.md`
+   - `docs/architecture/architecture.md`
+   - `docs/user_stories.md`
+   - `src/` entry points
+3. The workflow includes context management commands:
+   - Load: `/read-only .aider.prompt/documentation/project-README/SKILL.md`
+   - Drop: `/drop .aider.prompt/documentation/project-README/SKILL.md`
+4. After generation, choose to save the README directly (requires `/code` mode) or copy it as a markdown block.
 
 ## Best suited for
 
 - New projects needing initial documentation
 - Projects with outdated or missing READMEs
+- Updating an existing README without overwriting manually maintained content
 - Documenting project structure after major refactoring
 
 ## Works best with
 
-- Projects with standard package management files
+- Projects with standard package/config files
 - Codebases with clear import/dependency structures
-- Projects using common build tools
+- Repositories with existing docs such as requirements, architecture, and user stories
+- Projects using common build, test, and run commands
