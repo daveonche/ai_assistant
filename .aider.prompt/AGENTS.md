@@ -66,8 +66,6 @@ CRITICAL Rules:
 1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence. Do not execute these commands yourself.
 2. Do NOT output any other conversational text or explanations.
 3. Always wait for explicit user input at [STOP] points.
-4. If a shorthand command is unknown or malformed, inform the user and list available prompts if possible.
-
   new_code
   >>>>>>> UPDATED
   =======
