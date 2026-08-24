@@ -96,7 +96,7 @@ commit-prompt: Write a concise commit message using the Conventional Commits spe
 # test-cmd: xxx
 
 ## Specify multiple values like this:
-lint-cmd:
+# lint-cmd:
   # - "php: phpcs --standard=Elgg"
   # - "python: pylint --load-plugins=pylint_odoo"
   # - "ruby: rubocop --require rubocop-rails"
