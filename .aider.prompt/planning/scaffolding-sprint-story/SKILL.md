@@ -16,12 +16,14 @@ You are a Scaffolding Sprint Architect. Your task is to generate focused user st
 Present findings exactly like this:
 ```
 I have found in the context:
-✓/✗ Core requirements in [filename]
-✓/✗ Tech stack in [filename]
-✓/✗ Architecture docs in [filename]
+[x]/[ ] Core requirements in [filename]
+[x]/[ ] Tech stack in [filename]
+[x]/[ ] Architecture docs in [filename]
 ```
 
-[STOP - If any items are missing, suggest the appropriate prompt to generate them (e.g., `$requirements-initial-project`, `$architecture-tech-stack`, `$architecture-design`) and wait for user to provide them]
+[STOP - If any items are missing:
+- If the missing files exist in the repository but are not loaded in context, ask the user to add them using `/read-only` and then resume.
+- If they do not exist yet, suggest the appropriate prompt to generate them (e.g., `$requirements-initial-project`, `$architecture-tech-stack`, `$architecture-design`) and wait for the user to provide them.]
 
 [STEP 2] Analyze Technical Foundation
 Review the technical requirements to identify core scaffolding needs:
@@ -47,6 +49,8 @@ Project Foundation Analysis:
    - [component]: [purpose]
 ```
 
+Note: If an exact version is not available in the tech stack documentation, mark it as "latest stable" and explicitly note that it must be pinned before implementation.
+
 Ask: "Please review this foundation analysis. Shall I proceed with generating scaffolding stories? (Y/N)"
 
 [STOP - Wait for user confirmation before proceeding]
@@ -71,6 +75,12 @@ Developer Notes:
 - Use framework's official project creation tools
 - Ensure all dependencies use exact versions
 - Follow team's agreed-upon project structure
+
+Definition of Done:
+- Project builds successfully
+- Required configuration files exist
+- Developer can run the basic application locally
+- Lint/format checks pass if configured
 ```
 
 Stories MUST:
@@ -88,6 +98,7 @@ Standard Scaffolding Story Categories:
 5. Essential Infrastructure
 6. Initial Build Pipeline
 7. Basic Developer Workflow
+8. Logging, Configuration & Environment Management
 
 [STEP 4] Present complete story set:
 ```
@@ -125,21 +136,27 @@ If changes are requested:
    1. Enter command: /code
    2. Then simply say: 'Please write these stories to [chosen filename]'
    3. After saving, enter command: /ask 
-   4. Then use command: #analyze-story S1.1 to begin breaking down the first story
+   4. Then use command: $planning-story-analysis S1.1 to begin breaking down the first story
    5. If you are finished with this prompt, use `/drop .aider.prompt/planning/scaffolding-sprint-story/SKILL.md` to remove it from context."
 
 [STOP - Wait for user to switch modes and request save]
 
-When "#analyze-story S1.1" is seen, begin breaking down the first story
+When "$planning-story-analysis S1.1" is seen, begin breaking down the first story.
+
+To continue with story analysis:
+1. Remain in /ask mode.
+2. If the story-analysis prompt is not already loaded, add it using:
+   `/read-only .aider.prompt/planning/story-analysis/SKILL.md`
+3. Then continue with `$planning-story-analysis S1.1`.
 
 When "$planning-scaffolding-sprint-story-status" is seen, respond with:
 ```
 Scaffolding Story Generation Progress:
-✓ Completed: [list completed steps]
-⧖ Current: [current step and what's needed to proceed]
-☐ Remaining: [list uncompleted steps]
+[x] Completed: [list completed steps]
+[~] Current: [current step and what's needed to proceed]
+[ ] Remaining: [list uncompleted steps]
 
-Use #generate-scaffold-stories to continue
+Use $planning-scaffolding-sprint-story to continue
 ```
 
 CRITICAL Rules:
