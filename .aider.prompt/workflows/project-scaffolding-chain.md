@@ -32,8 +32,8 @@ Phase 7B: Unit Testing
 
 ## Input/Output Chain
 
-### Phase 1: Vision Statement Generation (`#generate-vision`)
-[Vision Statement Generation Prompt](../../../../prompts/planning/assistant-specific/aider/vision-statement-prompt.md)
+### Phase 1: Vision Statement Generation (`$planning-vision-statement`)
+[Vision Statement Generation Prompt](.aider.prompt/planning/vision-statement/SKILL.md)
 #### Purpose
 Define a comprehensive project vision statement that aligns with project requirements.
 
@@ -43,8 +43,8 @@ Define a comprehensive project vision statement that aligns with project require
 **Key Outputs → [Feed into Phase 2]:**
 - Vision Statement Document (`project_vision.md`)
 
-### Phase 2: Initial Project Requirements Management (`#generate-requirements`)
-[Initial Project Requirements Management Prompt](../../../../prompts/requirements/assistant-specific/aider/initial-project-requirements-management-prompt.md)
+### Phase 2: Initial Project Requirements Management (`$requirements-initial-project`)
+[Initial Project Requirements Management Prompt](.aider.prompt/requirements/initial-project/SKILL.md)
 #### Purpose
 Define and document core project requirements based on the vision statement.
 
@@ -54,8 +54,8 @@ Define and document core project requirements based on the vision statement.
 **Key Outputs → [Feed into Phase 3]:**
 - Core Requirements Document (`core_requirements.md`)
 
-### Phase 3: Technology Stack Generation (`#generate-stack`)
-[Technology Stack Generation Prompt](../../../../prompts/architecture/assistant-specific/aider/tech-stack-prompt.md)
+### Phase 3: Technology Stack Generation (`$architecture-tech-stack`)
+[Technology Stack Generation Prompt](.aider.prompt/architecture/tech-stack/SKILL.md)
 #### Purpose
 Define and document a compatible, version-locked technology stack.
 
@@ -65,8 +65,8 @@ Define and document a compatible, version-locked technology stack.
 **Key Outputs → [Feed into Phase 4]:**
 - Technology Stack Document (`tech_stack.md`)
 
-### Phase 4: Architecture Design Generation (`#generate-architecture`)
-[Architecture Design Generator Prompt](../../../../prompts/architecture/assistant-specific/aider/architecture-design-prompt.md)
+### Phase 4: Architecture Design Generation (`$architecture-design`)
+[Architecture Design Generator Prompt](.aider.prompt/architecture/design/SKILL.md)
 #### Purpose
 Define core architectural components needed for initial project scaffolding.
 
@@ -76,8 +76,8 @@ Define core architectural components needed for initial project scaffolding.
 **Key Outputs → [Feed into Phase 5]:**
 - Architecture Design Document (`initial_architecture.md`)
 
-### Phase 5: Scaffolding Sprint Story Generation (`#generate-scaffold-stories`)
-[Scaffolding Sprint Story Generation Prompt](../../../../prompts/planning/assistant-specific/aider/scaffolding-sprint-story-generation-prompt.md)
+### Phase 5: Scaffolding Sprint Story Generation (`$planning-scaffolding-sprint-story`)
+[Scaffolding Sprint Story Generation Prompt](.aider.prompt/planning/scaffolding-sprint-story/SKILL.md)
 #### Purpose
 Generate focused user stories for the initial project scaffolding sprint.
 
@@ -87,8 +87,8 @@ Generate focused user stories for the initial project scaffolding sprint.
 **Key Outputs → [Feed into Phase 6]:**
 - Scaffolding Sprint Stories (`sprint_1_stories.md`)
 
-### Phase 6: Story Analysis (`#analyze-story S<X.Y>`)
-[Story Analysis Prompt](../../../../prompts/planning/assistant-specific/aider/story-analysis-prompt.md)
+### Phase 6: Story Analysis (`$planning-story-analysis S<X.Y>`)
+[Story Analysis Prompt](.aider.prompt/planning/story-analysis/SKILL.md)
 #### Purpose
 Break down user stories into atomic, implementable functional steps.
 
@@ -98,8 +98,8 @@ Break down user stories into atomic, implementable functional steps.
 **Key Outputs → [Feed into Phase 7A]:**
 - Story Steps Report (`S<X.Y>-story-steps.md`)
 
-### Phase 7A: Implementation (`#implement-step S<X.Y> [step-number]`)
-[Implementation Prompt](../../../../prompts/coding/assistant-specific/aider/implementation-prompt.md)
+### Phase 7A: Implementation (`$coding-implementation S<X.Y> [step-number]`)
+[Implementation Prompt](.aider.prompt/coding/implementation/SKILL.md)
 #### Purpose
 Systematically implement one specific step from the story analysis.
 
@@ -112,8 +112,8 @@ During the implementation phase, if the Implementation Prompt determines that ne
 **Iteration Note:**
 Phases 7A and 7B iterate until all steps for a user story have been implemented and unit tested.
 
-### Phase 7B: Unit Testing (`#generate-tests S<X.Y> [step-number]`)
-[Unit Test Generation Prompt](../../../../prompts/testing/assistant-specific/aider/unit-test-prompt.md)
+### Phase 7B: Unit Testing (`$testing-unit-test S<X.Y> [step-number]`)
+[Unit Test Generation Prompt](.aider.prompt/testing/unit-test/SKILL.md)
 #### Purpose
 Generate and verify unit tests for the implemented story step.
 
@@ -131,64 +131,52 @@ Generate and verify unit tests for the implemented story step.
 
 1. **Initiate Vision Statement Generation:**
    ```
-   #generate-vision
+   $planning-vision-statement
    ```
    - Ensure all Phase 1 inputs are available
    - Wait for complete vision statement before proceeding
 
 2. **Generate Requirements:**
    ```
-   #generate-requirements
+   $requirements-initial-project
    ```
    - Must have all Phase 1 outputs available
    - Proceeds only when vision statement is complete
 
 3. **Generate Technology Stack:**
    ```
-   #generate-stack
+   $architecture-tech-stack
    ```
    - Ensure all Phase 2 outputs are available
    - Wait for stack generation to complete before proceeding
 
 4. **Generate Architecture Design:**
    ```
-   #generate-architecture
+   $architecture-design
    ```
    - Ensure all Phase 3 outputs are available
    - Wait for architecture design to complete before proceeding
 
 5. **Generate Scaffolding Stories:**
    ```
-   #generate-scaffold-stories
+   $planning-scaffolding-sprint-story
    ```
    - Ensure all Phase 4 outputs are available
    - Wait for story generation to complete before proceeding
 
 6. **Analyze Story:**
    ```
-   #analyze-story S<X.Y>
+   $planning-story-analysis S<X.Y>
    ```
    - Ensure the specific user story is available in the context
    - Wait for story analysis to complete before proceeding
 
 7. **Implement Stories, step by step:**
    ```
-   #implement-step S<X.Y> [step-number]
+   $coding-implementation S<X.Y> [step-number]
    ```
    - Requires complete story analysis outputs
    - Execute for each story and step, in sequence
-
-### Progress Tracking
-Monitor chain progress using status commands:
-```
-#vision-status
-#requirements-status
-#stack-status
-#architecture-status
-#scaffold-stories-status
-#analysis-status
-#implementation-status
-```
 
 ### Chain Dependencies
 
