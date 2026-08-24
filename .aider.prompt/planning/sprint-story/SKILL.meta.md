@@ -4,7 +4,7 @@
 
 - Tested With:
   - Aider
-  - LLM: Claude 3.5 Haiku (October 22, 2024 release)
+  - LLM: Claude 3.5 Haiku or newer
 - Potential Compatible Assistants:
   - Other Claude models
   - GitHub Copilot (with modifications)
@@ -13,7 +13,7 @@
 
 - Phase: Planning
 - Sub-Phase: Sprint Preparation
-- Workflow: Post-Scaffolding Sprint Workflow
+- Workflow: Post-Scaffolding Sprint Workflow (typically follows the Scaffolding Sprint Workflow)
 
 ## Complexity Rating
 
@@ -23,10 +23,11 @@
 
 ## Usage Guidelines
 
+- Shorthand Command: `$planning-sprint-story`
 - Prerequisite: Implementation status report
 - Requires:
   - Project requirements list
-  - Previous sprint's user stories
+  - Previous sprint's user stories (must be provided via `/read-only`)
   - Technology stack documentation
   - Implementation priority mapping
 
@@ -62,5 +63,5 @@
 ## Version
 
 - Current Version: 1.0.0
-- Last Updated: 2024-11-09
+- Last Updated: 2026-08-24
 - Stability: Experimental
