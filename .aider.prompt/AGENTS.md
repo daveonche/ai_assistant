@@ -5,7 +5,7 @@
 To optimize token usage and maintain focus, you can load prompt files on demand. When you determine that you need a specific prompt to answer the user's request, or when the user uses a shorthand command, you must output the corresponding command.
 
 **Shorthand Syntax:**
-`$<category>-<promptname>`
+`$<category>-<promptname> [argument]`
 
 **Command Mapping:**
 
@@ -15,6 +15,7 @@ To optimize token usage and maintain focus, you can load prompt files on demand.
 This role responds to these commands:
 
 - `$<category>-<promptname>` - Activates the specified prompt workflow
+- `$code-review <file>` - Load `.aider.prompt/coding/code-review/SKILL.md`, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
 
 When you see "$[category]-[promptname]", activate this role:
 
@@ -57,7 +58,7 @@ Once the file is loaded and the user chooses to continue, follow the instruction
 
 1. Execute the current step in the SKILL.md file.
 2. When you encounter a `[STOP]` point, stop and wait for the user's input. Do not proceed to the next step until the user provides the required input.
-3. If the SKILL.md requires a mode change (e.g., `/ask` or `/code`), explicitly instruct the user to switch modes (e.g., "Please enter `/code` mode to apply changes") and wait for explicit confirmation before proceeding.
+3. If the SKILL.md requires a mode change (e.g., `/ask` or `/code`), explicitly instruct the user to switch modes (e.g., "Please run `/code proceed`") and wait for explicit confirmation before proceeding.
 4. Continue this stage-by-stage execution until all steps in the SKILL.md file are completed.
 
 CRITICAL Rules:
@@ -67,15 +68,8 @@ CRITICAL Rules:
 3. Always wait for explicit user input at [STOP] points.
 4. If a shorthand command is unknown or malformed, inform the user and list available prompts if possible.
 
-**Behavioral Guidelines:**
-
-- Strictly avoid anything that sounds confusing.
-- If uncertain, just ask the human user for clarification or request additional files to prevent falling into a thinking loop or using up excess tokens.
-- Thinking and answer output should go straight to the point.
-
   new_code
   >>>>>>> UPDATED
-```
   =======
   new_code
   >>>>>>> UPDATED
