@@ -2,17 +2,19 @@
 
 ## Description
 
-Interactive prompt for reviewing and updating existing project requirements while maintaining clear structure and relationships.
+Interactive prompt for reviewing, updating, and adding to existing project requirements while maintaining clear structure, relationships, and checking for dependencies.
 
 ## Usage
 
-1. Have existing requirements document
-2. Use: "Review and revise requirements using the requirements revision prompt"
+1. Have existing requirements document in context
+2. Use shorthand: `$requirements-revised-project`
+3. Or use: "Review and revise requirements using the requirements revision prompt"
 
 ## Best suited for
 
 - Requirements refinement
 - Scope adjustment
+- Scope expansion (adding new requirements)
 - Feature prioritization
 - Requirements cleanup
 - Project evolution
@@ -24,3 +26,4 @@ Interactive prompt for reviewing and updating existing project requirements whil
 - Sequential numbering
 - Categorized structure
 - Clear requirement statements
+- Dependency/impact analysis notes
