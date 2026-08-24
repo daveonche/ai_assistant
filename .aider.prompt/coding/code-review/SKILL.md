@@ -14,7 +14,16 @@
 [STEP 2] Review the file against the agreed conventions and best practices.
 Provide concise issues, risks, and suggested improvements.
 
-[STOP] Ask which improvements to implement.
+[STOP] Present the improvements as numbered options and ask the user to select which ones to implement.
+
+Example:
+"Which improvements would you like me to implement?
+
+1. <Improvement 1>
+2. <Improvement 2>
+3. <Improvement 3>
+
+Reply with the number(s) to implement, or 'all'."
 
 [STEP 3] Ask the user to run: `/code proceed`
 
