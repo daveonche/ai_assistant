@@ -70,7 +70,7 @@ Phase 7B: Unit Testing
 
 ### Phase 1: Vision Statement Generation (`$planning-vision-statement`)
 
-[Vision Statement Generation Prompt](.aider.prompt/planning/vision-statement/SKILL.md)
+[Vision Statement Generation Prompt](../../planning/vision-statement/SKILL.md)
 
 #### Phase 1 Purpose
 
@@ -86,7 +86,7 @@ Define a comprehensive project vision statement that aligns with project require
 
 ### Phase 2: Initial Project Requirements Management (`$requirements-initial-project`)
 
-[Initial Project Requirements Management Prompt](.aider.prompt/requirements/initial-project/SKILL.md)
+[Initial Project Requirements Management Prompt](../../requirements/initial-project/SKILL.md)
 
 #### Phase 2 Purpose
 
@@ -102,7 +102,7 @@ Define and document core project requirements based on the vision statement.
 
 ### Phase 3: Technology Stack Generation (`$architecture-tech-stack`)
 
-[Technology Stack Generation Prompt](.aider.prompt/architecture/tech-stack/SKILL.md)
+[Technology Stack Generation Prompt](../../architecture/tech-stack/SKILL.md)
 
 #### Phase 3 Purpose
 
@@ -118,7 +118,7 @@ Define and document a compatible, version-locked technology stack.
 
 ### Phase 4: Architecture Design Generation (`$architecture-design`)
 
-[Architecture Design Generator Prompt](.aider.prompt/architecture/design/SKILL.md)
+[Architecture Design Generator Prompt](../../architecture/design/SKILL.md)
 
 #### Phase 4 Purpose
 
@@ -134,7 +134,7 @@ Define core architectural components needed for initial project scaffolding.
 
 ### Phase 5: Scaffolding Sprint Story Generation (`$planning-scaffolding-sprint-story`)
 
-[Scaffolding Sprint Story Generation Prompt](.aider.prompt/planning/scaffolding-sprint-story/SKILL.md)
+[Scaffolding Sprint Story Generation Prompt](../../planning/scaffolding-sprint-story/SKILL.md)
 
 #### Phase 5 Purpose
 
@@ -150,7 +150,7 @@ Generate focused user stories for the initial project scaffolding sprint.
 
 ### Phase 6: Story Analysis (`$planning-story-analysis S<X.Y>`)
 
-[Story Analysis Prompt](.aider.prompt/planning/story-analysis/SKILL.md)
+[Story Analysis Prompt](../../planning/story-analysis/SKILL.md)
 
 #### Phase 6 Purpose
 
@@ -166,7 +166,7 @@ Break down user stories into atomic, implementable functional steps.
 
 ### Phase 7A: Implementation (`$coding-implementation S<X.Y> [step-number]`)
 
-[Implementation Prompt](.aider.prompt/coding/implementation/SKILL.md)
+[Implementation Prompt](../../coding/implementation/SKILL.md)
 
 #### Phase 7A Purpose
 
@@ -184,7 +184,7 @@ Phases 7A and 7B iterate until all steps for a user story have been implemented 
 
 ### Phase 7B: Unit Testing (`$testing-unit-test S<X.Y> [step-number]`)
 
-[Unit Test Generation Prompt](.aider.prompt/testing/unit-test/SKILL.md)
+[Unit Test Generation Prompt](../../testing/unit-test/SKILL.md)
 
 #### Phase 7B Purpose
 
