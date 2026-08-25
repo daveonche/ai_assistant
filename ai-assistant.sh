@@ -1,99 +1,115 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# ai-assistant.sh - Launches an AI assistant in a Docker container with proper
+# workspace isolation, audio support, and Docker-in-Docker capabilities.
+#
+# This script builds a Docker image from Dockerfile.aider if needed, cleans up
+# old containers for the workspace, and runs the AI assistant with appropriate
+# volume mounts and environment variables.
+
 # Print exact failure details before exiting on error
-trap 'echo -e "\033[31m[ERROR] Script failed at line $LINENO: command \"$BASH_COMMAND\" exited with status $?\033[0m"' ERR
+trap 'echo -e "\033[31m[ERROR] L$LINENO: $BASH_COMMAND ($?)\033[0m" >&2' ERR
 
-# Optional: Uncomment the line below to print EVERY command as it runs (verbose debugging)
-# set -x
+# Constants
+readonly TOOL_NAME="ai-assistant"
+readonly AIDER_IMAGE="aider-agent:latest"
 
-TOOL_NAME="ai-assistant"
-DIR_NAME=$(basename "$(pwd)")
-WORKSPACE_HASH=$(pwd | md5sum | awk '{print $1}')
+# Clean up ALL containers associated with this workspace directory
+# Globals: WORKSPACE_HASH
+# Arguments: None
+# Outputs: None
+# Returns: None
+cleanup_containers() {
+  local all_dir_containers
+  local id
 
-# Use VSCODE_PID as a session ID to group containers; fallback to 0 if not in VS Code
-SESSION_ID="${VSCODE_PID:-0}"
+  all_dir_containers=$(docker ps -a \
+    --filter "label=aider.dir=${WORKSPACE_HASH}" \
+    --format "{{.ID}}")
 
-# Include SESSION_ID and shell PID ($$) to allow multiple concurrent containers per session
-CONTAINER_NAME="${TOOL_NAME}-${DIR_NAME}-${WORKSPACE_HASH:0:8}-${SESSION_ID}-${$}"
-DOCKER_GID=$(getent group docker | cut -d: -f3 2>/dev/null || echo 0)
-AIDER_IMAGE="aider-agent:latest"
-DOCKERFILE_PATH="$(pwd)/Dockerfile.aider"
-
-# Clean up ALL containers associated with this workspace directory (running or stopped)
-ALL_DIR_CONTAINERS=$(docker ps -a --filter "label=aider.dir=${WORKSPACE_HASH}" --format "{{.ID}}")
-
-if [ -n "$ALL_DIR_CONTAINERS" ]; then
+  if [[ -n "$all_dir_containers" ]]; then
     while read -r id; do
-        if [ -n "$id" ]; then
-            # Stop and force-remove any old container for this workspace
-            docker rm -f "$id" > /dev/null 2>&1 || true
-        fi
-    done <<< "$ALL_DIR_CONTAINERS"
-fi
+      if [[ -n "$id" ]]; then
+        docker rm -f "$id" > /dev/null 2>&1 || true
+      fi
+    done <<< "$all_dir_containers"
+  fi
+}
 
-if [ -f "$DOCKERFILE_PATH" ]; then
-    BUILD_LOG=$(mktemp)
-    # Ensure the build log is removed on exit or interrupt
-    trap 'rm -f "$BUILD_LOG"' EXIT
-    
-    # Enable BuildKit for faster, cached builds
-    export DOCKER_BUILDKIT=1
+# Build the Docker image with a spinner showing build progress
+# Globals: AIDER_IMAGE, DOCKERFILE_PATH
+# Arguments: None
+# Outputs: Build progress spinner to STDOUT, errors to STDERR
+# Returns: 0 on success, 1 on failure
+build_image() {
+  local build_log
+  local build_pid
+  local build_status
+  local spin_chars
+  local i=0
+  local latest_line
+  local status_msg
+  local char
 
-    # Run docker build in the background, piping output to log
-    docker build -t "$AIDER_IMAGE" -f "$DOCKERFILE_PATH" "$(pwd)" > "$BUILD_LOG" 2>&1 &
-    BUILD_PID=$!
+  build_log=$(mktemp)
+  trap "rm -f '$build_log'" EXIT
 
-    SPIN_CHARS="-\|/."
-    i=0
+  export DOCKER_BUILDKIT=1
 
-    # Loop while the build process is active
-    while kill -0 $BUILD_PID 2>/dev/null; do
-        LATEST_LINE=$(grep -oE '(RUN|COPY|FROM|Installing|Extracting|Downloading)[^[:cntrl:]]*' "$BUILD_LOG" | tail -n 1 || true)
-        
-        if [ -z "$LATEST_LINE" ]; then
-            STATUS_MSG="Initializing build environment..."
-        else
-            STATUS_MSG="${LATEST_LINE:0:45}"
-        fi
+  docker build -t "$AIDER_IMAGE" -f "$DOCKERFILE_PATH" \
+    "$(pwd)" > "$build_log" 2>&1 &
+  build_pid=$!
 
-        CHAR="${SPIN_CHARS:i%${#SPIN_CHARS}:1}"
-        printf "\r[%s] Loading AI Assistant... %-50s" "$CHAR" "$STATUS_MSG"
-        
-        i=$((i+1))
-        sleep 0.1
-    done
+  spin_chars="-\|/."
 
-    # Wait for completion and fetch exit status
-    wait $BUILD_PID
-    BUILD_STATUS=$?
+  while kill -0 "$build_pid" 2>/dev/null; do
+    latest_line=$(grep -oE \
+      '(RUN|COPY|FROM|Installing|Extracting|Downloading)[^[:cntrl:]]*' \
+      "$build_log" | tail -n 1 || true)
 
-    if [ $BUILD_STATUS -ne 0 ]; then
-        printf "\r[✖] Loading AI Assistant... failed.                                              \n\n"
-        echo -e "\033[31m--- Last lines of build log (Error Details) ---\033[0m"
-        tail -n 25 "$BUILD_LOG"
-        echo -e "\033[31m-------------------------------------------------\033[0m"
-        rm -f "$BUILD_LOG"
-        exit 1
+    if [[ -z "$latest_line" ]]; then
+      status_msg="Initializing build environment..."
     else
-        # Added extra padding spaces at the end to completely clear out long previous lines like mkdir
-        printf "\r[✔] Loading AI Assistant... done.                                                  \n"
+      status_msg="${latest_line:0:45}"
     fi
-else
-    echo "Dockerfile.aider not found at $DOCKERFILE_PATH. Exiting."
-    exit 1
-fi
 
-# Ensure the cache directory exists on the host to avoid permission issues
-mkdir -p "$HOME/.cache/aider"
+    char="${spin_chars:i%${#spin_chars}:1}"
+    printf "\r[%s] Loading AI Assistant... %-50s" "$char" "$status_msg"
 
-# Check if .env file exists to conditionally include it
-ENV_FILE_ARG=""
-if [ -f ".env" ]; then
-    ENV_FILE_ARG="--env-file .env"
-fi
+    i=$((i + 1))
+    sleep 0.1
+  done
 
-docker run -it --rm \
+  wait "$build_pid"
+  build_status=$?
+
+  if [[ "$build_status" -ne 0 ]]; then
+    printf "\r[✖] Loading AI Assistant... failed.                      \n\n"
+    echo -e "\033[31m--- Last lines of build log ---\033[0m" >&2
+    tail -n 25 "$build_log" >&2
+    echo -e "\033[31m-----------------------------\033[0m" >&2
+    rm -f "$build_log"
+    return 1
+  else
+    # Padding clears previous line content
+    printf "\r[✔] Loading AI Assistant... done.                        \n"
+  fi
+}
+
+# Run the AI assistant Docker container
+# Globals: CONTAINER_NAME, WORKSPACE_HASH, SESSION_ID, DOCKER_GID, AIDER_IMAGE
+# Arguments: Additional arguments passed to the AI assistant
+# Outputs: None
+# Returns: None
+run_container() {
+  local env_file_arg=""
+
+  if [[ -f ".env" ]]; then
+    env_file_arg="--env-file .env"
+  fi
+
+  docker run -it --rm \
     --name "$CONTAINER_NAME" \
     --label "aider.dir=${WORKSPACE_HASH}" \
     --label "aider.session=${SESSION_ID}" \
@@ -113,5 +129,56 @@ docker run -it --rm \
     -v "/run/user/$(id -u)/pulse/native:/run/user/$(id -u)/pulse/native" \
     -v "/dev/shm:/dev/shm" \
     -e PULSE_SERVER=unix:/run/user/$(id -u)/pulse/native \
-    $ENV_FILE_ARG \
+    $env_file_arg \
     "$AIDER_IMAGE" --chat-mode ask "$@"
+}
+
+# Main function to orchestrate the AI assistant launch
+# Globals: Sets WORKSPACE_HASH, CONTAINER_NAME, SESSION_ID, DOCKER_GID,
+#   DOCKERFILE_PATH
+# Arguments: Additional arguments passed to the AI assistant
+# Outputs: Status messages to STDOUT, errors to STDERR
+# Returns: 0 on success, 1 on failure
+main() {
+  local dir_name
+  local debug=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -x|--debug)
+        debug=true
+        shift
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  if [[ "$debug" == true ]]; then
+    set -x
+  fi
+
+  dir_name=$(basename "$(pwd)")
+  WORKSPACE_HASH=$(pwd | md5sum | awk '{print $1}')
+  SESSION_ID="${VSCODE_PID:-0}"
+  CONTAINER_NAME="${TOOL_NAME}-${dir_name}-"
+  CONTAINER_NAME+="${WORKSPACE_HASH:0:8}-${SESSION_ID}-${$}"
+  DOCKER_GID=$(getent group docker | cut -d: -f3 2>/dev/null || echo 0)
+  DOCKERFILE_PATH="$(pwd)/Dockerfile.aider"
+
+  if [[ ! -f "$DOCKERFILE_PATH" ]]; then
+    echo "Dockerfile.aider not found at $DOCKERFILE_PATH. Exiting." >&2
+    return 1
+  fi
+
+  cleanup_containers
+  build_image || return 1
+
+  mkdir -p "$HOME/.cache/aider"
+  run_container "$@"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+fi
