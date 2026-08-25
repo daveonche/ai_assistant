@@ -112,8 +112,6 @@ show-release-notes: false
 
 ## Specify multiple values like this:
 read:
-- .aider.prompt/AGENTS.md
-# - CONVENTIONS-FILENAME.md
-# - docs/user_stories.md
-# - docs/implementation_status.md
-# - docs/vision/project_vision.md
+- AGENTS.md
+# If your project is in the supported list, copy the .md file in .aider.conventions into your project root and uncomment the line below. This will allow Aider to read the conventions for your project.
+- SCRIPTS.md

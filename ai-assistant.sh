@@ -20,14 +20,17 @@ DOCKER_GID=$(getent group docker | cut -d: -f3 2>/dev/null || echo 0)
 AIDER_IMAGE="aider-agent:latest"
 DOCKERFILE_PATH="$(pwd)/Dockerfile.aider"
 
-# Clean up orphaned containers from previous sessions (e.g., after a VS Code window reload)
-ALL_DIR_CONTAINERS=$(docker ps --filter "label=aider.dir=${WORKSPACE_HASH}" --format "{{.ID}}\t{{.Label \"aider.session\"}}")
+# Clean up ALL containers associated with this workspace directory (running or stopped)
+ALL_DIR_CONTAINERS=$(docker ps -a --filter "label=aider.dir=${WORKSPACE_HASH}" --format "{{.ID}}")
 
-while IFS=$'\t' read -r id session; do
-    if [ "$session" != "$SESSION_ID" ]; then
-        docker rm -f "$id" > /dev/null 2>&1
-    fi
-done <<< "$ALL_DIR_CONTAINERS"
+if [ -n "$ALL_DIR_CONTAINERS" ]; then
+    while read -r id; do
+        if [ -n "$id" ]; then
+            # Stop and force-remove any old container for this workspace
+            docker rm -f "$id" > /dev/null 2>&1 || true
+        fi
+    done <<< "$ALL_DIR_CONTAINERS"
+fi
 
 if [ -f "$DOCKERFILE_PATH" ]; then
     BUILD_LOG=$(mktemp)

@@ -4,6 +4,7 @@
 
 # Aider files
 .aider*
+SCRIPTS.md
 
 # Keep Aider configuration
 !.aider.conf.yml
@@ -11,6 +12,7 @@
 !.aider.model.metadata.json
 !.aider.conventions/
 !.aider.prompt/
+!.aider.conventions/SCRIPTS.md
 
 # OS files
 .DS_Store
