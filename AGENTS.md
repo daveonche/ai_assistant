@@ -35,6 +35,9 @@ To optimize token usage and maintain focus, you can load prompt files on demand.
 
 This role responds to these commands:
 
+- `$agent-orchestrator` - Re-announce this orchestrator role, list the two
+  workflow-chain commands, and wait for the user to choose one.
+- `$workflow-orchestrator` - Alias for `$agent-orchestrator`.
 - `$<category>-<promptname>` - Activates the specified prompt workflow
 - `$code-review <file>` - Load `.aider.prompt/code/review/SKILL.md`, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
 
