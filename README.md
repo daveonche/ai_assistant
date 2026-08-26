@@ -59,24 +59,30 @@ ai-assistant
 
 ### Using in Other Projects
 
-You can use this assistant in other projects by copying the core files to that project's root:
+You can use this assistant in other projects by copying the `.agent` directory and the root launcher to that project's root:
 
 ```bash
-cp .env.example ai-assistant.sh Dockerfile.aider .aider.conf.yml .aider.model.settings.yml /path/to/your/project/
-cp -r .aider.prompt/ /path/to/your/project/
+cp -r .agent /path/to/your/project/
+cp assistant.sh /path/to/your/project/
 # Copy the specific convention file for your project (e.g., ELGG.md, RAILS.md, ODOO.md)
-cp .aider.conventions/CONVENTIONS-FILENAME.md /path/to/your/project/
+cp .agent/.aider.conventions/CONVENTIONS-FILENAME.md /path/to/your/project/.agent/
 ```
 
-Make the script executable and update the git index so you don't have to run the execute command again in that repo:
+Make the launchers executable and update the git index so you don't have to run the execute command again in that repo:
 
 ```bash
 cd /path/to/your/project/
-chmod +x ai-assistant.sh
-git update-index --chmod=+x ai-assistant.sh
+chmod +x assistant.sh .agent/ai-assistant.sh
+git update-index --chmod=+x assistant.sh .agent/ai-assistant.sh
 ```
 
-Then run `./ai-assistant.sh` from that project's directory.
+Then run `./assistant.sh` from that project's directory.
+
+If you prefer a direct `ai-assistant` command instead, install the `.agent` package in editable mode:
+
+```bash
+pip install -e .agent
+```
 
 ### Project Structure for Docker Compose Projects
 
@@ -114,12 +120,16 @@ on:
 
 ```txt
 .
-├── ai-assistant.sh          # Bash script to build and run the Docker container
-├── Dockerfile.aider         # Dockerfile for the Aider environment
-├── .env.example             # Template for environment variables
-├── .aider.conf.yml          # Aider configuration
-├── .aider.model.settings.yml# Aider model settings
-├── .aider.prompt/           # Aider prompt library
+├── assistant.sh             # Root convenience launcher
+├── .agent/
+│   ├── ai-assistant.sh      # Thin Bash launcher for the Python implementation
+│   ├── ai_assistant.py      # Python implementation for building and running the container
+│   ├── Dockerfile.aider     # Dockerfile for the Aider environment
+│   ├── .env.example         # Template for environment variables
+│   ├── .aider.conf.yml      # Aider configuration
+│   ├── .aider.model.settings.yml
+│   ├── .aider.prompt/       # Aider prompt library
+│   └── pyproject.toml       # Optional packaging for the `ai-assistant` command
 ├── ci.yml                   # GitHub Actions CI workflow
 ├── docs/                    # Project documentation and analysis
 ├── scripts/                 # Utility scripts
