@@ -46,7 +46,7 @@
 - Document all dependency decisions with concrete evidence sources (e.g., `npm view`, `pip index versions`)
 - Maintain clean separation between analysis and implementation phases
 - Update both documentation and dependency files
-- Use `$coding-dependency-management S<X.Y>` and `$coding-dependency-status` command aliases consistently
+- Use `$code-dependency-management S<X.Y>` and `$code-dependency-status` command aliases consistently
 - Run post-change verification using the project’s dependency manager (lockfile, dependency resolution, etc.)
 - Handle the “no new dependencies required” path as an explicit no-op, not an empty update
 
@@ -71,16 +71,16 @@
 - Clear documentation of decisions with evidence output recorded
 - Explicit mode switching instructions
 - Mandatory post-change verification commands (`npm install --package-lock-only`, `pip install -r`, `bundle lock --update`, `mvn dependency:resolve`, `gradle dependencies`)
-- Define both `#` and `$coding` aliases consistently in prompts
+- Define both `#` and `$code` aliases consistently in prompts
 - Add an explicit no-op branch for “no new dependencies required”
 - Keep metadata version and notes synchronized with the prompt workflow
 
 ## Version
 
-- Current Version: 1.1.0
-- Last Updated: 2026-08-24
+- Current Version: 1.2.0
+- Last Updated: 2026-08-26
 - Stability: Experimental
-- Changes: Synced with `SKILL.md` v1.1 enhancements (evidence-based compatibility, `$coding` aliases, post-change verification, no-op path)
+- Changes: Synced with `SKILL.md` v1.2 enhancements (workflow progress checklist, `Gotchas` section, clarified step 6 save instruction, updated resume command to `$code-implementation`)
 
 ## Integration Points
 
@@ -88,8 +88,8 @@
 - Story Analysis Prompt
 - Project Setup Workflow
 - Build/Deploy Pipeline Configuration
-- AGENTS.md shorthand command mapping (`$coding-dependency-management`, `$coding-dependency-status`)
-- Code Review Workflow (`.aider.prompt/coding/code-review/SKILL.md`)
+- AGENTS.md shorthand command mapping (`$code-dependency-management`, `$code-dependency-status`)
+- Code Review Workflow (`.agent/.aider.prompt/code/review/SKILL.md`)
 
 ## Success Metrics
 
@@ -98,7 +98,7 @@
 - Dependency files and lockfiles are updated/committed where required
 - Post-change dependency manager verification command succeeds
 - No-op path is selected for “no new dependencies required” when applicable
-- Successful return to implementation with `$coding-implementation S<X.Y>` command
+- Successful return to implementation with `$code-implementation S<X.Y>` command
 
 ## Failure Modes
 
