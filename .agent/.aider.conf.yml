@@ -112,6 +112,6 @@ show-release-notes: false
 
 ## Specify multiple values like this:
 read:
-- AGENTS.md
+- .agent/AGENTS.md
 # If your project is in the supported list, copy the .md file in .aider.conventions into your project root and uncomment the line below. This will allow Aider to read the conventions for your project.
-- SCRIPTS.md
+# - SCRIPTS.md

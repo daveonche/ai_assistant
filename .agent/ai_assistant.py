@@ -78,9 +78,9 @@ def _aider_config_args(agent_dir: Path) -> List[str]:
     if model_settings_file.exists():
         args.extend(["--model-settings-file", str(model_settings_file)])
 
-    prompt_dir = agent_dir / ".aider.prompt"
-    if prompt_dir.exists():
-        args.extend(["--prompt-dir", str(prompt_dir)])
+    # prompt_dir = agent_dir / ".aider.prompt"
+    # if prompt_dir.exists():
+    #     args.extend(["--prompt-dir", str(prompt_dir)])
 
     return args
 
