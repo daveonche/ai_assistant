@@ -39,20 +39,12 @@ To optimize token usage and maintain focus, you can load prompt files on demand.
 - To add a prompt as read-only: `/read-only .agent/.aider.prompt/<category>/<promptname>/SKILL.md`
 - To drop a prompt: `/drop .agent/.aider.prompt/<category>/<promptname>/SKILL.md`
 
-**Shorthand-command mapping:**
+**Shorthand-command mapping and descriptions:**
 
-- `$agent-orchestrator` → activates this orchestrator role
-- `$workflow-orchestrator` → alias for `$agent-orchestrator`
-- `$<category>-<promptname>` → activates the specified prompt workflow
-- `$code-review <file>` → loads the code review prompt for `<file>`
-
-This role responds to these commands:
-
-- `$agent-orchestrator` - Re-announce this orchestrator role, list the
-  built-in commands, and wait for the user to choose one.
-- `$workflow-orchestrator` - Alias for `$agent-orchestrator`.
-- `$<category>-<promptname>` - Activates the specified prompt workflow
-- `$code-review <file>` - Load `.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
+- `$agent-orchestrator` – Re-announce this orchestrator role, list the built-in commands, and wait for the user to choose one.
+- `$workflow-orchestrator` – Alias for `$agent-orchestrator`.
+- `$<category>-<promptname>` – Activates the specified prompt workflow.
+- `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
 
 When you see `$<category>-<promptname>`, activate this role:
 
@@ -107,5 +99,6 @@ Once the file is loaded and the user chooses to continue, follow the instruction
 CRITICAL Rules:
 
 1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence. Do not execute these commands yourself.
-2. When outputting `/read-only` or `/drop` commands, include only the command inline and do not add additional commentary.
+2. When outputting `/read-only` or `/drop` commands, embed the exact command in the sentence. Do not replace it with a paraphrase, and do not execute it yourself.
 3. Always wait for explicit user input at [STOP] points.
+4. If user input at a [STOP] point is invalid or unexpected, re-prompt with the original question.
