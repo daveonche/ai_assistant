@@ -2,14 +2,7 @@
 
 ## AI Assistant Compatibility
 
-- Tested With:
-  - Aider
-  - Implementation Prompt: Claude 3.5 Sonnet (October 22, 2024 release)
-  - Other Workflow Prompts: Claude 3.5 Haiku (October 22, 2024 release)
-- Potential Compatible Assistants:
-  - Other Claude models
-  - GitHub Copilot (with modifications)
-  - GPT-4 (with workflow adaptation)
+- Tested With: Aider
 
 ## SDLC Phase
 
@@ -65,8 +58,8 @@
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2026-08-24
+- Current Version: 1.1.0
+- Last Updated: 2026-08-26
 - Stability: Experimental
 
 ## Purpose
@@ -105,19 +98,7 @@ Phase 4B: Unit Testing
 
 This workflow is designed for projects that have already completed their initial scaffolding. It assumes basic project structure, initial dependencies, and core technologies are already in place.
 
-The workflow operates through these sequential phases:
-
-```txt
-Phase 1: Implementation Status Analysis
-↓ [Outputs feed Phase 2]
-Phase 2: Sprint Story Generation
-↓ [Outputs feed Phase 3]
-Phase 3: Story Analysis
-↓ [Outputs feed Phase 4A]
-Phase 4A: Implementation
-↓ [Outputs feed Phase 4B]
-Phase 4B: Unit Testing
-```
+The workflow operates through the sequential phases shown in the `Workflow` section above.
 
 ## Input/Output Chain
 
@@ -131,9 +112,7 @@ Assess current project state, identify implemented and pending features.
 
 **Initial Inputs Required:**
 
-- Project requirements list
-- Previous sprint's user stories
-- Core technology stack definition file (e.g., `package.json`, `pom.xml`, `requirements.txt`)
+- Existing project code and status files
 
 **Key Outputs → [Feed into Phase 2]:**
 
@@ -271,26 +250,7 @@ During the implementation phase, if the Implementation Prompt determines that ne
 
 ## Chain Dependencies
 
-```cmd
-Implementation Status Analysis
-└── Outputs required for Sprint Story Generation:
-    ├── Implementation Status Report
-    ├── Previous sprint's user stories
-    └── Sprint Story Generation
-        └── Outputs required for Story Analysis:
-            ├── Sprint Stories (sprint_X_stories.md)
-            └── Story Analysis
-                └── Outputs required for Implementation:
-                    ├── Story Steps Report (S<X.Y>-story-steps.md)
-                    ├── Sprint story
-                    ├── Project's dependency definition file (e.g., package.json)
-                    └── Implementation
-                        └── Outputs required for Unit Testing:
-                            ├── Code changes implementing the specified step
-                            ├── Story Steps Report (S<X.Y>-story-steps.md)
-                            └── Unit Testing
-                                └── Unit tests and pass/fail results
-```
+See `Input/Output Chain` for the single source of phase dependencies and outputs.
 
 ## Maintaining Chain Integrity
 
@@ -315,11 +275,9 @@ Implementation Status Analysis
 
 To maintain workflow integrity:
 
-1. Never skip phases or assume outputs
-2. Verify all outputs before proceeding to next phase
-3. Keep all documentation updated as you progress
-4. Use phase commands to confirm current state
-5. Don't proceed if required inputs are missing
+1. Keep all documentation updated as you progress
+2. Use phase commands to confirm current state
+3. Don't proceed if required inputs are missing
 
 ## Best Practices for Chain Execution
 
