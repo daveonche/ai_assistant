@@ -50,12 +50,20 @@ To start the AI assistant, run the root convenience launcher from the root of yo
 
 This launcher calls `.agent/ai-assistant.sh`. That script delegates to `.agent/ai_assistant.py`, which automatically builds the Docker image when needed and starts the container with the necessary volume mappings and environment variables.
 
-If you prefer a direct console command, install the `.agent` package in editable mode:
+If you prefer a direct console command, install the `.agent` package in editable mode inside a Python virtual environment:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -e .agent
 ai-assistant
 ```
+
+> **Note:** Using a virtual environment avoids the PEP 668
+> “externally-managed-environment” error that occurs when trying to
+> install packages directly into a system-managed Python. If you prefer
+> an isolated application install, you can also use
+> `pipx install -e .agent`.
 
 ### Using in Other Projects
 
@@ -78,11 +86,20 @@ git update-index --chmod=+x agent.sh .agent/ai-assistant.sh
 
 Then run `./agent.sh` from that project's directory.
 
-If you prefer a direct `ai-assistant` command instead, install the `.agent` package in editable mode:
+If you prefer a direct `ai-assistant` command instead, install the `.agent` package in editable mode inside a Python virtual environment:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -e .agent
+ai-assistant
 ```
+
+> **Note:** Using a virtual environment avoids the PEP 668
+> “externally-managed-environment” error that occurs when trying to
+> install packages directly into a system-managed Python. If you prefer
+> an isolated application install, you can also use
+> `pipx install -e .agent`.
 
 ### Project Structure for Docker Compose Projects
 
