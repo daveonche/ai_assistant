@@ -41,6 +41,11 @@ Guides the implementation of a specific step from a story analysis report, enfor
 - Command Driven: Yes (#implement-step S<X.Y> [step-number], #implementation-status S<X.Y> [step-number])
 - Phase Separation: Strict planning vs. implementation phases
 - Sequential Execution: Enforced step order with validation (step-number presence, range, and order)
+- Gotchas: Dedicated section covering new-dependency stop, sequential-order enforcement, and prerequisite verification
+- Progress Tracking: Workflow Progress Checklist provided
+- Validation Loop: Explicit validate-fix-repeat loop before final status
+- User Response Handling: Defined N response path for step requirement confirmation
+- Status Reporting: Clarifies omitted step-number behavior before reporting status
 
 ## Best Practices
 
@@ -50,6 +55,7 @@ Guides the implementation of a specific step from a story analysis report, enfor
 - Clear implementation planning
 - Dependency verification
 - Manual verification steps
+- Validation loop after implementation (review, test, fix, repeat)
 - Sequential progress tracking
 - Scope control per step
 
@@ -71,12 +77,13 @@ Guides the implementation of a specific step from a story analysis report, enfor
 - Dependency management integration
 - Regular progress verification
 - Manual verification steps
+- Validation loop before final status
 - Sequential implementation enforcement
 - Clear completion criteria
 
 ## Version
 
-- Current Version: 1.0.2
-- Last Updated: 2026-08-24
+- Current Version: 1.1.0
+- Last Updated: 2026-08-26
 - Stability: Beta
 - Keep metadata synchronized with changes to SKILL.md; update version and date when SKILL.md changes
