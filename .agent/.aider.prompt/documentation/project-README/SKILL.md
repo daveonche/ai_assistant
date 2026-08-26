@@ -1,10 +1,24 @@
 # Project README Generator
 
+## Gotchas
+- Preserve manually maintained README content (badges, team documentation, custom sections) when updating an existing README.
+- The `/read-only` and `/drop` commands must use the full path including `.agent/`:
+  - `/read-only .agent/.aider.prompt/documentation/project-README/SKILL.md`
+  - `/drop .agent/.aider.prompt/documentation/project-README/SKILL.md`
+- When generating commands, use actual commands from package/config files rather than placeholders.
+
+## Progress Checklist
+- [ ] Step 0: Context setup
+- [ ] Step 1: Analyze
+- [ ] Step 2: Generate
+- [ ] Step 2.5: Validate
+- [ ] Step 3: Output
+
 ## Workflow
 
 ### Step 0: Context setup
 1. Ensure this prompt file is loaded in context. If not, ask the user to run:
-   `/read-only .aider.prompt/documentation/project-README/SKILL.md`
+   `/read-only .agent/.aider.prompt/documentation/project-README/SKILL.md`
 2. Ask the user to add relevant project files to the chat if they are not already present. Prefer:
    - package/config files
    - `README.md` if present
@@ -14,7 +28,7 @@
    - `docs/user_stories.md`
    - `src/` entry points
 
-[STOP - Wait until the user confirms the relevant files are added.]
+[STOP - Wait until the user replies with "relevant files added" before proceeding.]
 
 ### Step 1: Analyze
 1. Scan all available project files and documentation.
@@ -23,14 +37,14 @@
 4. Identify core technologies from package files and code imports.
 5. Map component relationships through imports and architecture patterns.
 6. Extract build, run, and test instructions from configuration files.
-7. If a `README.md` already exists:
-   - Preserve manual sections such as custom badges, team documentation, or manually maintained content.
-   - Identify only outdated sections.
-   - Update inaccurate information without overwriting manually maintained content.
-   - If unsure whether a section is manual or generated, ask the user before changing it.
+7. If a `README.md` already exists, refer to the **Gotchas** section and preserve manual content as described there.
 
 ### Step 2: Generate
-Generate a comprehensive README using this structure:
+Generate a comprehensive README using this structure. Use the guidance below for concrete content:
+
+- For each placeholder like `[Analysis of project purpose and capabilities based on codebase]`, write a short, specific sentence rather than leaving the placeholder.
+- Core Technologies entries should use the format `Technology — role/purpose` (e.g., `FastAPI — REST API framework`).
+- For `Installation`, `Usage`, and `Testing` commands, extract the actual commands from `pyproject.toml`, `package.json`, `Makefile`, or other config files.
 
 # [Project Name]
 
@@ -67,7 +81,15 @@ Generate a comprehensive README using this structure:
 ## License
 [Project license information]
 
-[STOP - Present the generated README to the user for review. Wait for user confirmation before proceeding.]
+### Step 2.5: Validate
+1. Cross-check the generated README against the project files and documentation.
+   - Ensure all installation, usage, and testing commands exist in package or config files.
+   - Verify that each technology in `Core Technologies` appears in package files or imports.
+   - Confirm architecture components match code structure and imports.
+2. Correct any mismatches found.
+3. Repeat validation until the generated content aligns with the project.
+
+[STOP - Present the generated README. Wait for the user to reply with "README approved" before proceeding.]
 
 ### Step 3: Output
 1. Ask the user whether they want to save the file directly or output the markdown block to copy.
@@ -77,4 +99,4 @@ Generate a comprehensive README using this structure:
 3. If outputting:
    - Provide the complete markdown block.
 
-[STOP - End of workflow. Ask the user if they want to drop the prompt file from context using `/drop .aider.prompt/documentation/project-README/SKILL.md`.]
+[STOP - End of workflow. Ask the user if they want to drop the prompt file from context. If yes, tell them to run `/drop .agent/.aider.prompt/documentation/project-README/SKILL.md`. Wait for the user’s response.]
