@@ -12,7 +12,6 @@ SCRIPTS.md
 !.aider.model.metadata.json
 !.aider.conventions/
 !.aider.prompt/
-!.aider.conventions/SCRIPTS.md
 
 # OS files
 .DS_Store
