@@ -22,7 +22,7 @@ Interactive step-by-step workflow for creating focused, readable PlantUML diagra
 ## Output format
 
 - PlantUML syntax in a fenced code block with language `plantuml`
-- Optionally saved as `*.puml` file for rendering
+- Optionally saved as `*.puml` file for rendering; finalization asks the user where to save the diagram, or reply `do not save` to keep the code displayed only
 
 ## Quality goals
 
@@ -30,9 +30,15 @@ Interactive step-by-step workflow for creating focused, readable PlantUML diagra
 - Clear relationships
 - Optimized diagram size
 - Ready-to-render code
+- Syntax/render validation before finalizing
 
 ## Workflow behavior
 
 - Step-by-step guided interaction
 - Stops for user input at each step
+- Includes syntax/render validation before user review
 - Includes final review and refinement loop
+
+## Gotchas
+
+See `SKILL.md` Gotchas for PlantUML rendering/version compatibility and special-character handling.
