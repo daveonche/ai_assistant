@@ -29,26 +29,33 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
    Copy the example environment file and update it with your API keys.
 
    ```bash
-   cp .env.example .env
+   cp .agent/.env.example .env
    ```
 
    Edit `.env` and fill in your `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, and `HF_TOKEN`.
 
-3. **Make the launch script executable (if not already):**
+3. **Make the launch scripts executable (if not already):**
 
    ```bash
-   chmod +x ai-assistant.sh
+   chmod +x assistant.sh .agent/ai-assistant.sh
    ```
 
 ## Usage
 
-To start the AI assistant, run the launch script from the root of your project:
+To start the AI assistant, run the root convenience launcher from the root of your project:
 
 ```bash
-./ai-assistant.sh
+./assistant.sh
 ```
 
-This script will automatically build the Docker image (if it doesn't exist or is outdated) and start the container with the necessary volume mappings and environment variables.
+This launcher calls `.agent/ai-assistant.sh`, which automatically builds the Docker image when needed and starts the container with the necessary volume mappings and environment variables.
+
+If you prefer a direct console command, install the `.agent` package in editable mode:
+
+```bash
+pip install -e .agent
+ai-assistant
+```
 
 ### Using in Other Projects
 
@@ -89,6 +96,19 @@ This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) tha
 
 1. Ensure the `ci.yml` file is located in `.github/workflows/` in your repository.
 2. Add `DB_PASSWORD` to your repository's GitHub Actions Secrets.
+
+To avoid running CI for changes that only affect the `.agent` directory,
+add a `paths-ignore` entry for `.agent/**` in your workflow triggers:
+
+```yaml
+on:
+  push:
+    paths-ignore:
+      - '.agent/**'
+  pull_request:
+    paths-ignore:
+      - '.agent/**'
+```
 
 ## Project Structure
 
