@@ -28,6 +28,13 @@ IMPLEMENTATION PHASE (code mode):
 - Treat any coding conventions as review criteria, not absolute change requirements.
 - If the selected improvements would require new dependencies or go beyond the target file, stop and tell the user before proceeding.
 
+## Gotchas
+
+- Never edit the target file before the user confirms `/code proceed`.
+- The target file path must come from `$code-review <file>`; do not assume a default path.
+- The user may provide conventions after the initial review. If they do, restart the review criteria from that point.
+- The user may select “all”. Implement all presented improvements, not a subset.
+
 [STEP 1] First, check for these essential items in the available project context:
 1. The target file path from `$code-review <file>`
 2. Optional coding convention file or explicit convention instructions
