@@ -37,14 +37,6 @@ LOG_RE = re.compile(
 AGENT_DIR = Path(__file__).resolve().parent
 
 
-def _remove_if_empty(path: Path) -> None:
-    """Remove a directory if it exists and is empty."""
-    try:
-        if path.is_dir() and not any(path.iterdir()):
-            path.rmdir()
-    except OSError:
-        pass
-
 
 def _docker_available() -> bool:
     """Return True when the docker CLI can be executed."""
@@ -359,12 +351,6 @@ def run_container(
 
     command.extend(["-v", "/dev/shm:/dev/shm"])
 
-    tags_cache_dir = agent_dir / ".aider.tags.cache.v4"
-    tags_cache_dir.mkdir(parents=True, exist_ok=True)
-    command.extend([
-        "-v",
-        f"{tags_cache_dir}:{cwd}/.aider.tags.cache.v4",
-    ])
 
     project_root = Path(cwd)
     env_file = project_root / ".env"
@@ -457,9 +443,6 @@ def main() -> int:
         debug,
         assistant_args,
     )
-
-    tag_cache_mount_point = project_root / ".aider.tags.cache.v4"
-    _remove_if_empty(tag_cache_mount_point)
 
     return result
 
