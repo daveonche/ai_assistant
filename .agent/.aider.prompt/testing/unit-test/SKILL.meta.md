@@ -4,7 +4,8 @@
 
 - Tested With:
   - Aider
-  - LLM: Claude 3.5 Sonnet (October 22, 2024 release)
+  - LLM: Claude 3.5 Sonnet
+- Last Validated Model: Claude 3.5 Sonnet
 - Potential Compatible Assistants:
   - Other Claude models
   - GitHub Copilot (with modifications)
@@ -29,6 +30,7 @@
   - Existing test files (if any)
   - Project structure context
   - Testing environment details
+- Uses progressive disclosure: core SKILL.md + references/gotchas.md, references/templates.md, references/rules.md
 
 ## Prompt Characteristics
 
@@ -45,6 +47,8 @@
 - Maintain strict scope adherence
 - Follow project-specific testing patterns
 - Handle dependencies systematically
+- Use explicit checklists to track progress during major workflow steps
+- Provide recommended defaults for decision menus while allowing overrides
 
 ## Potential Challenges
 
@@ -54,6 +58,7 @@
 - Dependency management complexity
 - Test execution verification
 - Manual vs. automated test balance
+- Reference files falling out of sync with core SKILL.md
 
 ## Recommended Mitigation Strategies
 
@@ -63,9 +68,10 @@
 - Step-by-step test implementation
 - Regular test status checks
 - Support for manual test execution
+- Load references on demand and review them when core workflow changes
 
 ## Version
 
-- Current Version: 1.0.1
-- Last Updated: 2026-08-24
+- Current Version: 1.1.0
+- Last Updated: 2026-08-26
 - Stability: Experimental
