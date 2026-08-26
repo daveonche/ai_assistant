@@ -37,7 +37,7 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 3. **Make the launch scripts executable (if not already):**
 
    ```bash
-   chmod +x assistant.sh .agent/ai-assistant.sh
+   chmod +x agent.sh .agent/ai-assistant.sh
    ```
 
 ## Usage
@@ -45,7 +45,7 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 To start the AI assistant, run the root convenience launcher from the root of your project:
 
 ```bash
-./assistant.sh
+./agent.sh
 ```
 
 This launcher calls `.agent/ai-assistant.sh`, which automatically builds the Docker image when needed and starts the container with the necessary volume mappings and environment variables.
@@ -63,7 +63,7 @@ You can use this assistant in other projects by copying the `.agent` directory a
 
 ```bash
 cp -r .agent /path/to/your/project/
-cp assistant.sh /path/to/your/project/
+cp agent.sh /path/to/your/project/
 # Copy the specific convention file for your project (e.g., ELGG.md, RAILS.md, ODOO.md)
 cp .agent/.aider.conventions/CONVENTIONS-FILENAME.md /path/to/your/project/.agent/
 ```
@@ -72,11 +72,11 @@ Make the launchers executable and update the git index so you don't have to run 
 
 ```bash
 cd /path/to/your/project/
-chmod +x assistant.sh .agent/ai-assistant.sh
-git update-index --chmod=+x assistant.sh .agent/ai-assistant.sh
+chmod +x agent.sh .agent/ai-assistant.sh
+git update-index --chmod=+x agent.sh .agent/ai-assistant.sh
 ```
 
-Then run `./assistant.sh` from that project's directory.
+Then run `./agent.sh` from that project's directory.
 
 If you prefer a direct `ai-assistant` command instead, install the `.agent` package in editable mode:
 
@@ -116,11 +116,17 @@ on:
       - '.agent/**'
 ```
 
+> **Important:** GitHub Actions only runs workflows from
+> `.github/workflows/`. A `ci.yml` file inside `.agent/` will not be
+> executed automatically. Keep the active workflow at
+> `.github/workflows/ci.yml`, and treat `.agent/ci.yml` as a reference
+> copy if you need one.
+
 ## Project Structure
 
 ```txt
 .
-├── assistant.sh             # Root convenience launcher
+├── agent.sh                 # Root convenience launcher
 ├── .agent/
 │   ├── ai-assistant.sh      # Thin Bash launcher for the Python implementation
 │   ├── ai_assistant.py      # Python implementation for building and running the container
@@ -129,7 +135,9 @@ on:
 │   ├── .aider.conf.yml      # Aider configuration
 │   ├── .aider.model.settings.yml
 │   ├── .aider.prompt/       # Aider prompt library
-│   └── pyproject.toml       # Optional packaging for the `ai-assistant` command
+│   ├── .aider.conventions/  # Project-specific coding conventions
+│   ├── pyproject.toml       # Optional packaging for the `ai-assistant` command
+│   └── ci.yml               # CI workflow copy (see note below)
 ├── ci.yml                   # GitHub Actions CI workflow
 ├── docs/                    # Project documentation and analysis
 ├── scripts/                 # Utility scripts
