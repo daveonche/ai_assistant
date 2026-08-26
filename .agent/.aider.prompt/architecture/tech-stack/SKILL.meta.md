@@ -5,10 +5,10 @@
 - Tested With:
   - Aider
   - Claude 3.5 Sonnet (October 22, 2024 release)
-- Potential Compatible Assistants:
+- Untested / Not verified:
   - Other Claude models
-  - GitHub Copilot (with modifications)
-  - GPT-4 (with adaptations)
+  - GitHub Copilot
+  - GPT-4
 
 ## SDLC Phase
 
@@ -31,6 +31,7 @@
   - Core technology preferences
   - Capability requirements
   - Version compatibility constraints
+- Reference file: `references/dependency-file-templates.md` — load this file when generating dependency files.
 
 ## Purpose
 This prompt guides the user through defining a compatible, version-locked technology stack based on project requirements and user preferences. It also supports modifying an existing stack.
@@ -43,7 +44,7 @@ Use this prompt when starting a new project to select the core technology, frame
 - `#modify-stack`: Allows modification of an existing tech stack.
 - `#stack-status`: Shows current progress in stack generation workflow.
 
-### Workflow
+### Workflow for `#generate-stack`
 1. **Mode Verification**: Ensure you are in `/ask` mode.
 2. **Requirements Verification**: Check for project requirements and existing dependency files.
 3. **Application Type Assessment**: Determine the type of application being built.
@@ -52,6 +53,18 @@ Use this prompt when starting a new project to select the core technology, frame
 6. **Compatibility Verification**: Verify compatibility between core technology and dependencies.
 7. **Generate Documentation and Dependency Files**: Create the tech stack documentation and appropriate dependency files.
 8. **Save Files**: Switch to `/code` mode to save the generated files.
+
+### Workflow for `#modify-stack`
+1. **Mode Verification**: Ensure correct context and mode.
+2. **Context Verification**: Confirm that the existing tech-stack documentation and dependency files are present.
+3. **File Content Verification**: Read and display current stack and dependency contents.
+4. **Modification Selection**: Choose core version update, add dependency, update dependency version, remove dependency, or other.
+5. **Impact Analysis**: Present exact proposed changes, files to modify, compatibility verification, and cascading changes.
+6. **Save Modified Files**: Exercise the same `/code` mode saving workflow.
+
+### Workflow for `#stack-status`
+- Report completed steps, current step, and remaining steps for tech stack generation.
+- If persistence across sessions is needed, use a small state file such as `tech_stack_progress.md`.
 
 ## Prompt Characteristics
 
@@ -72,29 +85,22 @@ Use this prompt when starting a new project to select the core technology, frame
 - Enable user preference consideration
 - Conduct thorough impact analysis
 
-## Potential Challenges
+## Key Risks and Mitigations
 
-- Version compatibility conflicts
-- Dependency chain resolution
-- Cross-platform compatibility
-- Technology ecosystem constraints
-- Maintaining version consistency
-- Managing user preferences vs technical fit
-- Handling multiple dependency file formats
+- Core risks and mitigations are documented in `SKILL.md`; the main constraints are:
+  - Version compatibility conflicts → strict version locking and comprehensive compatibility checks.
+  - Dependency chain resolution and cross-platform compatibility → technology-specific validation and structured modification process.
+  - Maintaining version consistency → consistent dependency-file generation and explicit user confirmation steps.
+  - User preference vs technical fit → clear documentation of AI recommendations and user choices.
 
-## Recommended Mitigation Strategies
+## Validation & Execution Notes
 
-- Strict version locking
-- Comprehensive compatibility checks
-- Clear documentation requirements
-- Structured modification process
-- Impact analysis before changes
-- Explicit user confirmation steps
-- Technology-specific file generation
-- Consistent version formatting
+- Validation loop: Run the generated dependency-file templates through the checklist in `SKILL.md` before saving.
+- Execution evidence: Update this section after each real run with tested scenarios and any issues found.
+- Current status: Not yet recorded.
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-12-02
+- Current Version: 1.1.0
+- Last Updated: 2026-08-26
 - Stability: Experimental
