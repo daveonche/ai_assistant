@@ -85,7 +85,7 @@ build_image() {
   build_status=$?
 
   if [[ "$build_status" -ne 0 ]]; then
-    printf "\r[✖] Loading AI Assistant... failed.                      \n\n"
+    printf "\r[✖] Loading AI Assistant... failed.%-50s\n\n" ""
     echo -e "\033[31m--- Last lines of build log ---\033[0m" >&2
     tail -n 25 "$build_log" >&2
     echo -e "\033[31m-----------------------------\033[0m" >&2
@@ -93,7 +93,7 @@ build_image() {
     return 1
   else
     # Padding clears previous line content
-    printf "\r[✔] Loading AI Assistant... done.                        \n"
+    printf "\r[✔] Loading AI Assistant... done.%-50s\n" ""
   fi
 }
 
