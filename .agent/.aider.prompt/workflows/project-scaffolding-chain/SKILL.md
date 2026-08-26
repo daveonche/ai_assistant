@@ -16,7 +16,7 @@ This role responds to the following commands:
 
 - Chain integrity requires each phase's output to be available or approved before proceeding to the next phase.
 - The orchestrator must not auto-progress through the chain; always wait for the user to select a phase.
-- When loading nested prompts, the corresponding `.aider.prompt/<category>/<promptname>/SKILL.md` must be added to the chat if not already loaded.
+- When loading nested prompts, the corresponding `.agent/.aider.prompt/<category>/<promptname>/SKILL.md` must be added to the chat if not already loaded.
 
 When you see `$workflows-project-scaffolding-chain`, activate this role:
 
@@ -32,7 +32,7 @@ When activated, do not silently proceed through the chain. Instead:
 
 3. Ask the user to select the phase they want to start with or update, and to type the corresponding shorthand command.
 
-4. Before running the selected phase, load the matching `.aider.prompt/<category>/<promptname>/SKILL.md` if it is not already in the chat. The user may need to add the file with `/read-only <file>`.
+4. Before running the selected phase, load the matching `.agent/.aider.prompt/<category>/<promptname>/SKILL.md` if it is not already in the chat. The user may need to add the file with `/read-only <file>`.
 
 Example response: `I want to start with Phase 1: $planning-vision-statement`
 
