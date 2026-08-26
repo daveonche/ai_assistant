@@ -48,7 +48,7 @@ To start the AI assistant, run the root convenience launcher from the root of yo
 ./agent.sh
 ```
 
-This launcher calls `.agent/ai-assistant.sh`, which automatically builds the Docker image when needed and starts the container with the necessary volume mappings and environment variables.
+This launcher calls `.agent/ai-assistant.sh`. That script delegates to `.agent/ai_assistant.py`, which automatically builds the Docker image when needed and starts the container with the necessary volume mappings and environment variables.
 
 If you prefer a direct console command, install the `.agent` package in editable mode:
 
@@ -65,7 +65,7 @@ You can use this assistant in other projects by copying the `.agent` directory a
 cp -r .agent /path/to/your/project/
 cp agent.sh /path/to/your/project/
 # Copy the specific convention file for your project (e.g., ELGG.md, RAILS.md, ODOO.md)
-cp .agent/.aider.conventions/CONVENTIONS-FILENAME.md /path/to/your/project/.agent/
+cp .agent/.aider.conventions/CONVENTIONS-FILENAME.md /path/to/your/project/
 ```
 
 Make the launchers executable and update the git index so you don't have to run the execute command again in that repo:
@@ -128,8 +128,8 @@ on:
 .
 ├── agent.sh                 # Root convenience launcher
 ├── .agent/
-│   ├── ai-assistant.sh      # Thin Bash launcher for the Python implementation
-│   ├── ai_assistant.py      # Python implementation for building and running the container
+│   ├── ai-assistant.sh      # Thin Bash launcher that invokes ai_assistant.py
+│   ├── ai_assistant.py      # Python CLI implementation
 │   ├── Dockerfile.aider     # Dockerfile for the Aider environment
 │   ├── .env.example         # Template for environment variables
 │   ├── .aider.conf.yml      # Aider configuration
@@ -137,8 +137,10 @@ on:
 │   ├── .aider.prompt/       # Aider prompt library
 │   ├── .aider.conventions/  # Project-specific coding conventions
 │   ├── pyproject.toml       # Optional packaging for the `ai-assistant` command
-│   └── ci.yml               # CI workflow copy (see note below)
-├── ci.yml                   # GitHub Actions CI workflow
+│   └── ci.yml               # CI workflow reference copy (see note below)
+├── .github/
+│   └── workflows/
+│       └── ci.yml           # GitHub Actions CI workflow
 ├── docs/                    # Project documentation and analysis
 ├── scripts/                 # Utility scripts
 └── src/                     # Source code
