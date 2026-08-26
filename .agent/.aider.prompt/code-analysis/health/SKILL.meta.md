@@ -18,13 +18,16 @@ Use this prompt when you need to perform a health check on your source code, ide
 - `#analyze-health`: Starts or resumes the codebase health analysis workflow.
 
 ### Workflow
-1. **Mode Verification**: Ensure you are in `/ask` mode.
-2. **Context Verification**: Verify that the relevant source code files are loaded in the context.
-3. **File Collection**: Scan and build a list of source files to analyze.
-4. **Per-File Analysis**: Analyze each file for logic, performance, security, error handling, record import statements, and examine code structure; then perform project/import-level dependency analysis.
-5. **Issue Categorization**: Organize findings into logic, performance, security, error handling, dependencies, and structure categories.
-6. **Interactive Issue Review**: Present categorized findings with issue counts and allow the user to dive deeper, generate the full health report, or focus on critical issues only.
-7. **Generate Report**: Output the final health analysis report, using severity classification and a `Critical Issues Summary`, and provide instructions to save it.
+For the full step-by-step workflow, see `SKILL.md`.
+
+The analysis proceeds through these high-level stages:
+
+1. **Mode & Context Verification**: Ensure `/ask` mode and relevant source files are loaded.
+2. **File Collection**: Scan and build a list of source files to analyze.
+3. **Per-File Analysis**: Analyze each file for logic, performance, security, error handling, import statements, and structure; then perform project/import-level dependency analysis. Before moving to categorization, validate that at least one finding per file has been recorded.
+4. **Issue Categorization**: Organize findings into logic, performance, security, error handling, dependencies, and structure categories. Keep these categories high-level unless the user asks for additional detail.
+5. **Interactive Issue Review**: Present categorized findings with issue counts and allow the user to dive deeper, generate the full health report, or focus on critical issues only. Generating the full health report is the default when no selection is made.
+6. **Generate Report**: Output the final health analysis report, using severity classification and a `Critical Issues Summary`, and provide instructions to save it.
 
 ## Best suited for
 - Pre-update code review
