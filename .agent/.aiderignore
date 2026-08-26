@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+env/
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+eggs/
+
+# Environment & Secrets
+.env
+
+# Build & Distribution
+dist/
+build/
+*.zip
+*.tar.gz
+*.egg
+
+# Logs & Caches
+*.log
+.cache/
+.pytest_cache/
+coverage/
+htmlcov/
+
+# Binary & Media Files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.pdf
+*.sqlite3
+*.db
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Project Specific
