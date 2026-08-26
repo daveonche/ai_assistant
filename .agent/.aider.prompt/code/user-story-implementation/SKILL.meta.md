@@ -6,14 +6,14 @@ Guides the systematic implementation of user stories through a structured workfl
 
 ## Usage
 
-1. Ensure the following context is available:
+1. Add the relevant context to the chat:
    - User story to be implemented
    - Project technology stack information
    - Current dependencies and versions
 2. Use command: `#implement-story S<X.Y>` to start or resume implementation
    - Replace `X.Y` with the story number, e.g., `S2.1`.
-3. Use command: "#implement-story-status" to check progress
-4. After completion, use `/drop .aider.prompt/coding/user-story-implementation/SKILL.md` to remove the prompt from context and free up tokens.
+3. Use command: `#implement-story-status` to check progress
+4. After completion, use `/drop .agent/.aider.prompt/code/user-story-implementation/SKILL.md` to remove the prompt from context and free up tokens.
 
 ## Best suited for
 
