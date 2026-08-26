@@ -7,11 +7,15 @@ venv/
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.so
 *.egg-info/
 eggs/
 
 # Environment & Secrets
 .env
+.env.local
+.env.*
 
 # Build & Distribution
 dist/
@@ -24,7 +28,11 @@ build/
 *.log
 .cache/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
 coverage/
+.coverage
 htmlcov/
 
 # Binary & Media Files
@@ -43,5 +51,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+*.tmp
+*.bak
+*.orig
 
 # Project Specific
