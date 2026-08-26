@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '.agent/**'
+  pull_request:
+    branches: [ main, master ]
+    paths-ignore:
+      - '.agent/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Compose
+        uses: docker/setup-compose@v1
+
+      - name: Build and Test Project
+        run: |
+          # 1. Evaluate Ruby on Rails App stacks
+          if [ -f RAILS.md ]; then
+            echo "🚀 Running Remote Rails Docker Execution Stack..."
+            docker compose exec -T web bundle exec rails test
+            
+          # 2. Evaluate Elgg PHP Framework stacks
+          elif [ -f ELGG.md ]; then
+            echo "🚀 Running Remote Elgg PHPUnit Execution Stack..."
+            docker compose exec -T php ./vendor/bin/phpunit --configuration src/phpunit.xml
+            
+          # 3. Evaluate Odoo Framework stacks
+          elif [ -f ODOO.md ]; then
+            echo "🚀 Running Remote Odoo Execution Stack..."
+            # Assumes a service named 'odoo' in docker-compose.yml and a test database
+            docker compose exec -T odoo odoo --test-enable --stop-after-init -d test_db -i base
+            
+          else
+            echo "No recognized project framework file (RAILS.md, ELGG.md, ODOO.md) found. Skipping tests."
+            exit 0
+          fi
