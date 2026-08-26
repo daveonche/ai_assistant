@@ -350,11 +350,11 @@ def run_container(
 
     command.extend(["-v", "/dev/shm:/dev/shm"])
 
-    tags_cache_file = agent_dir / ".aider.tags.cache.v4"
-    tags_cache_file.touch(exist_ok=True)
+    tags_cache_dir = agent_dir / ".aider.tags.cache.v4"
+    tags_cache_dir.mkdir(parents=True, exist_ok=True)
     command.extend([
         "-v",
-        f"{tags_cache_file}:{cwd}/.aider.tags.cache.v4",
+        f"{tags_cache_dir}:{cwd}/.aider.tags.cache.v4",
     ])
 
     project_root = Path(cwd)
