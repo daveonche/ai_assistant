@@ -48,7 +48,7 @@ I have found in the context:
 
 - If they provide a convention, follow it as review criteria.
 - If they point to a file, read that file and use it as review criteria.
-- If they answer no, proceed with general best practices.
+- If they answer no, use the following default review criteria: readability, error handling, security, performance, and maintainability.
 
 [STEP 3] Read the target file: `{file}`.
 
@@ -66,12 +66,27 @@ Example:
 
 Reply with the number(s) to implement, or 'all'."
 
-[STEP 4] After the user selects improvements, ask the user to run:
+[STEP 4] After the user selects improvements, confirm the exact list before switching to code mode. Say:
+"Here are the selected improvements I will implement:
+- <Improvement A>
+- <Improvement B>
+
+Does this list match your intent? Reply 'confirmed' to proceed."
+
+[STOP] Wait for the user to confirm the selected improvement list.
+
+After confirmation, ask the user to run:
 `/code proceed`
 
 [STOP] Wait for confirmation that the user has run the command.
 
 [STEP 5] After the user confirms code mode, implement the confirmed improvements in `{file}`.
+
+Then validate the changes:
+1. Review the edited target file for syntax and formatting errors.
+2. Run any relevant project checks or tests if available.
+3. If validation fails, fix the issues and validate again.
+4. Only present final status after validation passes.
 
 Present final status and say EXACTLY:
 "Code review implementation is complete. The following improvements have been implemented:
