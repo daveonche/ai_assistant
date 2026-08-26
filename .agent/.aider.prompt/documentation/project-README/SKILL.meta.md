@@ -2,7 +2,7 @@
 
 ## Description
 
-Generates a new project README or updates an existing one by analyzing codebase files, documentation, and configuration. When updating, it preserves manual sections and updates only outdated or inaccurate information.
+Generates a new project README or updates an existing one by analyzing codebase files, documentation, and configuration, then validates the generated README against project files. When updating, it preserves manual sections and updates only outdated or inaccurate information.
 
 ## Usage
 
@@ -18,9 +18,12 @@ Generates a new project README or updates an existing one by analyzing codebase 
    - `docs/user_stories.md`
    - `src/` entry points
 3. The workflow includes context management commands:
-   - Load: `/read-only .aider.prompt/documentation/project-README/SKILL.md`
-   - Drop: `/drop .aider.prompt/documentation/project-README/SKILL.md`
-4. After generation, choose to save the README directly (requires `/code` mode) or copy it as a markdown block.
+   - Load: `/read-only .agent/.aider.prompt/documentation/project-README/SKILL.md`
+   - Drop: `/drop .agent/.aider.prompt/documentation/project-README/SKILL.md`
+4. After generation, validate the README against project files and present it for user approval.
+5. Once approved, choose to save the README directly (requires `/code` mode) or copy it as a markdown block.
+
+> **Note:** See the main `SKILL.md` **Gotchas** section for important handling of manual content and context-management path conventions.
 
 ## Best suited for
 
