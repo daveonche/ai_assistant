@@ -5,10 +5,12 @@ on:
     branches: [ main, master ]
     paths-ignore:
       - '.agent/**'
+      - 'agent.sh'
   pull_request:
     branches: [ main, master ]
     paths-ignore:
       - '.agent/**'
+      - 'agent.sh'
 
 jobs:
   test:
