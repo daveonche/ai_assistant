@@ -38,3 +38,9 @@ yarn-error.log*
 # Dependency directories
 node_modules/
 vendor/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
