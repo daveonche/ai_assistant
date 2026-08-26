@@ -9,7 +9,7 @@
 - Potential Compatible Assistants:
   - Claude models
   - Other GPT-4o models
-  - GitHub Copilot (with modifications: may require manual handling of /ask and /code commands)
+  - GitHub Copilot (with modifications: requires explicit mode management equivalent to `/ask` and `/code`)
 
 ## SDLC Phase
 
@@ -37,7 +37,6 @@
   - `/code` for saving
 - File Dependency:
   - Existing vision file (`docs/vision/project_vision.md`) must be loaded for `#modify-vision`
-- Default Output Location: `docs/vision/project_vision.md` (unless custom path is specified)
 
 ## Prompt Characteristics
 
@@ -65,35 +64,22 @@
 - Confirm existing file is loaded before modifying
 - Keep modifications section-scoped
 
-## Potential Challenges
+## Challenges & Mitigations
 
-- Maintaining non-technical focus
-- Balancing detail level
-- Future vision clarity
-- Value proposition definition
-- Feature abstraction level
-- Audience specificity
-- Vision scope control
-- Technical detail avoidance
-- Losing generated draft when switching from `/ask` to `/code`
-- Saving when the target file already exists
-- Modifying a vision file that is not loaded in context
-- Accidentally changing more than one section during `#modify-vision`
-
-## Recommended Mitigation Strategies
-
-- Example-based guidance
-- Structured section format
-- Clear technical boundaries
-- Interactive refinement process
-- Multiple input options
-- Value-focused questions
-- Consistent structure
-- Regular alignment checks
-- Output full markdown content at save time to avoid context loss
-- Require explicit overwrite or rename confirmation before writing
-- Require `/read-only` + user confirmation before modification
-- Restrict `#modify-vision` edits to the selected section only
+| Challenge | Mitigation |
+| --- | --- |
+| Maintaining non-technical focus | Example-based guidance |
+| Balancing detail level | Structured section format |
+| Future vision clarity | Clear technical boundaries |
+| Value proposition definition | Interactive refinement process |
+| Feature abstraction level | Multiple input options |
+| Audience specificity | Value-focused questions |
+| Vision scope control | Consistent structure |
+| Technical detail avoidance | Regular alignment checks |
+| Losing generated draft when switching from `/ask` to `/code` | Output full markdown content at save time to avoid context loss |
+| Saving when the target file already exists | Require explicit overwrite or rename confirmation before writing |
+| Modifying a vision file that is not loaded in context | Require `/read-only` + user confirmation before modification |
+| Accidentally changing more than one section during `#modify-vision` | Restrict `#modify-vision` edits to the selected section only |
 
 ## Outputs
 
@@ -103,6 +89,7 @@
 
 ## Related Skills
 
+- Parent workflow: `workflows/project-scaffolding-chain`
 - `requirements/initial-project`
 - `architecture/design`
 - `planning/story-analysis`
@@ -110,5 +97,5 @@
 ## Version
 
 - Current Version: 1.1.0
-- Last Updated: 2026-08-24
+- Last Updated: 2026-08-26
 - Stability: Beta
