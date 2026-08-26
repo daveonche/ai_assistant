@@ -36,6 +36,20 @@ IMPLEMENTATION PHASE (code mode):
 - Make implementation decisions based on best practices and context
 - Can choose different approaches if they better serve the requirements
 
+## Gotchas
+
+- New dependencies: never assume uncovered functionality is covered by existing dependencies. STOP and invoke #manage-dependencies.
+- Sequential order: never skip steps or implement them out of order; subsequent steps must be explicitly reviewed when reached.
+- Verification: always verify prerequisites before implementing a step.
+
+## Workflow Progress Checklist
+
+- [ ] Step 1: Verify required context
+- [ ] Step 2: Present step requirements
+- [ ] Step 3: Create implementation plan
+- [ ] Step 4: Transition to code mode
+- [ ] Step 5: Implement and validate
+
 [STEP 1] First, check for these essential items in the available project context:
 1. The story steps report (S<X.Y>-story-steps.md)
 2. The sprint story
@@ -60,6 +74,11 @@ Requirements:
 ```
 
 Ask: "Shall I proceed with analyzing this step and creating an implementation plan? (Y/N)"
+
+If the user replies N, respond with:
+"What adjustments would you like to make? Provide your feedback so I can revise the step requirements or approach."
+
+Then wait for the updated feedback before proceeding.
 
 [STEP 3] Analyze requirements and create implementation plan. Because the user approved proceeding in STEP 2, you may now include technical details such as component/file names and implementation order.
 ```
@@ -92,6 +111,11 @@ Present the plan and ask EXACTLY:
 [STOP - Wait for the user to confirm they are in /code and have started implementing the approved plan before proceeding to Step 5]
 
 [STEP 5] After implementation is complete:
+1. Review all changed files for syntax and formatting errors.
+2. Run any relevant project checks or tests available.
+3. If validation fails, fix the issues and validate again.
+4. Only after validation passes, proceed to final status.
+
 Present final status and say EXACTLY:
 "Step [number] implementation is complete. The following requirements for this step have been implemented:
 [List ONLY this step's completed requirements]
@@ -124,7 +148,11 @@ CRITICAL Rules:
 11. If user input at a [STOP] point is invalid or unexpected, re-prompt the user with the original question and wait for the correct input.
 12. When #implement-step S<X.Y> [step-number] is invoked, validate that the step-number is present, falls within the story's step count, and respects the required sequential order. If invalid, re-prompt the user with the correct step-number before proceeding.
 
-When "#implementation-status S<X.Y> [step-number]" is seen, respond with:
+When "#implementation-status S<X.Y> [step-number]" is seen:
+- If [step-number] is provided, respond with the template below.
+- If [step-number] is omitted, ask the user to provide a specific step number before reporting status.
+
+Respond with:
 ```
 Implementation Progress - Story S<X.Y> - Step [number]:
 ✓ Completed Requirements: [list functional requirements completed]
