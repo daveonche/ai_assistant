@@ -40,7 +40,7 @@ Provides a staged workflow for reviewing a target file, collecting optional codi
 - State Dependent: Yes
 - Requires Contextual Awareness: High
 - Mode Sensitive: Yes (`/ask` for review, `/code` for implementation)
-- Command Driven: Yes (`$code-review <file>`, `/code proceed`)
+- Command Driven: Yes (`$code-review <file>`, `/ask`, `/code proceed`)
 - Sequential Execution: Enforced stage order
 
 ## Best Practices
@@ -69,15 +69,15 @@ Provides a staged workflow for reviewing a target file, collecting optional codi
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2026-08-23
+- Current Version: 1.1.0
+- Last Updated: 2026-08-26
 - Stability: Experimental
 
 ## Integration Points
 
 - `.aider.prompt/AGENTS.md` shorthand orchestrator
 - `.aider.prompt/code/review/SKILL.md`
-- `.aider.prompt/cod/implementation/SKILL.md`
+- `.aider.prompt/code/implementation/SKILL.md`
 - `.aider.prompt/testing/unit-test/SKILL.md`
 
 ## Success Metrics
