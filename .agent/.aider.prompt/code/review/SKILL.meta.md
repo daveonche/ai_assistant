@@ -76,8 +76,8 @@ Provides a staged workflow for reviewing a target file, collecting optional codi
 ## Integration Points
 
 - `.aider.prompt/AGENTS.md` shorthand orchestrator
-- `.aider.prompt/coding/code-review/SKILL.md`
-- `.aider.prompt/coding/implementation/SKILL.md`
+- `.aider.prompt/code/review/SKILL.md`
+- `.aider.prompt/cod/implementation/SKILL.md`
 - `.aider.prompt/testing/unit-test/SKILL.md`
 
 ## Success Metrics
