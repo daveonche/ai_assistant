@@ -30,7 +30,6 @@
   - No prior project structure, dependencies, or core technologies
   - Understanding of chained workflow dependencies
   - Ability to load and run phase-specific prompts
-- Command Driven: Yes
 
 ## Prompt Characteristics
 
@@ -39,14 +38,6 @@
 - Requires Contextual Awareness: High
 - Command Driven: Yes
 - Chained Workflow: Yes
-
-## Best Practices
-
-- Keep phase outputs in accessible locations
-- Verify all outputs before proceeding to the next phase
-- Version control all artifacts
-- Document modifications, assumptions, and decisions
-- Never skip phases or assume outputs
 
 ## Potential Challenges
 
@@ -91,25 +82,6 @@ Use this workflow chain when starting a new project or when the initial project 
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 7B: Unit Testing
 - `$coding-dependency-management` - Activates conditional dependency management during implementation
 
-### Workflow
-
-```txt
-Phase 1: Vision Statement Generation
-↓ [Outputs feed Phase 2]
-Phase 2: Initial Project Requirements Management
-↓ [Outputs feed Phase 3]
-Phase 3: Technology Stack Generation
-↓ [Outputs feed Phase 4]
-Phase 4: Architecture Design Generation
-↓ [Outputs feed Phase 5]
-Phase 5: Scaffolding Sprint Story Generation
-↓ [Outputs feed Phase 6]
-Phase 6: Story Analysis
-↓ [Outputs feed Phase 7A]
-Phase 7A: Implementation
-↓ [Outputs feed Phase 7B]
-Phase 7B: Unit Testing
-```
 
 ## Overview
 
@@ -203,7 +175,7 @@ Define core architectural components needed for initial project scaffolding.
 
 **Key Outputs → [Feed into Phase 5]:**
 
-- Architecture Design Document (`initial_architecture.md`)
+- Architecture Design Document (`architecture.md`)
 
 ### Phase 5: Scaffolding Sprint Story Generation (`$planning-scaffolding-sprint-story`)
 
@@ -351,37 +323,24 @@ Generate and verify unit tests for the implemented story step.
 
 ## Chain Dependencies
 
-```cmd
-Vision Statement Generation
-└── Outputs required for Requirements Management:
-    ├── Vision Statement Document
-    └── Requirements Management
-        └── Outputs required for Technology Stack Generation:
-            ├── Core Requirements Document
-            └── Technology Stack Generation
-                └── Outputs required for Architecture Design:
-                    ├── Technology Stack Document
-                    └── Architecture Design
-                        └── Outputs required for Scaffolding Story Generation:
-                            ├── Architecture Design Document
-                            └── Scaffolding Story Generation
-                                └── Outputs required for Story Analysis:
-                                    ├── Scaffolding Sprint Stories
-                                    └── Story Analysis
-                                        └── Outputs required for Implementation:
-                                            ├── Story Steps Report
-                                            ├── Scaffolding Sprint Story
-                                            └── Implementation
-                                                └── Outputs required for Unit Testing:
-                                                    ├── Code changes implementing the specified step
-                                                    └── Unit Testing
-```
+Each phase's primary output becomes a required input for the next phase.
 
-## Maintaining Chain Integrity
+| Phase | Required Output for Next Phase |
+| --- | --- |
+| Phase 1: Vision Statement Generation | Vision Statement Document |
+| Phase 2: Initial Project Requirements Management | Core Requirements Document |
+| Phase 3: Technology Stack Generation | Technology Stack Document |
+| Phase 4: Architecture Design Generation | Architecture Design Document |
+| Phase 5: Scaffolding Sprint Story Generation | Scaffolding Sprint Stories |
+| Phase 6: Story Analysis | Story Steps Report |
+| Phase 7A: Implementation | Implemented code changes |
+| Phase 7B: Unit Testing | Verified unit tests |
+
+## Chain Integrity & Best Practices
+
+Verify each transition before moving to the next phase.
 
 ### Verification Points
-
-Each phase has specific verification points where the chain integrity must be confirmed:
 
 1. **Vision → Requirements**
    - Verify vision statement is complete
@@ -403,30 +362,22 @@ Each phase has specific verification points where the chain integrity must be co
 
 ### Chain Break Prevention
 
-To maintain workflow integrity:
+- Never skip phases or assume outputs
+- Verify all outputs before proceeding to the next phase
+- Keep all documentation updated as you progress
+- Use phase commands to confirm current state
+- Do not proceed if required inputs are missing
 
-1. Never skip phases or assume outputs
-2. Verify all outputs before proceeding to next phase
-3. Keep all documentation updated as you progress
-4. Use phase commands to confirm current state
-5. Don't proceed if required inputs are missing
+### Execution Best Practices
 
-## Best Practices for Chain Execution
-
-1. **Document Management**
-   - Keep all phase outputs in accessible locations
-   - Document any modifications to outputs
-   - Version control all artifacts
-
-2. **Phase Transitions**
-   - Explicitly verify all required outputs exist
-   - Validate output quality before proceeding
-   - Document any assumptions or decisions
-
-3. **Dependency Handling**
-   - Track both technical and workflow dependencies
-   - Verify dependency satisfaction at each step
-   - Document any dependency changes
+- Keep all phase outputs in accessible locations
+- Document any modifications to outputs
+- Version control all artifacts
+- Validate output quality before proceeding
+- Document assumptions and decisions
+- Track both technical and workflow dependencies
+- Verify dependency satisfaction at each step
+- Document any dependency changes
 
 ## Using the Workflow Chain
 
