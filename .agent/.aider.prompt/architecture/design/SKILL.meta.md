@@ -39,55 +39,30 @@
 - Command Driven: Yes (#generate-architecture, #architecture-status)
 - Diagram Support: Mermaid.js integration
 
-## Best Practices
+## Command Behavior
 
-- Focus on core structural decisions
-- Minimize initial component count
-- Document decision rationale
-- Maintain clear component boundaries
-- Use visual representations
-- Keep documentation concise
-- Limit scope to scaffolding needs
+- `#generate-architecture`: Starts or resumes the architecture design workflow.
+- `#architecture-status`: Shows current progress only and does NOT activate the full workflow. To resume after viewing status, use `#generate-architecture`.
 
-## Potential Challenges
+## Gotchas / Sync Notes
 
-- Scope creep beyond core architecture
-- Over-engineering initial design
-- Balancing flexibility vs. structure
-- Managing technical constraints
-- Maintaining documentation clarity
-- Avoiding premature optimization
-
-## Recommended Mitigation Strategies
-
-- Strict scaffolding scope limits
-- Core component focus
-- Clear architectural boundaries
-- Explicit decision documentation
-- Visual diagram support
-- Regular scope verification
-- Minimal project structure depth
+- Mermaid diagrams must be linked as PNG images; never embed the Mermaid diagram source in documentation markdown.
+- Never assume a specific application type (UI/CLI/Service). Confirm the application type with the user before making decisions.
+- Keep workflow instructions authoritative in SKILL.md. Do not duplicate full workflow steps or implementation details here.
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-12-02
+- Current Version: 1.1.0
+- Last Updated: 2026-08-26
 - Stability: Experimental
 
 ## Purpose
-This prompt guides the user through defining the core architectural components for a project. It focuses on fundamental structures, cross-cutting concerns, and integration patterns that are difficult to change later in the development lifecycle.
+This metadata file describes the architecture design generator skill. Workflow instructions, command behavior, and stop points are defined in SKILL.md.
 
-## Usage
-Use this prompt when starting a new project or when a major architectural pivot is required.
+## Sync / Validation Checklist
 
-### Commands
-- `#generate-architecture`: Starts or resumes the architecture design workflow.
-- `#architecture-status`: Shows the current progress in the architecture workflow.
-
-### Workflow
-1. **Mode Verification**: Ensure you are in `/ask` mode.
-2. **Context Verification**: The prompt will check for core requirements and technology stack documents.
-3. **Scope Confirmation**: Defines the boundaries of the scaffolding design (what is and isn't included).
-4. **Core Architecture Generation**: Defines layers, cross-cutting concerns, and integration patterns.
-5. **Documentation Planning**: Outlines the architecture document and Mermaid diagram.
-6. **Implementation**: Switches to `/code` mode to generate the documentation files and diagrams.
+Before considering this metadata file current, verify:
+- [ ] `#architecture-status` description matches SKILL.md
+- [ ] Gotchas / Sync Notes reflect the current SKILL.md gotchas
+- [ ] Version and Last Updated are incremented after SKILL.md changes
+- [ ] No full workflow steps, command highlights, or implementation details are duplicated here
