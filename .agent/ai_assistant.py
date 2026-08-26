@@ -37,6 +37,15 @@ LOG_RE = re.compile(
 AGENT_DIR = Path(__file__).resolve().parent
 
 
+def _remove_if_empty(path: Path) -> None:
+    """Remove a directory if it exists and is empty."""
+    try:
+        if path.is_dir() and not any(path.iterdir()):
+            path.rmdir()
+    except OSError:
+        pass
+
+
 def _docker_available() -> bool:
     """Return True when the docker CLI can be executed."""
     try:
@@ -439,7 +448,7 @@ def main() -> int:
     aider_cache_dir = Path.home() / ".cache" / "aider"
     aider_cache_dir.mkdir(parents=True, exist_ok=True)
 
-    return run_container(
+    result = run_container(
         workspace_hash,
         session_id,
         container_name,
@@ -448,6 +457,11 @@ def main() -> int:
         debug,
         assistant_args,
     )
+
+    tag_cache_mount_point = project_root / ".aider.tags.cache.v4"
+    _remove_if_empty(tag_cache_mount_point)
+
+    return result
 
 
 if __name__ == "__main__":
