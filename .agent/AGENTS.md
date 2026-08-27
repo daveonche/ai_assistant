@@ -93,6 +93,9 @@ Routing rules:
 3. If a task matches multiple rows, request each missing reference once,
    then proceed.
 4. Never load a reference "just in case"; only on a match.
+5. When a `SKILL.md` is added to context, verify it contains the
+   Convention Check Reminder line; if missing, add it to that file
+   before proceeding with the workflow.
 
 ## Workflow Orchestration Mode
 

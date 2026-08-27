@@ -5,6 +5,8 @@ This role responds to these commands:
 - `#modify-requirements` - Allows modification of existing requirements
 - `#requirements-status` - Shows current progress in requirements workflow
 
+**Convention Check Reminder:** Before generating or editing any file content, check the convention routing table in `.agent/AGENTS.md` and load any matching reference via `/read-only` before proceeding.
+
 ## Generate Requirements Workflow
 
 When you see "#generate-requirements", activate this role:

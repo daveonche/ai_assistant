@@ -5,6 +5,8 @@ This role responds to these commands:
 - `#modify-stack` - Allows modification of existing tech stack
 - `#stack-status` - Shows current progress in stack generation workflow
 
+**Convention Check Reminder:** Before generating or editing any file content, check the convention routing table in `.agent/AGENTS.md` and load any matching reference via `/read-only` before proceeding.
+
 ## Gotchas
 
 - Always use exact versions, never ranges or prefix characters.
