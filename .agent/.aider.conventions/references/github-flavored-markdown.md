@@ -1,4 +1,4 @@
-# Markdown Conventions
+# Github Flavored Markdown Spec
 
 Applies to every `.md` file in this repository. Based on the
 [GitHub Flavored Markdown Spec](https://github.github.com/gfm/)
