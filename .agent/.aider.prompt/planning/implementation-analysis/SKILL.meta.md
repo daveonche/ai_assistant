@@ -5,20 +5,17 @@ Analyzes the current codebase to determine the implementation status of features
 
 ## Prompt File
 
-- Path: `.aider.prompt/planning/implementation-analysis/SKILL.md`
+- Path: `.agent/.aider.prompt/planning/implementation-analysis/SKILL.md`
 
 ## Trigger Commands
-- `#analyze-impl`: Starts or resumes the implementation analysis.
-- `#analyze-impl-status`: Shows the current progress in the analysis workflow.
+- `$planning-implementation-analysis`: Starts or resumes the implementation analysis.
+- `$planning-implementation-analysis status`: Shows the current progress in the analysis workflow.
 
 ## AI Assistant Compatibility
 
 - Tested With:
   - Aider
   - LLM: Claude 3.5 Haiku (October 22, 2024 release)
-- Potential Compatible Assistants:
-  - Other Claude models
-  - GitHub Copilot (with modifications)
 
 ## SDLC Phase
 
@@ -54,12 +51,13 @@ Analyzes the current codebase to determine the implementation status of features
   - Compare with existing status file
   - Update only changed sections
   - Preserve historical records unless explicitly overwritten
+- Output Template: The report structure (status classifications, feature entries, source-file citations) is defined in `SKILL.md`; treat it as the single source of truth for output format.
 
 ## Workflow Chain
 
-- Current Prompt: `#analyze-impl`
-- Next Workflow Step: `#generate-sprint-stories`
-- Previous Workflow Step: `#scaffolding-sprint-story` (verify for this repository)
+- Current Prompt: `$planning-implementation-analysis`
+- Next Workflow Step: `$planning-sprint-story`
+- Previous Workflow Step: `$planning-scaffolding-sprint-story`
 
 ## Prompt Characteristics
 
@@ -72,26 +70,18 @@ Analyzes the current codebase to determine the implementation status of features
 - Conduct thorough review of existing project state
 - Identify both completed and pending features
 - Prioritize features based on technical dependencies
-- Require at least one source-file citation per feature before classifying it as Complete or Partially Implemented
-- Classify features with no source evidence as Not Yet Implemented
 - Maintain clear, structured output
+- Validate findings with the development team before acting on them
 
-## Potential Challenges
+## Gotchas
 
-- Incomplete project documentation
-- Misinterpreting existing implementation status
-- Overlooking subtle technical dependencies
-- Inconsistent feature tracking
-
-## Recommended Mitigation Strategies
-
-- Maintain comprehensive project documentation
-- Regularly update implementation status
-- Cross-reference multiple sources of project information
-- Validate findings with development team
+- Never classify a feature as Complete or Partially Implemented without at least one source-file citation; features with no source evidence must be classified Not Yet Implemented.
+- Documentation can drift: `docs/requirements.md` and `docs/user_stories.md` may describe features that no longer match the code. Verify claims against source files, not documentation alone.
+- Features are often split across multiple files (models, handlers/views, templates). Search broadly before marking something Partially Implemented.
+- Re-running the analysis must preserve historical records in `docs/implementation_status.md` unless the user explicitly asks to overwrite them.
 
 ## Version
 
-- Current Version: 1.1.1
+- Current Version: 1.2.0
 - Last Updated: 2026-08-24
 - Stability: Experimental
