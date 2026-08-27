@@ -12,12 +12,15 @@ Generates structured core requirements for a new software project, focusing on a
 4. To update existing requirements, enter: `#modify-requirements`
 5. To check progress, enter: `#requirements-status`
 
+Note: `$requirements-initial-project` activates the workflow through the orchestrator; the `#`-prefixed commands are in-workflow commands used after activation.
+
 ## Best suited for
 
 - New project initialization
 - Project scope definition
 - Architecture planning phase
 - Technology stack selection
+- Informing later architecture and technology choices
 
 ## Output format
 
@@ -26,13 +29,12 @@ Generates structured core requirements for a new software project, focusing on a
 - Markdown formatted document
 - `[Assumed]` markers on assumption-based requirements
 - Focus on explicit user needs rather than implementation or architecture details
-- Provides input that helps later architecture and technology choices
 
 ## AI Assistant Compatibility
 
 - Tested With:
   - Aider
-  - Current Claude models available as of the last test date
+  - LLM: GLM 5.3 Flash (August 27, 2026 release)
 - Potentially Compatible:
   - Other modern LLMs, but the interactive workflow may require minor prompt adaptations
 
@@ -64,18 +66,14 @@ Generates structured core requirements for a new software project, focusing on a
 - Input Driven: Yes
 - State Dependent: Yes
 - Requires Contextual Awareness: Moderate
-- Command Driven: Yes (#generate-requirements, #modify-requirements, #requirements-status)
+- Command Driven: Yes (`#generate-requirements`, `#modify-requirements`, `#requirements-status`)
 
 ## Best Practices
 
 - Focus on explicit project needs
-- Maintain clear requirement categorization
-- Use consistent ID formatting
-- Keep requirements atomic
-- Avoid technical implementation details
-- Mark assumptions clearly with the `[Assumed]` prefix
-- Only mark assumptions when the user explicitly chooses the assumption option
 - Support iterative refinement
+
+Note: Detailed rules (atomicity, `[Assumed]` marking, ID uniqueness, showing the complete list after each change) are enforced by SKILL.md's Critical Rules and Gotchas and are not repeated here.
 
 ## Potential Challenges
 
@@ -85,15 +83,6 @@ Generates structured core requirements for a new software project, focusing on a
 - Managing requirement dependencies
 - Balancing detail vs. clarity
 - Tendency to drift into implementation or technical details
-
-## Recommended Mitigation Strategies
-
-- Structured requirement ID system
-- Clear assumption marking
-- Interactive refinement process
-- Explicit user confirmation steps
-- Show the complete updated requirements list after every modification
-- Separate functional/additional requirements
 
 ## Inputs
 
@@ -111,8 +100,8 @@ Generates structured core requirements for a new software project, focusing on a
 ## Version
 
 - Current Version: 1.2.0
-- Last Updated: 2026-08-24
+- Last Updated: 2026-08-27
 - Stability: Beta
 - Changelog:
-  - 1.2.0: Aligned commands, clarified assumptions, improved modification loop
+  - 1.2.0: Added validation loops, checklist-based status reporting, `[CAT]` abbreviation rules, and a worked example; documented the command-prefix mismatch in Gotchas (commands intentionally not renamed); applied Markdown formatting fixes
   - 1.1.0: Initial interactive requirements workflow
