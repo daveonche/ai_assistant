@@ -1,4 +1,4 @@
-# Metadata: Vision Statement Generation Prompt (v1.1.0)
+# Metadata: Vision Statement Generation Prompt (v1.2.0)
 
 ## AI Assistant Compatibility
 
@@ -6,6 +6,7 @@
   - Aider
   - Claude 3.5 Sonnet (October 22, 2024 release)
   - GPT-4o mini
+  - GLM 5.3 Flash (August 27, 2026 release)
 - Potential Compatible Assistants:
   - Claude models
   - Other GPT-4o models
@@ -32,6 +33,7 @@
   - Value proposition
   - Key feature concepts
   - Future growth vision
+  - Project requirements document (optional; grounds generation when available)
 - Mode Requirements:
   - `/ask` for generation/modification
   - `/code` for saving
@@ -44,7 +46,7 @@
 - State Dependent: Yes (conversation-scoped only)
 - Persistence: None
 - Requires Contextual Awareness: Moderate
-- Command Driven: Yes (#generate-vision, #modify-vision, #vision-status)
+- Command Driven: Yes ($planning-vision-statement activation; #generate-vision, #modify-vision, #vision-status)
 - Modification Workflow: Yes (Interactive loop for updating specific sections)
 - Example Based: Provides clear examples for each section
 - Interactive Guidance: Multi-option input approach
@@ -61,8 +63,10 @@
 - Interactive refinement
 - Require explicit user approval of full draft before saving
 - Verify `/ask` mode before beginning workflows
+- Ground generation in the project requirements document when available
 - Confirm existing file is loaded before modifying
 - Keep modifications section-scoped
+- Validate the saved file against the approved draft before announcing completion
 
 ## Challenges & Mitigations
 
@@ -77,9 +81,11 @@
 | Vision scope control | Consistent structure |
 | Technical detail avoidance | Regular alignment checks |
 | Losing generated draft when switching from `/ask` to `/code` | Output full markdown content at save time to avoid context loss |
-| Saving when the target file already exists | Require explicit overwrite or rename confirmation before writing |
+| Saving when the target file already exists | Require explicit overwrite or rename confirmation before mode switching |
 | Modifying a vision file that is not loaded in context | Require `/read-only` + user confirmation before modification |
 | Accidentally changing more than one section during `#modify-vision` | Restrict `#modify-vision` edits to the selected section only |
+
+Note: Keep the rows in this table aligned with the Gotchas section in `SKILL.md`; update both files together to prevent drift.
 
 ## Outputs
 
@@ -96,6 +102,11 @@
 
 ## Version
 
-- Current Version: 1.1.0
-- Last Updated: 2026-08-26
+- Current Version: 1.2.0
+- Last Updated: 2026-08-27
 - Stability: Beta
+
+## Version History
+
+- 1.2.0 (2026-08-27): Aligned metadata with the SKILL.md v1.2.0 refactor — deduplicated guidance, checkbox verification checklists, post-save validation loop, pre-mode-switch overwrite check, requirements grounding step, documented orchestrator activation command, and markdown polish.
+- 1.1.0 (2026-08-26): Initial metadata release for the vision statement generation skill.
