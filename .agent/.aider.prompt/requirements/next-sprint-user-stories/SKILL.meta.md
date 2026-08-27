@@ -12,23 +12,20 @@ Guides the systematic generation of sprint user stories through a structured wor
 ## Prerequisites
 
 Ensure all required project context is available before starting:
-- Project requirements list (e.g., `requirements.md`)
-- Previous sprint stories (e.g., `sprint_X_stories.md`)
-- Implementation status report (e.g., `implementation_status.md`)
+
+- Project requirements list (e.g., `docs/requirements.md`)
+- Previous sprint stories (e.g., `docs/sprints/sprint_X_stories.md`)
+- Implementation status report (e.g., `docs/implementation_status.md`)
 - Technology stack information (e.g., `package.json`, `requirements.txt`)
 
 ## Best suited for
 
-- Sprint planning sessions
-- Backlog grooming
-- Agile development workflows
-- Feature implementation sequencing
-- Dependency resolution
-- Sprint backlog creation
-- Story refinement meetings
-- Implementation priority alignment
+- Sprint planning and backlog grooming sessions
+- Sequencing feature implementation by technical dependencies
+- Sprint backlog creation and story refinement
+- Aligning implementation priorities across sprints
 
-## Scope & Limitations
+## Scope &amp; Limitations
 
 - Focuses strictly on generating stories for the *next* sprint based on technical dependencies.
 - Explicitly excludes testing from acceptance criteria, as testing is considered part of the standard "Definition of Done".
@@ -39,7 +36,7 @@ Ensure all required project context is available before starting:
 - Input validation report
 - Technical dependency analysis
 - Sprint-specific user stories with:
-  - Unique story IDs (S[sprint].[number])
+  - Unique story IDs (S\[sprint\].\[number\])
   - User story descriptions
   - Acceptance criteria
   - Dependencies
