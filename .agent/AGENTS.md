@@ -70,6 +70,30 @@ prefix instead and are announced as that workflow's available commands
 - `$<category>-<promptname>` – Activates the specified prompt workflow.
 - `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
 
+## Conventions Reference Routing
+
+The files in `.agent/.aider.conventions/references/` are NOT loaded at
+startup. They are loaded on demand, matched by the file type the current
+task touches. Before creating or editing any file, check this mapping:
+
+| Task touches | Reference to load |
+| --- | --- |
+| `.github/workflows/*.yml`, `.github/workflows/*.yaml`, or any CI/CD config (e.g., `ci.yml`) | `.agent/.aider.conventions/references/ci-cid-best-practices.md` |
+| `*.sh` scripts | `.agent/.aider.conventions/references/bash-scripts.md` |
+| `*.md` documentation | `.agent/.aider.conventions/references/github-flavored-markdown.md` |
+| `SKILL.md` prompt files | `.agent/.aider.conventions/references/agent-skills.md` |
+
+Routing rules:
+
+1. When the task matches a row and that reference is not already in
+   context, output the matching `/read-only` command inline (per Critical
+   Rules) and wait for the user to add it before proceeding.
+2. If the reference is already in context, proceed without re-requesting
+   it.
+3. If a task matches multiple rows, request each missing reference once,
+   then proceed.
+4. Never load a reference "just in case"; only on a match.
+
 ## Workflow Orchestration Mode
 
 When you see `$<category>-<promptname>`, activate this role:
