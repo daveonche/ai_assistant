@@ -49,10 +49,23 @@ I have found in the context:
 
 [STOP - If any required items are missing, list them and wait for user to provide them]
 
-[STEP 2] Ask the user to provide any coding conventions:
-"Do you have a coding convention you want me to apply to this review? If yes, provide it or point me to a convention file."
+[STEP 2] Determine the coding conventions to apply, in this order:
 
-[STOP] Wait for the user’s response.
+1. Check whether a conventions file is already loaded in context (e.g.,
+   any file from `.agent/.aider.conventions/` or its `references/`
+   directory), including a reference mapped to the target file type by
+   the Conventions Reference Routing table in `.agent/AGENTS.md`.
+2. If a matching reference is already in context, announce it as the
+   review criteria and continue directly to STEP 3. Do NOT ask the user
+   for conventions.
+3. If the routing table maps the target file type to a reference that is
+   NOT in context, output the matching `/read-only` command inline (per
+   Critical Rules) and wait for the user to add it, then use it as review
+   criteria.
+4. Only if no reference applies, ask the user:
+   "Do you have a coding convention you want me to apply to this review? If yes, provide it or point me to a convention file."
+
+[STOP - Only after step 4] Wait for the user’s response.
 
 - If they provide a convention, follow it as review criteria.
 - If they point to a file, read that file and use it as review criteria.
