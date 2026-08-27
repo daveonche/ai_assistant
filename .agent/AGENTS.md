@@ -47,7 +47,7 @@ To optimize token usage and maintain focus, you can load prompt files on demand.
 
 **Shorthand Syntax:**
 
-```
+```bash
 $<category>-<promptname> [argument]
 ```
 
@@ -58,7 +58,7 @@ prefix instead and are announced as that workflow's available commands
 
 **Context-management command mapping:**
 
-```
+```bash
 /read-only .agent/.aider.prompt/<category>/<promptname>/SKILL.md
 /drop .agent/.aider.prompt/<category>/<promptname>/SKILL.md
 ```
