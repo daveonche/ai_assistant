@@ -4,9 +4,10 @@
 
 - Tested With:
   - Aider
-  - LLM: Claude 3.5 Haiku (October 22, 2024 release)
+  - LLM: GLM 5.3 Flash (August 27, 2026 release)
+  - Skill version tested: 1.1.0
 - Potential Compatible Assistants:
-  - Other Claude models
+  - Other GLM models
   - GitHub Copilot (with modifications)
 
 ## SDLC Phase
@@ -27,7 +28,10 @@
 - Requires:
   - User story details
   - Project requirements
-  - Technology stack context
+  - Project context (may include a technology stack; it must NOT influence step wording)
+- Progressive Disclosure:
+  - Core workflow lives in `SKILL.md`
+  - The implementation-steps template lives in `references/story-template.md` and is loaded on demand in Step 4
 
 ## Prompt Characteristics
 
@@ -37,11 +41,7 @@
 
 ## Best Practices
 
-- Break down stories into atomic, implementable steps
-- Ensure clear verification criteria
-- Maintain technology-agnostic descriptions
-- Focus on user-facing functionality
-- Preserve original story intent
+- Follow the rules defined in `SKILL.md` (see its "Each step MUST", "Developer Notes MUST", and "CRITICAL Rules" sections); this file intentionally does not duplicate them
 
 ## Potential Challenges
 
@@ -57,9 +57,15 @@
 - Ensure steps are incremental and testable
 - Cross-reference with project requirements
 - Maintain clear acceptance criteria
+- Run the Step 4a validation checklist in `SKILL.md` before presenting steps; it directly addresses vague decomposition and non-implementable steps
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2024-11-09
+- Current Version: 1.1.0
+- Last Updated: 2026-08-27
 - Stability: Experimental
+
+## Version History
+
+- 1.1.0 (2026-08-27): Added Gotchas section and Step 4a validation loop to `SKILL.md`; extracted the implementation-steps template to `references/story-template.md`; clarified technology neutrality and `#analysis-status` stage definitions.
+- 1.0.0 (2024-11-09): Initial release.
