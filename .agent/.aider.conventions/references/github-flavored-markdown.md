@@ -49,6 +49,7 @@ Use these rules as review criteria when creating or reviewing Markdown files.
 - Closing fence: same character, at least as long as the opening fence, no info string.
 - If the block contains triple backticks, open with four or more.
 - Keep fences unindented (0–3 spaces allowed; 4 makes them content of an indented code block).
+- Wrap filenames and file paths in inline code spans (backticks) — e.g., `agent.sh`, `docs/tech_stack.md`. Recommended for readability, not mandatory.
 
 ## Tables
 
