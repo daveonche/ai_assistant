@@ -34,6 +34,7 @@ IMPLEMENTATION PHASE (code mode):
 - The target file path must come from `$code-review <file>`; do not assume a default path.
 - The user may provide conventions after the initial review. If they do, restart the review criteria from that point.
 - The user may select “all”. Implement all presented improvements, not a subset.
+- Never ask for a convention that is already in context; apply it directly (see STEP 2).
 
 [STEP 1] First, check for these essential items in the available project context:
 1. The target file path from `$code-review <file>`
