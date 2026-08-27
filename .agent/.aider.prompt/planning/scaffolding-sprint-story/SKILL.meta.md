@@ -4,7 +4,7 @@
 
 - Tested With:
   - Aider
-  - Claude 3.5 Sonnet (October 22, 2024 release)
+  - LLM: GLM 5.3 Flash (August 27, 2026 release)
 - Potential Compatible Assistants:
   - Other Claude models
   - GitHub Copilot — requires prompt reformatting
@@ -24,15 +24,13 @@
 
 ## Usage Guidelines
 
-- Prerequisites:
+- Prerequisites (files that must exist, ideally loaded in context):
   - Core requirements — can be generated using `$requirements-initial-project`
   - Technology stack — can be generated using `$architecture-tech-stack`
   - Architecture documentation — can be generated using `$architecture-design`
-- Requires:
-  - Technology stack documentation
-  - Architecture documentation
+- Required information (extracted from the prerequisite files):
   - Development environment needs
-  - Technical dependencies
+  - Technical dependencies with exact versions
   - Project structure requirements
 - Mode requirements:
   - `/ask` for story generation and review
@@ -44,11 +42,12 @@
 - State Dependent: Yes
 - Requires Contextual Awareness: High
 - Command Driven: Yes (`$planning-scaffolding-sprint-story`, `$planning-scaffolding-sprint-story-status`)
-- Story Format: Standardized templates
+- Story Format: Standardized template in `references/story-template.md`, loaded on demand (progressive disclosure)
 - Dependency Tracking: Technical sequencing
 - Output Format: Markdown sprint stories
 - Review Checkpoints:
   - Foundation analysis review
+  - Self-validation checklist before presenting the story set
   - Story set review before saving
 - Saving Mode: `/code`
 
@@ -68,21 +67,22 @@
 | Challenge | Mitigation |
 |---|---:|
 | Technical dependency ordering | Clear dependency graphing |
-| Environment setup completeness | Environment setup checklist |
-| Version compatibility | Version specification guidance |
+| Environment setup completeness | Story MUST-rule for environment setup inclusion |
+| Version compatibility | Exact-version pinning with "latest stable" flagging |
 | Story scope control | Standard story categories |
 | Infrastructure requirements | Verification checkpoints |
 | Development workflow definition | Detailed acceptance criteria |
-| Tool chain integration | Tool chain verification |
+| Tool chain integration | Dedicated developer workflow and build pipeline story categories |
 | Configuration management | Configuration documentation |
 
 ## Version
 
-- Current Version: 1.1.0
-- Last Updated: 2026-08-24
+- Current Version: 1.2.0
+- Last Updated: 2026-08-27
 - Stability: Experimental
 
 ## Changelog
 
+- 1.2.0: Aligned metadata with SKILL.md refactor (c8c97d0): documented external story template and self-validation checkpoint, clarified prerequisites vs. required information, aligned mitigations with actual skill mechanisms
 - 1.1.0: Added logging/config category, Definition of Done, version fallback, ASCII status indicators
 - 1.0.1: Initial metadata version
