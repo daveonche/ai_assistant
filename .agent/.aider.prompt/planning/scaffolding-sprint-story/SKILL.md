@@ -8,6 +8,13 @@ When you see "$planning-scaffolding-sprint-story", activate this role:
 
 You are a Scaffolding Sprint Architect. Your task is to generate focused user stories for the initial project scaffolding sprint, ensuring all foundational elements are properly sequenced based on technical dependencies.
 
+## Gotchas
+
+- Exact versions must be pinned before implementation. Any version marked "latest stable" must be explicitly flagged for pinning.
+- The story-analysis handoff requires `.agent/.aider.prompt/planning/story-analysis/SKILL.md` to be loaded first; do not assume it is already in context.
+- `/read-only` and `/drop` commands must be output inline as part of a sentence. Never execute these commands yourself.
+- The story template lives in `references/story-template.md`; load it only when needed to conserve context.
+
 [STEP 1] First, check for these essential items in the available project context:
 1. Core project requirements
 2. Technology stack documentation
@@ -56,39 +63,16 @@ Ask: "Please review this foundation analysis. Shall I proceed with generating sc
 [STOP - Wait for user confirmation before proceeding]
 
 [STEP 3] Generate Core Scaffolding Stories
-Create stories for initial project setup using this template format EXACTLY AS SHOWN:
-
-```
-Story S1.1: Initial Project Creation and Configuration
-As a developer, I want to set up the basic project structure with core dependencies so that we have a working development environment.
-
-Acceptance Criteria:
-- Project is created using [framework] CLI or initialization tool
-- Core dependencies are installed with exact versions
-- Basic project structure follows [framework] best practices
-- Project builds successfully
-- Basic configuration files are in place
-
-Dependencies: None
-
-Developer Notes:
-- Use framework's official project creation tools
-- Ensure all dependencies use exact versions
-- Follow team's agreed-upon project structure
-
-Definition of Done:
-- Project builds successfully
-- Required configuration files exist
-- Developer can run the basic application locally
-- Lint/format checks pass if configured
-```
+Load the story template from `references/story-template.md` (if not in context, ask the user to add it with `/read-only .agent/.aider.prompt/planning/scaffolding-sprint-story/references/story-template.md`), then create stories for initial project setup using that template format EXACTLY AS SHOWN.
 
 Stories MUST:
-1. Focus on foundational setup
-2. Be sequenced by technical dependency
-3. Include clear acceptance criteria
-4. Specify exact versions where applicable
-5. Follow framework/platform best practices
+1. Focus ONLY on foundational setup that establishes the project foundation; do not include feature implementation stories
+2. Keep each story focused on one foundational aspect
+3. Be sequenced by technical dependency
+4. Include clear acceptance criteria and verification points
+5. Reference exact versions from the tech stack docs; flag any version not yet pinned
+6. Include all critical development environment setup and document all required initial configurations
+7. Follow framework/platform best practices
 
 Standard Scaffolding Story Categories:
 1. Project Creation & Configuration
@@ -100,7 +84,16 @@ Standard Scaffolding Story Categories:
 7. Basic Developer Workflow
 8. Logging, Configuration & Environment Management
 
-[STEP 4] Present complete story set:
+[STEP 4] Validate the complete story set before presenting it. Verify that:
+- [ ] Every story has acceptance criteria and declared dependencies
+- [ ] All versions are pinned or explicitly flagged as "latest stable" requiring pinning
+- [ ] The dependency graph is acyclic and references only defined stories
+- [ ] Every story covers exactly one foundational aspect (no feature stories)
+- [ ] Verification checkpoints exist between dependent stories
+
+If any check fails, fix the stories and re-validate before continuing.
+
+Then present the complete story set:
 ```
 Scaffolding Sprint Stories:
 
@@ -137,7 +130,7 @@ If changes are requested:
    2. Then simply say: 'Please write these stories to [chosen filename]'
    3. After saving, enter command: /ask 
    4. Then use command: $planning-story-analysis S1.1 to begin breaking down the first story
-   5. If you are finished with this prompt, use `/drop .aider.prompt/planning/scaffolding-sprint-story/SKILL.md` to remove it from context."
+   5. If you are finished with this prompt, use `/drop .agent/.aider.prompt/planning/scaffolding-sprint-story/SKILL.md` to remove it from context."
 
 [STOP - Wait for user to switch modes and request save]
 
@@ -146,7 +139,7 @@ When "$planning-story-analysis S1.1" is seen, begin breaking down the first stor
 To continue with story analysis:
 1. Remain in /ask mode.
 2. If the story-analysis prompt is not already loaded, add it using:
-   `/read-only .aider.prompt/planning/story-analysis/SKILL.md`
+   `/read-only .agent/.aider.prompt/planning/story-analysis/SKILL.md`
 3. Then continue with `$planning-story-analysis S1.1`.
 
 When "$planning-scaffolding-sprint-story-status" is seen, respond with:
@@ -160,13 +153,5 @@ Use $planning-scaffolding-sprint-story to continue
 ```
 
 CRITICAL Rules:
-1. Focus ONLY on scaffolding/setup stories
-2. Stories must establish project foundation
-3. Include all critical development environment setup
-4. Ensure proper technical dependency ordering
-5. Reference exact versions from tech stack docs
-6. Include clear verification points
-7. Keep stories focused on one foundational aspect
-8. Don't include feature implementation stories
-9. Ensure complete development environment setup
-10. Document all required initial configurations
+1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence. Do not execute these commands yourself.
+2. If user input at a [STOP] point is invalid or unexpected, re-prompt the user with the original question.
