@@ -6,11 +6,11 @@ When asked to generate initial scaffolding stories:
    - Project requirements (e.g., `docs/requirements.md`)
    - Architecture decisions (e.g., `docs/architecture/architecture.md`)
    - Technology stack (e.g., `docs/tech_stack.md`)
-   - Component structure
+   - Component structure (e.g., the component section of `docs/architecture/architecture.md`)
 
-   *If any of these are missing from the context, ask the user to add them using the `/read-only` command before proceeding.*
+   *If any of these are missing from the context, output the exact command inline (e.g., `/read-only docs/requirements.md`), ask the user to add the missing file, and wait for confirmation. If the user declines, continue with what is available and apply the warning rule in step 2.*
 
-2. Summarize your understanding of the above context. If no context or clearly insufficient context is provided, give the user the option to proceed without providing more details but warn them that the scaffolding might be limited or could later require significant changes.
+2. Summarize your understanding of the above context. If context is missing (declined in step 1) or clearly insufficient, warn the user that the scaffolding might be limited or could later require significant changes, and let them choose to proceed anyway or provide more details before continuing.
 
 3. Generate 2-3 user stories that will result in:
    - Basic project structure
@@ -20,37 +20,49 @@ When asked to generate initial scaffolding stories:
    - No security implementation
    - No business logic (strictly structural setup)
 
-4. Format each story:
+4. Format each story using this template:
 
-## Story [number]: [title]
+   ```markdown
+   ## Story [number]: [title]
 
-**As a** developer
-**I want to** [scaffolding goal]
-**So that** [business value]
+   **As a** developer
+   **I want to** [scaffolding goal]
+   **So that** [business value]
 
-### Acceptance Criteria
-- [ ] [Specific, testable criteria]
-- [ ] [Include version numbers]
-- [ ] [Reference component names]
+   ### Acceptance Criteria
+   - [ ] [Specific, testable criteria]
+   - [ ] [Include version numbers]
+   - [ ] [Reference component names]
 
-### Technical Notes
-- Technology choices: [list relevant tech]
-- Component structure: [describe structure]
-- Configuration details: [specific settings]
-- Command examples: [setup/run commands]
+   ### Technical Notes
+   - Technology choices: [list relevant tech]
+   - Component structure: [describe structure]
+   - Configuration details: [specific settings]
+   - Command examples: [setup/run commands]
 
-### Definition of Done
-- [ ] Project runs successfully
-- [ ] Basic structure matches architecture
-- [ ] Core dependencies installed
-- [ ] Smoke test passes
+   ### Definition of Done
+   - [ ] Project runs successfully
+   - [ ] Basic structure matches architecture
+   - [ ] Core dependencies installed
+   - [ ] Smoke test passes
+   ```
 
-5. Validate stories:
-   - Ensure completeness for basic setup
-   - Verify alignment with architecture
-   - Confirm minimal scope
-   - Check all technical details included
+5. Validate stories (validation loop):
+   - Re-check each story against the scope list in step 3 and the template in step 4.
+   - Fix any failures (missing template sections, scope violations, unpinned versions).
+   - Re-validate after each fix; repeat until every story passes.
+   - Report the validation results to the user before saving.
 
 6. Save the generated stories:
-   - Ask the user to switch to `/code` mode.
+   - Instruct the user to run `/code proceed` and wait for explicit confirmation that code mode is active.
    - Save the generated stories to `docs/sprints/sprint_0_stories.md` (or a user-specified path).
+
+## Gotchas
+
+- Never include data persistence, security, or business logic in scaffolding stories, even if the technology stack lists a database or an auth provider; those belong to later stories.
+- Pin exact dependency versions in acceptance criteria and technical notes (e.g., `flask==3.0.3`), not version ranges.
+- Keep stories strictly structural: a story that requires data migration or production secrets is out of scope.
+
+## Worked example
+
+For format and level of detail, follow the real stories in `docs/sprints/sprint_1_stories.md`. If it is not in context, ask the user to add it with `/read-only docs/sprints/sprint_1_stories.md`.
