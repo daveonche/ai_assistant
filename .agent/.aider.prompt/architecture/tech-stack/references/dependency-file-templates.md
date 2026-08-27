@@ -6,7 +6,7 @@ Use the appropriate template for the selected core technology. All versions must
 
 If the project uses Python, create `requirements.txt` with a realistic, directly usable example:
 
-```
+```txt
 Flask==3.0.3
 SQLAlchemy==2.0.31
 python-dotenv==1.0.1
@@ -32,7 +32,7 @@ Use actual versions after compatibility verification. The example above is a con
 
 ### Deno Fresh
 
-```
+```json
 {
   "imports": {
     "$fresh/": "https://deno.land/x/fresh@<exact-version>/",

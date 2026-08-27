@@ -34,17 +34,21 @@
 - Reference file: `references/dependency-file-templates.md` — load this file when generating dependency files.
 
 ## Purpose
+
 This prompt guides the user through defining a compatible, version-locked technology stack based on project requirements and user preferences. It also supports modifying an existing stack.
 
 ## Usage
+
 Use this prompt when starting a new project to select the core technology, frameworks, and dependencies, or when you need to modify an existing technology stack.
 
 ### Commands
+
 - `#generate-stack`: Starts new technology stack generation.
 - `#modify-stack`: Allows modification of an existing tech stack.
 - `#stack-status`: Shows current progress in stack generation workflow.
 
 ### Workflow for `#generate-stack`
+
 1. **Mode Verification**: Ensure you are in `/ask` mode.
 2. **Requirements Verification**: Check for project requirements and existing dependency files.
 3. **Application Type Assessment**: Determine the type of application being built.
@@ -55,6 +59,7 @@ Use this prompt when starting a new project to select the core technology, frame
 8. **Save Files**: Switch to `/code` mode to save the generated files.
 
 ### Workflow for `#modify-stack`
+
 1. **Mode Verification**: Ensure correct context and mode.
 2. **Context Verification**: Confirm that the existing tech-stack documentation and dependency files are present.
 3. **File Content Verification**: Read and display current stack and dependency contents.
@@ -63,6 +68,7 @@ Use this prompt when starting a new project to select the core technology, frame
 6. **Save Modified Files**: Exercise the same `/code` mode saving workflow.
 
 ### Workflow for `#stack-status`
+
 - Report completed steps, current step, and remaining steps for tech stack generation.
 - If persistence across sessions is needed, use a small state file such as `tech_stack_progress.md`.
 

@@ -8,6 +8,7 @@ SCRIPTS.md
 
 # Keep Aider configuration
 !.aider.conf.yml
+!.aiderignore
 !.aider.model.settings.yml
 !.aider.model.metadata.json
 !.aider.conventions/

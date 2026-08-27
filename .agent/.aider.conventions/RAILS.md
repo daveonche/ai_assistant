@@ -1,9 +1,3 @@
----
-name: rails-conventions 
-description: Rootstrap Rails conventions. Use when writing, reviewing, or editing any Rails code.
-paths: "app/**/*.rb,config/**/*.rb,config/**/*.yml,db/**/*.rb,lib/**/*.rb,**/routes.rb" 
----
-
 # Rails Conventions (Rootstrap)
 
 Apply these whenever producing or modifying Rails-specific code.
