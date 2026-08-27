@@ -8,13 +8,18 @@ Read-only analysis prompt that compares the current codebase against project req
 
 The following files must be loaded in the conversation context:
 
-- `docs/requirements.md` and/or `docs/requirements/core_requirements.md`
+- `docs/requirements/core_requirements.md` when present; otherwise `docs/requirements.md` (at least one of the two)
 - `docs/user_stories.md`
 - `docs/tech_stack.md`
 
 ## Mode
 
-Requires `/ask` mode before activation.
+Requires `/ask` mode before activation. Saving the report requires a controlled transition to code mode via `/code proceed` (see `SKILL.md` Step 4).
+
+## Constraints
+
+- Do not invent or reuse technology stack values that are not present in the loaded `docs/tech_stack.md`.
+- Do not invent requirement-ID formats; use the actual requirement IDs exactly as they appear in the loaded requirements files.
 
 ## Usage
 
@@ -34,6 +39,9 @@ Requires `/ask` mode before activation.
   - Priority categories
   - Requirement ID to feature mapping
   - Implementation rationale
+- Validation loop:
+  - Cross-checks requirement IDs, tech-stack values, and file paths against the loaded source files
+  - Repeats until all checks pass
 - Progress tracking checkpoints
 - Optional report save:
   - Default: `docs/implementation_status.md`
