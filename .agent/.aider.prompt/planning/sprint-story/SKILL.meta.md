@@ -4,10 +4,11 @@
 
 - Tested With:
   - Aider
-  - Claude 3.5+ models
+  - GLM 5.3 Flash (August 27, 2026 release)
 - Potential Compatible Assistants:
   - Other Claude models
   - GitHub Copilot (after adapting stop/command syntax)
+- Portability Note: The `$`/`#` shorthand commands, `/ask`–`/code` mode switching, and `/read-only` file loading are aider-specific mechanics. Adapt these to equivalent mechanisms before using this prompt with other assistants.
 
 ## SDLC Phase
 
@@ -39,7 +40,7 @@
 
 - Input Driven: Yes
 - State Dependent: Yes
-- State Tracking: Internal step tracking; if context is lost, agent asks user for the last completed step
+- State Tracking: Explicit Progress Checklist in SKILL.md; the agent updates it as each step completes and uses it to answer `#generate-sprint-stories-status`. If context is lost, the agent asks the user for the last completed step
 - Resume/Progress Command: `#generate-sprint-stories-status`
 - Requires Contextual Awareness: Critical
 
@@ -64,12 +65,14 @@
 - Conduct detailed technical dependency mapping
 - Use consistent story template
 - Validate stories against project requirements
+- Rely on the built-in self-validation loop (STEP 5), which re-runs after every revision before stories are presented or saved
+- Enforce the code-mode save gate: stories are written to disk only after the user switches to `/code` mode and replies `save to file`
 - Ensure stories are atomic and implementable
 - Cross-reference with implementation status report
 - Use `#generate-sprint-stories-status` or ask the user for the last completed step when resuming
 
 ## Version
 
-- Current Version: 1.1.0
-- Last Updated: 2026-08-24
+- Current Version: 1.2.0
+- Last Updated: 2026-08-27
 - Stability: Experimental
