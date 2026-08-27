@@ -1,14 +1,14 @@
-# Project Scaffolding Story Generator Prompt
+# Project Scaffolding Story Generator
 
 ## Description
 
-Generates minimal set of user stories needed to create a basic working shell of an application based on defined architecture and tech stack.
+Generates a minimal set of user stories needed to create a basic working shell of an application based on defined architecture and tech stack.
 
 ## Usage
 
-1. Have requirements, architecture, and tech stack defined
+1. Have requirements, architecture, tech stack, and component structure defined
 2. Activate using the shorthand command: `$requirements-scaffolding-user-stories`
-   (Or manually load: `/read-only .aider.prompt/requirements/scaffolding-user-stories/SKILL.md`)
+   (Or manually load: `/read-only .agent/.aider.prompt/requirements/scaffolding-user-stories/SKILL.md`)
 
 ## Best suited for
 
@@ -24,4 +24,5 @@ Generates minimal set of user stories needed to create a basic working shell of 
 - Detailed acceptance criteria
 - Technical implementation notes
 - Clear definition of done
+- Strictly structural scope: no persistence, security, or business logic; pinned dependency versions
 - Saved to `docs/sprints/sprint_0_stories.md` (or user-specified path)
