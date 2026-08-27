@@ -15,7 +15,7 @@ Analyzes the current codebase to determine the implementation status of features
 
 - Tested With:
   - Aider
-  - LLM: Claude 3.5 Haiku (October 22, 2024 release)
+  - LLM: GLM 5.3 Flash (August 27, 2026 release)
 
 ## SDLC Phase
 
@@ -83,5 +83,5 @@ Analyzes the current codebase to determine the implementation status of features
 ## Version
 
 - Current Version: 1.2.0
-- Last Updated: 2026-08-24
+- Last Updated: 2026-08-27
 - Stability: Experimental
