@@ -31,6 +31,12 @@ When one of those workflow-chain commands is used, load the matching
 `.aider.prompt/workflows/<name>/SKILL.md`, announce the activated workflow role
 from that file, and list the shorthand commands that workflow responds to.
 
+Shorthand commands defined inside a mapped `SKILL.md` file (and in the
+workflows it activates) intentionally use the `#` symbol prefix
+(e.g., `#generate-sprint-stories`). They are internal to that mapped workflow:
+announce them as the available commands for that workflow, and do not rewrite
+them to the `$` syntax used by top-level orchestrator commands.
+
 ## Context Window Management
 
 **CRITICAL: You have the ability to manage your own context window by issuing aider commands.**
@@ -44,6 +50,11 @@ To optimize token usage and maintain focus, you can load prompt files on demand.
 ```
 $<category>-<promptname> [argument]
 ```
+
+`$` commands are top-level orchestrator and context-management commands.
+Commands defined inside mapped `SKILL.md` files intentionally use the `#`
+prefix instead and are announced as that workflow's available commands
+(see Workflow Chain Execution).
 
 **Context-management command mapping:**
 
