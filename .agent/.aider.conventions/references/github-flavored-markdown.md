@@ -34,7 +34,7 @@ Use these rules as review criteria when creating or reviewing Markdown files.
 - Bullet marker: `-` everywhere. Mixing `-`, `*`, `+` starts separate lists.
 - Ordered marker: `1.` style. Rendering follows the first item's number; keep later numbers sequential for readability.
 - Exactly one space after the marker (`- item`); `-item` is not a list.
-- Nest sublists by indenting to align with the parent item's content (2 spaces for `- `), not a fixed 4.
+- Nest sublists by indenting to align with the parent item's content (2 spaces for `-`), not a fixed 4.
 - Keep lists tight (no blank lines between items) unless an item contains multiple blocks.
 - Only a list whose first item starts with `1` may interrupt a paragraph; otherwise precede lists with a blank line.
 
@@ -45,7 +45,7 @@ Use these rules as review criteria when creating or reviewing Markdown files.
 ## Code
 
 - Always use fenced code blocks with backticks; never indented code blocks.
-- Put the language identifier as the first word of the info string (```python, ```bash, ```markdown); use ```text for non-code literals.
+- Put the language identifier as the first word of the info string ` ```python, ```bash, ```markdown ` use ` ```text ` for non-code literals.
 - Closing fence: same character, at least as long as the opening fence, no info string.
 - If the block contains triple backticks, open with four or more.
 - Keep fences unindented (0–3 spaces allowed; 4 makes them content of an indented code block).
@@ -60,7 +60,7 @@ Use these rules as review criteria when creating or reviewing Markdown files.
 
 ## Block quotes
 
-- Prefix every line with `> `, including blank lines inside the quote (a lone `>` keeps it open).
+- Prefix every line with `>`, including blank lines inside the quote (a lone `>` keeps it open).
 
 ## Emphasis and strikethrough
 

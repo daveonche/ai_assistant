@@ -11,8 +11,8 @@
         allow_fallbacks: false
         data_collection: "deny"
 
-# Switch with /model pro
-- name: openrouter/deepseek/deepseek-v4-pro-0813
+# Switch with /model specialist
+- name: openrouter/google/gemini-3.7-flash:batch
   edit_format: diff
   extra_params:
     extra_body:
@@ -22,7 +22,7 @@
         data_collection: "deny"
 
 # Switch with /model architect
-- name: openrouter/z-ai/glm-5.2
+- name: openrouter/z-ai/glm-5.3-flash
   edit_format: diff
   extra_params:
     extra_body:
@@ -34,7 +34,7 @@
         # Denies providers from logging your code data for training metrics
         data_collection: "deny"
 
-# Switch with /model coder
+# Switch with /model editor
 - name: openrouter/deepseek/deepseek-v4-flash-0731
   edit_format: diff
   extra_params:
@@ -47,7 +47,7 @@
     temperature: 0.1
     max_tokens: 4096
 
-# Switch with /model gemini
+# Switch with /model helper
 - name: gemini/gemini-3.1-flash-lite
   edit_format: diff
   extra_params:

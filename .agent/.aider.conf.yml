@@ -13,7 +13,7 @@
 # Main model:
 
 ## Specify the model to use for the main chat
-model: openrouter/z-ai/glm-5.2
+model: openrouter/z-ai/glm-5.3-flash
 
 #################
 # Model settings:
@@ -22,13 +22,13 @@ model: openrouter/z-ai/glm-5.2
 model-settings-file: .aider.model.settings.yml
 
 ## Add a model alias (can be used multiple times)
-#alias: "architect:openrouter/z-ai/glm-5.2"
+#alias: "architect:openrouter/z-ai/glm-5.3-flash"
 
 ## Specify multiple values like this:
 alias:
  - "genius:openrouter/z-ai/glm-5.3"
- - "specialist:openrouter/deepseek/deepseek-v4-pro-0813"
- - "architect:openrouter/z-ai/glm-5.2"
+ - "specialist:openrouter/google/gemini-3.7-flash:batch"
+ - "architect:openrouter/z-ai/glm-5.3-flash"
  - "editor:openrouter/deepseek/deepseek-v4-flash-0731"
  - "helper:gemini/gemini-3.1-flash-lite"
 
@@ -113,5 +113,6 @@ show-release-notes: false
 ## Specify multiple values like this:
 read:
 - .agent/AGENTS.md
+- .agent/MARKDOWN.md
 # If your project is in the supported list, copy the .md file in .agent/.aider.conventions into your project root and uncomment the line below. This will allow Aider to read the conventions for your project.
 # - AGENT-SKILLS.md
