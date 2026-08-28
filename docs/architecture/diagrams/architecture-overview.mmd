@@ -1,8 +1,12 @@
-graph TD
-    User[User] -->|Executes| BashScript[ai-assistant.sh]
-    BashScript -->|Builds/Runs| DockerContainer[Docker Container]
-    DockerContainer -->|Executes| Aider[Aider AI Engine]
-    Aider -->|Reads| AgentMd[AGENT.md]
-    Aider -->|Loads/Drops| PromptLibrary[Prompt Library SKILL.md]
-    Aider -->|Modifies| LocalRepo[Local Git Repository]
-    DockerContainer -->|Volume Map| LocalRepo
+flowchart TD
+    User([Developer]) -->|runs| SH["agent.sh<br>(Host Entry Layer)"]
+    SH -->|delegates| PY[".agent/ai_assistant.py<br>(Launcher Layer)"]
+    PY -->|docker build| DF[".agent/Dockerfile.aider"]
+    DF --> IMG[("paulgauthier/aider-full:latest")]
+    PY -->|docker run + bind mount| CT["Docker Container<br>(Aider Runtime)"]
+    PROJ[("Host Project Root<br>incl. .agent/")] -->|mounted into| CT
+    CT --> ORCH[".agent/AGENTS.md<br>(Workflow Orchestration)"]
+    ORCH -->|loads on demand| PL[".agent/.aider.prompt/**/SKILL.md<br>(Prompt Library)"]
+    ORCH -->|loads on demand| CV[".agent/.aider.conventions/**<br>(Conventions)"]
+    PL <-->|reads/writes| DOCS[("docs/<br>(SDLC Artifacts)")]
+    CT -->|LLM API| LLM([LLM Provider])
