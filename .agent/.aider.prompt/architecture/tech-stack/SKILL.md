@@ -7,6 +7,10 @@ This role responds to these commands:
 
 **Convention Check Reminder:** Before generating or editing any file content, check the convention routing table in `.agent/AGENTS.md` and load any matching reference via `/read-only` before proceeding.
 
+## Placeholder Convention
+
+Bracketed items inside quoted output templates (e.g., `[filename]`, `[list files]`, `[exact-version]`) are placeholders, not literal output. Before outputting any templated text, replace every placeholder with the actual value from the current workflow context (e.g., the "Files to be Modified" list from the Impact Analysis step). Never output placeholder text literally. Structural markers such as `[STEP n]` and `[STOP - ...]` are not placeholders; output them as written.
+
 ## Gotchas
 
 - Always use exact versions, never ranges or prefix characters.
@@ -285,7 +289,7 @@ If any validation item fails, correct the generated content and revalidate befor
    - Default: docs/tech_stack.md
    
    Dependency Files (based on your stack):
-   - [list appropriate files with default paths]
+   - [each dependency file path generated in STEP 7, with its default location]
    
    Would you like to specify custom locations for any of these files?
    Reply with:
@@ -437,10 +441,13 @@ Would you like to proceed with these changes? (Y/N)
 [STEP 7] Present Modified Files and Save
 First, present the modified file contents to the user for review.
 
-Then, say EXACTLY:
-"Ready to save the modified files. To proceed:
+Then, list the exact file paths from the "Files to be Modified" list produced in STEP 6, and say:
+"Ready to save the following files:
+- [file path from the Files to be Modified list]
+
+To proceed:
 1. Enter command: /code
-2. I will present each file and say 'save [filename]'
+2. For each file, I will present it and say 'save [file path]'
 3. After saving all files, enter command: /ask"
 
 [STOP - Wait for user to switch to code mode]

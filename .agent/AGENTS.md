@@ -70,6 +70,10 @@ prefix instead and are announced as that workflow's available commands
 - `$<category>-<promptname>` – Activates the specified prompt workflow.
 - `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
 
+## Placeholder Convention
+
+Bracketed items inside quoted output templates (e.g., `[promptname]`, `[category]`, `[filename]`) are placeholders, not literal output. Before outputting any templated text, replace every placeholder with the actual value from the current context (e.g., the real prompt name, category, or file path). Never output placeholder text literally. Structural markers such as `[STEP n]` and `[STOP - ...]` are not placeholders; output them as written.
+
 ## Conventions Reference Routing
 
 The files in `.agent/.aider.conventions/references/` are NOT loaded at
