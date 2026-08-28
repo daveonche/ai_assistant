@@ -18,6 +18,12 @@
   - Purpose: Providing the single `.sh` script to launch the environment, manage container lifecycle, and map local repositories.
   - Chosen because: Standard shell scripting required to fulfill REQ-FR-ENV-2 and REQ-NFR-USAB-1.
 
+### Launch Runtime
+
+- Python (>=3.8)
+  - Purpose: Provide structured language for the ai_assistant.py file used for launching the aider container.
+  - Chosen because: Standard runtime required to execute the Python launcher (.agent/ai_assistant.py); version constraint matches `requires-python = ">=3.8"` declared in .agent/pyproject.toml.
+
 ### Workflow Orchestration
 
 - AGENT.md (Configuration)
@@ -26,12 +32,13 @@
 
 ## Compatibility Matrix
 
-| Dependency        | Version | Aider (latest) | Docker | Bash | AGENT.md |
-|-------------------|---------|----------------|--------|------|----------|
-| Docker            | N/A     | ✓              | -      | ✓    | ✓        |
-| Bash              | N/A     | ✓              | ✓      | -    | ✓        |
-| AGENT.md          | N/A     | ✓              | ✓      | ✓    | -        |
+| Dependency | Version | Aider (latest) | Docker | Bash | Python | AGENT.md |
+|------------|---------|----------------|--------|------|--------|----------|
+| Docker     | N/A     | ✓              | -      | ✓    | ✓      | ✓        |
+| Bash       | N/A     | ✓              | ✓      | -    | ✓      | ✓        |
+| Python     | >=3.8   | ✓              | ✓      | ✓    | -      | ✓        |
+| AGENT.md   | N/A     | ✓              | ✓      | ✓    | ✓      | -        |
 
 ## Version Lock Rationale
 
-The base image `paulgauthier/aider-full:latest` is used to ensure all Aider dependencies are correctly configured. Docker and Bash versions are provided by the host system and base image respectively.
+The base image `paulgauthier/aider-full:latest` is used to ensure all Aider dependencies are correctly configured. Docker and Bash versions are provided by the host system and base image respectively. The host system requires Python (>=3.8) to execute the launcher script `.agent/ai_assistant.py`, which uses only the Python standard library; the minimum version matches the `requires-python` constraint declared in `.agent/pyproject.toml`.
