@@ -4,7 +4,6 @@
 
 # Aider files
 .aider*
-SCRIPTS.md
 
 # Keep Aider configuration
 !.aider.conf.yml

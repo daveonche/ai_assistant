@@ -1,4 +1,14 @@
 # Switch with /model genius
+- name: openrouter/x-ai/grok-4.6
+  edit_format: diff
+  extra_params:
+    extra_body:
+      provider:
+        sort: "price"
+        allow_fallbacks: false
+        data_collection: "deny"
+
+# Switch with /model specialist
 - name: openrouter/z-ai/glm-5.3
   edit_format: diff
   extra_params:
@@ -6,16 +16,6 @@
       reasoning:
         # Forces maximum brilliant thinking when invoked
         effort: "max"
-      provider:
-        sort: "price"
-        allow_fallbacks: false
-        data_collection: "deny"
-
-# Switch with /model specialist
-- name: openrouter/google/gemini-3.7-flash:batch
-  edit_format: diff
-  extra_params:
-    extra_body:
       provider:
         sort: "price"
         allow_fallbacks: false

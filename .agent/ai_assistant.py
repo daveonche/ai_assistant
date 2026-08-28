@@ -385,6 +385,10 @@ def run_container(
         str(agent_dir / ".aider.chat.history.md"),
         "--input-history-file",
         str(agent_dir / ".aider.input.history"),
+        "--aiderignore",
+        str(agent_dir / ".aiderignore"),
+        "--model-metadata-file",
+        str(agent_dir / ".aider.model.metadata.json"),
     ])
 
     command.extend(assistant_args)

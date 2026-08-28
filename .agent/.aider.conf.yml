@@ -26,8 +26,8 @@ model-settings-file: .aider.model.settings.yml
 
 ## Specify multiple values like this:
 alias:
- - "genius:openrouter/z-ai/glm-5.3"
- - "specialist:openrouter/google/gemini-3.7-flash:batch"
+ - "genius:openrouter/x-ai/grok-4.6"
+ - "specialist:openrouter/z-ai/glm-5.3"
  - "architect:openrouter/z-ai/glm-5.3-flash"
  - "editor:openrouter/deepseek/deepseek-v4-flash-0731"
  - "helper:gemini/gemini-3.1-flash-lite"
