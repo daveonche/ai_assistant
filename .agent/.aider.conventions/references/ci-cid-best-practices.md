@@ -230,3 +230,11 @@ Before committing workflow changes, validate with `actionlint` (or `act`
 for local runs), confirm every `uses` reference is SHA-pinned, review
 the effective `permissions` block, and re-check every item in the review
 checklist above.
+
+When `actionlint` is not installed, a minimal PyYAML fallback checks
+YAML syntax only. It does not catch workflow schema or semantic errors,
+so treat a pass as necessary but not sufficient:
+
+```bash
+python3 -c "import glob, yaml; [yaml.safe_load(open(p)) for p in glob.glob('.github/workflows/*.y*ml')]; print('YAML OK')"
+```
