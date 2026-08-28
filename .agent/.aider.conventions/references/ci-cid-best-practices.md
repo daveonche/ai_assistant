@@ -50,6 +50,17 @@ Use these rules when creating or reviewing GitHub Actions workflows.
 - Never use mutable references (`@main`, `@latest`, or major tags such as
   `@v4`); a moved tag can execute attacker-controlled code in the
   pipeline (supply chain attack).
+- Verify each pinned SHA against its upstream tag before merging:
+
+  ```bash
+  git ls-remote https://github.com/actions/<action>.git 'refs/tags/<version>*'
+  ```
+
+  One advertised line means a lightweight tag: the SHA shown is the
+  commit to pin. A second line ending in `^{}` means an annotated tag:
+  pin the SHA from the `^{}` line. Empty output with exit code 0 means
+  the tag does not exist as queried; list candidates with
+  `git ls-remote --tags https://github.com/actions/<action>.git 'refs/tags/<major>*'`.
 - Audit marketplace actions before use; prefer the trusted `actions/`
   organization and use Dependabot to keep pinned SHAs updated.
 - Use `run` for shell commands; combine related commands with `&&` and

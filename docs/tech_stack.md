@@ -42,3 +42,13 @@
 ## Version Lock Rationale
 
 The base image `paulgauthier/aider-full:latest` is used to ensure all Aider dependencies are correctly configured. Docker and Bash versions are provided by the host system and base image respectively. The host system requires Python (>=3.8) to execute the launcher script `.agent/ai_assistant.py`, which uses only the Python standard library; the minimum version matches the `requires-python` constraint declared in `.agent/pyproject.toml`.
+
+### Verified Action Pins
+
+GitHub Actions `uses` references are pinned to full-length commit SHAs and verified against their upstream tags before merge; the verification procedure is documented in "Steps and actions" in `.agent/.aider.conventions/references/ci-cid-best-practices.md`.
+
+| Action | Version | Pinned SHA | Used in |
+| :--- | :--- | :--- | :--- |
+| `actions/checkout` | v4.2.2 | `11bd71901bbe5b1630ceea73d27597364c9af683` | `.github/workflows/ci.yml` (both jobs) |
+
+Verification record: `git ls-remote https://github.com/actions/checkout.git 'refs/tags/v4.2.2*'` returned exactly one line, so `v4.2.2` is a lightweight tag and the advertised SHA is the commit itself; it matches the pinned value.
