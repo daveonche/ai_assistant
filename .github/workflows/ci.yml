@@ -1,3 +1,10 @@
+# CI pipeline validating the launcher, shell scripts, and Docker image build.
+#
+# Local validation: actionlint is the preferred validator (see
+# .agent/.aider.conventions/references/ci-cid-best-practices.md). When it is
+# not installed, validate YAML syntax with PyYAML:
+#   python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print('YAML OK')"
+
 name: CI
 
 on:
@@ -37,7 +44,7 @@ jobs:
         run: python3 -m py_compile .agent/ai_assistant.py
 
       - name: Shellcheck shell scripts
-        run: git ls-files -z '*.sh' | xargs -0 shellcheck
+        run: git ls-files -z '*.sh' | xargs -0 -r shellcheck
 
   docker-build:
     name: Docker image build smoke test
