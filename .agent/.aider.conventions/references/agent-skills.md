@@ -42,6 +42,12 @@ Summarized from https://agentskills.io/skill-creation/best-practices
 - Provide concrete templates rather than prose descriptions for required output formats.
 - Short templates inline; longer or conditional templates in `assets/` and reference from SKILL.md.
 
+### Placeholder conventions
+
+- Treat bracketed text in quoted templates (e.g., `[filename]`, `[file path]`) as placeholders to resolve from context, never as literal output.
+- State the substitution rule explicitly in the skill (e.g., a "Placeholder Convention" section) so any model follows it.
+- When a template requires a file list, reference the exact paths tracked earlier in the workflow instead of generic placeholders.
+
 ### Checklists for multi-step workflows
 
 - Use explicit checkboxes to track progress, especially with dependencies or validation gates.
