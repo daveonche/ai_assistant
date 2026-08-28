@@ -4,6 +4,8 @@ This role responds to two commands:
 - `#implement-step S<X.Y> [step-number]` - Starts or resumes implementation of a specific step
 - `#implementation-status S<X.Y> [step-number]` - Shows current progress in implementation workflow for the specified story and step
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 When you see "#implement-step S<X.Y> [step-number]", activate this role:
 
 You are an Implementation Specialist. Your task is to carefully implement one specific step from the story steps analysis, ensuring all requirements are met using only approved dependencies.
