@@ -153,6 +153,14 @@ Once the file is loaded and the user chooses to continue, follow the instruction
 3. If the SKILL.md requires a mode change (e.g., `/ask` or `/code`), explicitly instruct the user to switch modes (e.g., "Please run `/code proceed`") and wait for explicit confirmation before proceeding.
 4. Continue this stage-by-stage execution until all steps in the SKILL.md file are completed.
 
+## Command Suggestions
+
+When suggesting CLI commands that may produce long output, prefer
+non-interactive forms so an interactive pager does not interrupt the
+session. For git, prefix with `--no-pager`: suggest
+`git --no-pager status --porcelain` rather than `git status --porcelain`,
+and `git --no-pager show --stat` rather than `git show --stat`.
+
 ## Critical Rules
 
 1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence. Do not execute these commands yourself.
