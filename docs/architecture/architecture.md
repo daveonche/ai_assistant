@@ -2,52 +2,41 @@
 
 ![Architecture Diagram](./diagrams/architecture-overview.png)
 
-`<details>`
-`<summary>Diagram Source</summary>`
-
-```mermaid
-graph TD
-    User[User] -->|Executes| BashScript[ai-assistant.sh]
-    BashScript -->|Builds/Runs| DockerContainer[Docker Container]
-    DockerContainer -->|Executes| Aider[Aider AI Engine]
-    Aider -->|Reads| AgentMd[AGENT.md]
-    Aider -->|Loads/Drops| PromptLibrary[Prompt Library SKILL.md]
-    Aider -->|Modifies| LocalRepo[Local Git Repository]
-    DockerContainer -->|Volume Map| LocalRepo
-```
-
-</details>
-
-The system acts as a CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It leverages Bash scripting to manage a Dockerized environment, mapping local repositories into the container. Inside the container, Aider is orchestrated via an `AGENT.md` configuration file and a structured prompt library, enforcing a staged, context-isolated workflow to minimize token usage and adhere to SDLC best practices.
+AIAssistant is a developer CLI tool (script-launched, Dockerized, terminal-driven) built on a layered launcher + configuration-as-code architecture. A single host entry script (`agent.sh`) delegates to a Python launcher that manages the full Docker container lifecycle for an aider runtime. Inside the container, workflow orchestration is driven by markdown configuration (`AGENTS.md`) that loads SDLC prompt-library skills on demand, keeping the context window small and token usage minimal. All workflow state persists as git-tracked markdown artifacts under `docs/`.
 
 ## Core Layers
 
-- **Domain Layer**: Defines the core concepts of the prompt library, agent configuration, and task context. Interfaces ensure prompt loading and context management adhere to atomic execution rules.
-- **Application Layer**: Contains the primary use cases such as launching the environment, orchestrating the workflow via Aider, and managing context. Services handle Docker lifecycle and prompt orchestration.
-- **Infrastructure Layer**: Manages external integrations including the Docker Engine and Aider AI engine. Persistence is handled via the local filesystem, and communication relies on Bash and Docker CLI.
-- **CLI Layer**: The entry point for the user, implemented as a Bash script (`ai-assistant.sh`) to provide a frictionless setup and launch experience.
+- **Host Entry Layer**: `agent.sh` — single-command entry point; delegates to the Python launcher (REQ-FR-ENV-2, REQ-FR-ENV-5).
+- **Launcher Layer**: `.agent/ai_assistant.py` — Python (>=3.8, stdlib only); Docker availability check, image build, container run/cleanup, config argument assembly (REQ-FR-ENV-1).
+- **Containerization Layer**: `.agent/Dockerfile.aider` + Docker — builds `paulgauthier/aider-full:latest`, mounts the host project root including `.agent/`, maps Docker GID for socket access (REQ-FR-ENV-4).
+- **Workflow Orchestration Layer**: `.agent/AGENTS.md` — command routing, context-window management, conventions reference routing (REQ-FR-WF-2).
+- **Prompt Library Layer**: `.agent/.aider.prompt/**/SKILL.md` — SDLC phase prompts and workflow chains (REQ-FR-WF-1, REQ-FR-TM-1, REQ-FR-TM-2).
+- **Conventions Layer**: `.agent/.aider.conventions/**` — coding conventions loaded on demand by file-type routing (supports REQ-FR-WF-3).
+- **Documentation Layer**: `docs/` — file-based SDLC artifacts produced and consumed by the workflow chain.
 
 ## Cross-cutting Concerns
 
-- **Error Handling**: Managed via Bash script exit codes and Docker container status checks to ensure environment stability.
-- **Logging**: Relies on standard output and error streams from Aider and Docker for visibility.
-- **Security**: Enforced through Docker volume mapping restrictions, ensuring local repository isolation.
-- **State Synchronization**: Handled via `AGENT.md` context management commands (`/read-only`, `/drop`) to maintain optimal context windows.
-- **Configuration**: Utilizes `.aider.conf.yml`, `.env`, and `Dockerfile.aider` for system and environment settings.
+- **Error Handling**: Launcher validates Docker availability and exits with clear errors; workflows enforce `[STOP]` gates and re-prompt on invalid input.
+- **Logging**: Launcher command tracing and spinner updates; debug flag for verbose output.
+- **Security**: Container isolation of the AI runtime; Docker socket GID mapping; prompts loaded via `/read-only` to prevent unintended edits.
+- **State Synchronization**: File-based state; chain integrity requires each phase's output before the next phase.
+- **Configuration**: `.agent/.aider.conf.yml`, `.agent/.aider.model.settings.yml`, `.agent/pyproject.toml`, `.agent/.aiderignore`.
 
 ## Integration Patterns
 
-- **External Service Integration**: Docker volume binds map local repositories directly into the containerized Aider environment.
-- **Inter-service Communication**: The Bash script invokes Docker commands, which in turn execute Aider within the container.
-- **Event Handling**: Aider shorthand commands (`$<category>-<promptname>`) trigger the loading or dropping of specific prompt files.
-- **State Persistence**: Maintained through the local git repository and the file-based prompt library.
+- **External Service Integration**: LLM API access via aider inside the container (API keys passed through the launcher).
+- **Inter-service Communication**: Host → container via Docker CLI (bind mounts, environment variables, container naming/session hashing).
+- **Event Handling**: User-driven command flow (`$`/`#` shorthand commands); no background or event-driven processing.
+- **State Persistence**: Git-tracked markdown files in `docs/` as the single source of truth for workflow progress.
 
 ## Component Interactions
 
-The user interacts with the CLI Layer (Bash script), which initializes the Infrastructure Layer (Docker container). Inside the container, the Application Layer (Aider) reads the Domain Layer (`AGENT.md` and prompt files) to execute the workflow. Data flows from user input through the Bash script to Docker, and into Aider, which processes the prompts and interacts with the mapped local repository.
+The developer runs `agent.sh`, which delegates to `.agent/ai_assistant.py`. The launcher verifies Docker availability, builds the image from `.agent/Dockerfile.aider`, and runs the container with the host project root bind-mounted. Inside the container, aider loads `.agent/AGENTS.md`, which loads `SKILL.md` files on demand via `/read-only`. Workflow phases read and write markdown artifacts in `docs/`.
 
 ## Interface Contracts
 
-- **CLI Interface**: `ai-assistant.sh` accepts local repository paths and configuration flags.
-- **Docker Interface**: `Dockerfile.aider` defines the container environment, and `docker-compose` manages volume mappings.
-- **Prompt Interface**: `SKILL.md` files define the staged execution steps and context management rules for Aider.
+- `agent.sh` → `.agent/ai_assistant.py`: CLI arguments (debug flag, assistant arguments forwarded to aider).
+- `.agent/ai_assistant.py` → Docker CLI: build/run/cleanup commands; container identity derived from workspace hash + session ID.
+- Container → host project: read-write bind mount of the project root (including `.agent/`).
+- `AGENTS.md` → `SKILL.md` files: `$<category>-<promptname>` shorthand mapped to `/read-only` and `/drop` context-management commands.
+- Workflow chain → `docs/`: each phase consumes the previous phase's markdown artifact and produces the next.
