@@ -4,10 +4,12 @@
 
 ### Story S1.1: Initial Project Creation and Configuration
 
-- [x] Step 1. Enable Project Directory Structure Creation
-- [x] Step 2. Enable Git Repository Initialization
-- [x] Step 3. Enable .gitignore Configuration
-- [x] Step 4. Enable Basic README Creation
+- [x] Step 1. Enable version-controlled repository initialization
+- [x] Step 2. Enable the layered project layout
+- [x] Step 3. Enable placeholder tracking for empty directories
+- [x] Step 4. Enable transient artifact exclusion
+- [ ] Step 5. Enable project licensing and readme documentation
+- [ ] Step 6. Enable architecture alignment confirmation
 
 ### Story S1.2: Docker Environment Setup
 
