@@ -161,6 +161,11 @@ session. For git, prefix with `--no-pager`: suggest
 `git --no-pager status --porcelain` rather than `git status --porcelain`,
 and `git --no-pager show --stat` rather than `git show --stat`.
 
+When asking the user to run verification commands, request they run them
+via `/run <command>` (or the `!` shell prefix) so the output is added to
+the chat automatically, then ask them to reply "done" — do not ask them
+to paste output manually.
+
 ## Critical Rules
 
 1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence. Do not execute these commands yourself.
