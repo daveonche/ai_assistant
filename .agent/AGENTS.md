@@ -161,11 +161,11 @@ session. For git, prefix with `--no-pager`: suggest
 `git --no-pager status --porcelain` rather than `git status --porcelain`,
 and `git --no-pager show --stat` rather than `git show --stat`.
 
-When asking the user to run verification commands, output the command
-plainly (e.g., in a fenced code block) with no prefix such as `/run`,
-so aider recognizes it in the response and offers to execute it
-directly. Then ask the user to reply "done" — do not ask them to paste
-output manually.
+When asking the user to run verification commands, output each command
+in a fenced code block tagged with a shell language (e.g., ```bash),
+with no prefix such as `/run`, so aider recognizes it in the response
+and offers to execute it directly. Then ask the user to reply "done" —
+do not ask them to paste output manually.
 
 ## Critical Rules
 
