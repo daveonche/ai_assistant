@@ -11,8 +11,10 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/)
+- [Docker](https://docs.docker.com/get-docker/) (CLI & Compose Plugin)
 - [Git](https://git-scm.com/)
+- Bash (runs `agent.sh` and `.agent/ai-assistant.sh`)
+- Python >=3.8 (host; runs the launcher and the direct `ai-assistant` install)
 - API Keys for your chosen LLM providers (OpenRouter, OpenAI, Google AI, Hugging Face)
 
 ## Installation
@@ -136,8 +138,7 @@ on:
 > **Important:** GitHub Actions only runs workflows from
 > `.github/workflows/`. A `ci.yml` file inside `.agent/` will not be
 > executed automatically. Keep the active workflow at
-> `.github/workflows/ci.yml`, and treat `.agent/ci.yml` as a reference
-> copy if you need one.
+> `.github/workflows/ci.yml`.
 
 ## Project Structure
 
@@ -145,16 +146,17 @@ on:
 .
 ├── agent.sh                 # Root convenience launcher
 ├── .agent/
+│   ├── AGENTS.md            # Agent workflow & context orchestrator
 │   ├── ai-assistant.sh      # Thin Bash launcher that invokes ai_assistant.py
 │   ├── ai_assistant.py      # Python CLI implementation
 │   ├── Dockerfile.aider     # Dockerfile for the Aider environment
 │   ├── .env.example         # Template for environment variables
 │   ├── .aider.conf.yml      # Aider configuration
 │   ├── .aider.model.settings.yml
+│   ├── .aiderignore         # Context exclusion rules for aider
 │   ├── .aider.prompt/       # Aider prompt library
 │   ├── .aider.conventions/  # Project-specific coding conventions
-│   ├── pyproject.toml       # Optional packaging for the `ai-assistant` command
-│   └── ci.yml               # CI workflow reference copy (see note below)
+│   └── pyproject.toml       # Optional packaging for the `ai-assistant` command
 ├── .github/
 │   └── workflows/
 │       └── ci.yml           # GitHub Actions CI workflow

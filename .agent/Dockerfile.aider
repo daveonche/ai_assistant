@@ -3,9 +3,9 @@ FROM paulgauthier/aider-full:latest
 # Switch to root to install system requirements
 USER root
 
-# Install system dependencies, Node.js repo prerequisites, and a lean system browser (Chromium)
+# Install system dependencies, Node.js repo prerequisites, a lean system browser (Chromium), and the GFM renderer (cmark-gfm)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates curl gnupg libpulse0 alsa-utils chromium && \
+    apt-get install -y --no-install-recommends ca-certificates curl gnupg libpulse0 alsa-utils chromium cmark-gfm && \
     install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
