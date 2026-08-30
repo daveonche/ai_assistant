@@ -32,7 +32,7 @@ As a developer, I want a single-command host entry script with documented prereq
 
 Acceptance Criteria:
 
-- `agent.sh` delegates all lifecycle logic to `.agent/ai_assistant.py` (REQ-FR-ENV-2, REQ-FR-ENV-5)
+- `agent.sh` delegates all lifecycle logic to `.agent/ai_assistant.py` via `.agent/ai-assistant.sh` (REQ-FR-ENV-2, REQ-FR-ENV-5)
 - `agent.sh` forwards the debug flag and assistant arguments to the launcher
 - Prerequisites documented: Docker (CLI & Compose Plugin), Bash, Python >=3.8 (host)
 - Script is executable and passes shellcheck per `.agent/.aider.conventions/references/bash-scripts.md`
@@ -133,10 +133,10 @@ As a developer, I want a CI pipeline validating the launcher, scripts, and image
 
 Acceptance Criteria:
 
-- `.agent/ci.yml` validates: Python syntax/lint of `.agent/ai_assistant.py`, shellcheck of `*.sh` scripts, Docker image build
+- `.github/workflows/ci.yml` validates: Python syntax/lint of `.agent/ai_assistant.py`, shellcheck of `*.sh` scripts, Docker image build
 - CI config follows `.agent/.aider.conventions/references/ci-cid-best-practices.md`
 - Pipeline fails on any validation error; passes on a clean tree
-- All actions pinned to exact versions — ⚠ FLAGGED: pin exact action versions before merge
+- All actions pinned to exact versions — ✓ SATISFIED: `actions/checkout` pinned to full SHA `11bd71901bbe5b1630ceea73d27597364c9af683` (v4.2.2), verified per `docs/tech_stack.md`
 
 Dependencies: S1.5
 
