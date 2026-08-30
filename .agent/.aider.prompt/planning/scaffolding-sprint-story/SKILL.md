@@ -155,3 +155,5 @@ Use $planning-scaffolding-sprint-story to continue
 CRITICAL Rules:
 1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence. Do not execute these commands yourself.
 2. If user input at a [STOP] point is invalid or unexpected, re-prompt the user with the original question.
+
+Convention Check Reminder: Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference with `/read-only` before proceeding.
