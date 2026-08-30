@@ -13,6 +13,7 @@ AIAssistant is a developer CLI tool (script-launched, Dockerized, terminal-drive
 - **Prompt Library Layer**: `.agent/.aider.prompt/**/SKILL.md` — SDLC phase prompts and workflow chains (REQ-FR-WF-1, REQ-FR-TM-1, REQ-FR-TM-2).
 - **Conventions Layer**: `.agent/.aider.conventions/**` — coding conventions loaded on demand by file-type routing (supports REQ-FR-WF-3).
 - **Documentation Layer**: `docs/` — file-based SDLC artifacts produced and consumed by the workflow chain.
+- **CI/CD Layer**: `.github/workflows/ci.yml` — GitHub Actions pipeline validating the launcher (Python lint), shell scripts (shellcheck), and Docker image build on push.
 
 ## Cross-cutting Concerns
 
