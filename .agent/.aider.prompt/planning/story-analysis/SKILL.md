@@ -146,3 +146,5 @@ CRITICAL Rules:
 6. Ensure clear progression between steps
 7. Manual verification steps must describe what user should test and observe
 8. NO additional formatting or suggestions beyond the specified template
+
+Convention Check Reminder: Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference with `/read-only` before proceeding.
