@@ -1,9 +1,11 @@
-# Environment files
+# Environment files (secrets/credentials)
 .env
 .env.local
 .env.*
+# Env templates are project deliverables - keep them tracked
+!.env.example
 
-# Aider files
+# Aider / container runtime output (chat history, input history, tags cache, LLM history)
 .aider*
 
 # Keep Aider configuration
