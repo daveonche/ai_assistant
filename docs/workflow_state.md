@@ -4,9 +4,9 @@ Last updated: 2026-09-01
 
 ## Active Workflow
 
-- Command: (none — ad-hoc task: session state persistence)
-- SKILL.md: n/a
-- Current step: Session State Persistence rules and `$session-checkpoint` added to `.agent/AGENTS.md`
-- Last completed: Created `docs/workflow_state.md` (commit f8a3515)
-- Next action: Commit these changes, then run `$session-checkpoint` to refresh this file before ending the session
-- Files in context: `.agent/AGENTS.md`, `docs/workflow_state.md`, `LICENSE`, `README.md`, `.agent/.aider.conventions/references/github-flavored-markdown.md`, `.agent/.aider.conventions/references/agent-skills.md`
+- Command: `$workflows-project-scaffolding-chain` → `#implement-step S1.2 2`
+- SKILL.md: `.agent/.aider.prompt/workflows/project-scaffolding-chain/SKILL.md`
+- Current step: `#implement-step S1.2 2` — implement step 2 of story S1.2
+- Last completed: `$learning-project-tutor` discarded by user at `[STEP 2] Context Verification`; session state persistence feature shipped (f8a3515, 878bd67)
+- Next action: Add the workflow `SKILL.md` and `docs/analysis/S1.2-story-steps.md` to context, then implement step 2; reconcile `docs/implementation_status.md` (it currently marks all S1.2 steps complete)
+- Files in context: `.agent/AGENTS.md`, `docs/workflow_state.md`, `README.md`, `LICENSE`, `.agent/.aider.conventions/references/github-flavored-markdown.md`, `.agent/.aider.conventions/references/agent-skills.md`
