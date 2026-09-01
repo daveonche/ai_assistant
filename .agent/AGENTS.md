@@ -121,6 +121,11 @@ most one active workflow and is a pointer, not a log.
    position and draft the state file update at any time, without
    waiting for the session to end. Ask the user to run
    `/code proceed` to save it, then confirm the checkpoint was saved.
+   If nothing has changed since the last write (e.g., the session was
+   just resumed after `/clear` and the file already reflects this
+   position), do not draft an edit; instead announce "Checkpoint
+   unchanged — nothing to save" and tell the user to reply
+   "continue" to resume from it. No `/code proceed` is needed.
 4. On session start (the first user message), ask the user to add the
    state file with `/read-only docs/workflow_state.md`. If an active
    workflow is recorded, announce: "Resuming: `<workflow>` at
