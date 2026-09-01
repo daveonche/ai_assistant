@@ -130,7 +130,8 @@ most one active workflow and is a pointer, not a log.
    state file with `/read-only docs/workflow_state.md`. If an active
    workflow is recorded, announce: "Resuming: `<workflow>` at
    `<step>`. Next action: `<next action>`" and ask whether to continue
-   or discard the state.
+   or discard the state. Tell the user to reply "continue" to resume
+   from the checkpoint, or "discard" to clear the recorded state.
 5. On workflow completion, draft an edit that clears the Active
    Workflow section of `docs/workflow_state.md`.
 6. Never record secrets or API keys in the state file.
