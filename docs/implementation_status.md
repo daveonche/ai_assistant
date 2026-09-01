@@ -11,11 +11,13 @@
 - [ ] Step 5. Enable project licensing and readme documentation
 - [ ] Step 6. Enable architecture alignment confirmation
 
-### Story S1.2: Docker Environment Setup
+### Story S1.2: Development Environment Setup
 
-- [x] Step 1. Enable Dockerfile Creation
-- [x] Step 2. Enable Docker Image Building in Script
-- [x] Step 3. Enable Container Execution and Volume Mapping in Script
+- [x] Step 1. Enable single-command host entry delegation
+- [x] Step 2. Enable argument and debug-flag forwarding
+- [ ] Step 3. Enable executable entry scripts that pass static checks
+- [ ] Step 4. Enable prerequisite documentation for first use
+- [ ] Step 5. Enable dual-mode installation support
 
 ### Story S1.3: Bash Launch Script Implementation
 
