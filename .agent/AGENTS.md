@@ -18,6 +18,7 @@ The orchestrator responds to these commands:
 - `$workflows-project-scaffolding-chain` – Starts or resumes the Project Scaffolding Sprint Workflow Chain. It guides the project from vision and initial requirements through technology stack, architecture design, scaffolding sprint stories, story analysis, implementation, and unit testing.
 - `$workflows-post-scaffolding-chain` – Starts or resumes the Post-Scaffolding Sprint Workflow Chain. It covers implementation status analysis, sprint story generation, story analysis, implementation, unit testing, and conditional dependency management.
 - `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
+- `$session-checkpoint` – Save the current workflow position (workflow command, current step, last completed step, next action, files in context) to `docs/workflow_state.md`. Draft the edit, request `/code proceed` to apply it, then confirm the checkpoint was saved.
 
 ## Workflow Chain Execution
 
@@ -26,6 +27,7 @@ When `$agent-orchestrator` is used, announce this role and the built-in commands
 - `$workflows-project-scaffolding-chain`
 - `$workflows-post-scaffolding-chain`
 - `$code-review <file>`
+- `$session-checkpoint`
 
 When one of those workflow-chain commands is used, load the matching
 `.aider.prompt/workflows/<name>/SKILL.md`, announce the activated workflow role
@@ -69,6 +71,7 @@ prefix instead and are announced as that workflow's available commands
 - `$workflow-orchestrator` – Alias for `$agent-orchestrator`.
 - `$<category>-<promptname>` – Activates the specified prompt workflow.
 - `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
+- `$session-checkpoint` – Save the current workflow position (workflow command, current step, last completed step, next action, files in context) to `docs/workflow_state.md`. Draft the edit, request `/code proceed` to apply it, then confirm the checkpoint was saved.
 
 ## Placeholder Convention
 
@@ -100,6 +103,33 @@ Routing rules:
 5. When a `SKILL.md` is added to context, verify it contains the
    Convention Check Reminder line; if missing, add it to that file
    before proceeding with the workflow.
+
+## Session State Persistence
+
+To let a new session pinpoint the last activity, maintain
+`docs/workflow_state.md` as the session checkpoint file. It records at
+most one active workflow and is a pointer, not a log.
+
+1. While a workflow is active, track its position: the current step,
+   the last completed step, the next action, and the files in context.
+2. When the user signals the session is ending (e.g., "bye",
+   "goodbye", "that's all for today"), announce where they stopped
+   (workflow, current step, next action) and draft the updated content
+   of `docs/workflow_state.md` as a SEARCH/REPLACE edit. Ask the user
+   to run `/code proceed` to save it.
+3. When the user uses `$session-checkpoint`, announce the current
+   position and draft the state file update at any time, without
+   waiting for the session to end. Ask the user to run
+   `/code proceed` to save it, then confirm the checkpoint was saved.
+4. On session start (the first user message), ask the user to add the
+   state file with `/read-only docs/workflow_state.md`. If an active
+   workflow is recorded, announce: "Resuming: `<workflow>` at
+   `<step>`. Next action: `<next action>`" and ask whether to continue
+   or discard the state.
+5. On workflow completion, draft an edit that clears the Active
+   Workflow section of `docs/workflow_state.md`.
+6. Never record secrets or API keys in the state file.
+7. Update the `Last updated` date on every write.
 
 ## Workflow Orchestration Mode
 
