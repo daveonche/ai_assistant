@@ -82,6 +82,14 @@ I have found in the context:
 Then review the file against the agreed conventions and best practices.
 Provide concise issues, risks, and suggested improvements.
 
+Delta reference check for convention files: when the target file is a
+convention or reference file (e.g., under `.agent/.aider.conventions/`),
+review it as a delta reference. Flag content that restates general
+knowledge the reviewing AI already applies by default, and propose
+condensing the file to repo-specific rules, easily-got-wrong details, and
+exact syntax; omitting general guidance is expected, since the AI supplies
+it from built-in knowledge.
+
 [STOP] Present the improvements as numbered options and ask the user to select which ones to implement.
 
 Example:
