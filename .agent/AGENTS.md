@@ -90,6 +90,7 @@ task touches. Before creating or editing any file, check this mapping:
 | `*.md` documentation | `.agent/.aider.conventions/references/github-flavored-markdown.md` |
 | `SKILL.md` prompt files | `.agent/.aider.conventions/references/agent-skills.md` |
 | `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/.aider.conventions/references/docker-best-practices.md` |
+| `compose.yml`, `compose.yaml`, `docker-compose*.yml`, `docker-compose*.yaml`, or any Compose file | `.agent/.aider.conventions/references/compose-file-spec.md` |
 
 Routing rules:
 
