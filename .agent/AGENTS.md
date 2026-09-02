@@ -89,6 +89,7 @@ task touches. Before creating or editing any file, check this mapping:
 | `*.sh` scripts | `.agent/.aider.conventions/references/bash-scripts.md` |
 | `*.md` documentation | `.agent/.aider.conventions/references/github-flavored-markdown.md` |
 | `SKILL.md` prompt files | `.agent/.aider.conventions/references/agent-skills.md` |
+| `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/.aider.conventions/references/docker-best-practices.md` |
 
 Routing rules:
 
