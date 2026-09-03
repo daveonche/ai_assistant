@@ -11,11 +11,11 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) (CLI & Compose Plugin)
-- [Git](https://git-scm.com/)
-- Bash (runs `agent.sh` and `.agent/ai-assistant.sh`)
-- Python >=3.8 (host; runs the launcher and the direct `ai-assistant` install)
-- API Keys for your chosen LLM providers (OpenRouter, OpenAI, Google AI, Hugging Face)
+- [Docker](https://docs.docker.com/get-docker/) (CLI & Compose Plugin): provides the isolated container that runs Aider, and the Compose Plugin backs the container lifecycle commands used by the launcher
+- [Git](https://git-scm.com/): needed to clone this repository and to copy the configuration into other projects; the launcher itself does not require Git to start the assistant
+- Bash: runs the `agent.sh` and `.agent/ai-assistant.sh` entry scripts
+- Python >=3.8 (host): runs the launcher (`.agent/ai_assistant.py`) and the direct `ai-assistant` install; the minimum version matches `requires-python` in `.agent/pyproject.toml`
+- API Keys for your chosen LLM providers (OpenRouter, OpenAI, Google AI, Hugging Face): authenticate the model calls Aider makes at launch
 
 ## Installation
 
@@ -106,6 +106,14 @@ ai-assistant
 ### Project Structure for Docker Compose Projects
 
 If using with other projects that are built with Docker Compose, all the Docker files and configurations should be placed in the root directory, and the project's main source code should be placed in the `src/` folder.
+
+## Agent Workflow Sessions
+
+The `.agent` orchestration configuration supports long-running workflow sessions that survive chat resets. Session position is kept in `docs/workflow_state.md`.
+
+1. **Checkpoint anytime:** run `$session-checkpoint` to save the current workflow position (workflow command, current step, last completed step, next action, files in context) to `docs/workflow_state.md`.
+2. **Clear the context:** run `/clear` to start a fresh chat without losing your position.
+3. **Resume:** in the fresh session, add the state file to the chat with `/read-only docs/workflow_state.md`; the orchestrator announces where you stopped and asks you to reply `continue` to resume from the checkpoint, or `discard` to clear the recorded state.
 
 ## Continuous Integration (CI)
 
