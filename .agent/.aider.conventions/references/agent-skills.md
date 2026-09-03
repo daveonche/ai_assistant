@@ -1,6 +1,6 @@
 # Agent Skills Best Practices
 
-Summarized from https://agentskills.io/skill-creation/best-practices
+Summarized from [Agent Skills](https://agentskills.io/skill-creation/best-practices)
 
 ## Start from real expertise
 

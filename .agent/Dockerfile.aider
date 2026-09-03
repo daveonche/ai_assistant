@@ -1,35 +1,113 @@
+# syntax=docker/dockerfile:1
+#
+# Build context for this file is the .agent directory itself (managed by
+# ai_assistant.py, which auto-creates a minimal .dockerignore). This file
+# intentionally contains NO COPY instructions:
+#   - Project source code is provided at runtime via the same-path bind mount
+#     of the project root (see run_container in ai_assistant.py).
+#   - `docker` / `docker compose` executed inside the container talk to the
+#     host daemon through the mounted /var/run/docker.sock, so compose stacks
+#     are siblings of this container and all paths resolve on the host.
+#
+# For reproducible builds, pin the base image by digest once tested:
+#   docker buildx imagetools inspect paulgauthier/aider-full:latest
+# FROM paulgauthier/aider-full:latest@sha256:<DIGEST>
 FROM paulgauthier/aider-full:latest
 
-# Switch to root to install system requirements
 USER root
 
-# Install system dependencies, Node.js repo prerequisites, a lean system browser (Chromium), the GFM renderer (cmark-gfm), and the shellcheck linter
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates curl gnupg libpulse0 alsa-utils chromium cmark-gfm shellcheck && \
+# ---- Environment flags BEFORE any install layer ----------------------------
+# PUPPETEER_SKIP_DOWNLOAD prevents mermaid-cli's puppeteer dependency from
+# downloading a ~170MB Chrome build that would never be used (puppeteer is
+# pointed at the system chromium below). HF_HOME bakes the embedding model
+# into a world-readable path so the runtime user loads it offline instead of
+# re-downloading ~100MB on first run.
+#
+# Optional: uncomment HF_HUB_OFFLINE to skip Hugging Face update checks at
+# startup. Safe once the model below is baked in; blocks runtime model swaps.
+# ENV HF_HUB_OFFLINE=1
+ENV PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    HF_HOME=/opt/hf-cache \
+    DEBIAN_FRONTEND=noninteractive
+
+# ---- Layer A: system dependencies and Chromium ------------------------------
+# Biggest and most stable payload: keep it first so its cache survives all
+# later layer churn. alsa-utils is kept for ALSA (/dev/snd) audio support.
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gnupg \
+        libpulse0 \
+        alsa-utils \
+        chromium \
+        cmark-gfm
+
+# ---- Layer B: pre-bake the Python embedding model ---------------------------
+# Expensive but rarely changing: placed before anything volatile so it stays
+# cached even when the npm layers below are rebuilt. chmod a+rX makes the
+# cache readable by any runtime user (host uid via docker run --user).
+RUN python3 -c "from sentence_transformers import SentenceTransformer; \
+    SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')" && \
+    chmod -R a+rX /opt/hf-cache
+
+# ---- Layer C: Docker CLI + compose plugin + Node.js -------------------------
+# docker-ce-cli and docker-compose-plugin are required so aider can run
+# `docker` / `docker compose` inside the container for debugging against the
+# host daemon (socket mounted at runtime). Both third-party repos are added
+# first, then a single apt-get update + install sweep.
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
     install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
-    rm -rf /var/lib/apt/lists/*
-
-# Add Node.js v22 repository and install Node.js, Docker CLI, and Docker Compose plugin
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" > /etc/apt/sources.list.d/docker.list && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get update && \
-    apt-get install -y --no-install-recommends nodejs docker-ce-cli docker-compose-plugin && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+        docker-ce-cli \
+        docker-compose-plugin \
+        nodejs
 
-# Tell Puppeteer to skip its default bulky download and use the installed system browser
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+# ---- Layer D: global npm utilities (most volatile layer) --------------------
+# npm cache mount avoids re-downloading tarballs when this layer changes.
+# NOTE: the npm "shellcheck" package is intentionally NOT used. It is only a
+# JS wrapper that downloads the real binary on FIRST RUN into root-owned
+# /usr/lib/node_modules, which fails with EACCES for the non-root runtime
+# user. The official static binary is baked in below instead.
+RUN --mount=type=cache,target=/root/.npm \
+    npm install -g --no-audit --no-fund \
+        @mermaid-js/mermaid-cli@^11
 
-# Install Mermaid CLI safely and quickly
-RUN npm install -g @mermaid-js/mermaid-cli
+# ---- Layer D2: ShellCheck (real static binary, baked at build time) ---------
+# Version-pinned, offline at runtime, executable by every user. TARGETARCH is
+# auto-provided by BuildKit (amd64/arm64/arm). The xz check is a no-op when
+# the base image already ships it. Alternative: `apt-get install shellcheck`
+# gives Debian bookworm's v0.8.0 if you prefer zero GitHub traffic.
+ARG TARGETARCH
+ARG SHELLCHECK_VERSION=v0.10.0
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
+    { command -v xz >/dev/null 2>&1 || { apt-get update && apt-get install -y --no-install-recommends xz-utils; }; } && \
+    case "${TARGETARCH}" in \
+        arm64) SC_ARCH=aarch64 ;; \
+        arm) SC_ARCH=armv6hf ;; \
+        *) SC_ARCH=x86_64 ;; \
+    esac && \
+    curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.${SC_ARCH}.tar.xz" -o /tmp/shellcheck.tar.xz && \
+    tar -xJf /tmp/shellcheck.tar.xz -C /tmp && \
+    install -m 0755 "/tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck && \
+    rm -rf "/tmp/shellcheck-${SHELLCHECK_VERSION}" /tmp/shellcheck.tar.xz
 
-# Ensure /home exists and is writable by any user                                 
-RUN mkdir -p /home && chmod 777 /home
+# ---- Layer E: runtime configuration ----------------------------------------
+# Sticky bit (1777) instead of 777: /home stays writable as a shared scratch
+# HOME (the launcher sets HOME=/home and mounts host caches into it) without
+# allowing file ownership tampering.
+RUN mkdir -p /home && chmod 1777 /home && \
+    echo '{"args": ["--no-sandbox"]}' > /home/puppeteer-config.json
 
-# Create Puppeteer config to run Chromium without sandbox in container
-RUN echo '{"args": ["--no-sandbox"]}' > /home/puppeteer-config.json
-
-# Switch back to non-root user for security
 USER aider
