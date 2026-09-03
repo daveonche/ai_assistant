@@ -50,7 +50,7 @@
   this should be done with a here document or an embedded newline if possible.
 
 - Pipelines should be split one per line if they don’t all fit on one line.\
-  If a pipeline all fits on one line, it should be on one line.
+  If a pipeline fits on one line, keep it on one line.
 
 - Put `; then` and `; do` on the same line as the `if`, `for`, or `while`.
 
@@ -94,14 +94,11 @@
 - A function called `main` is required for scripts long enough to contain\
   at least one other function.
 
-- Put all functions together in the file just below constants.\
-  Don’t hide executable code between functions.\
-  Doing so makes the code difficult to follow and results in nasty surprises \
-  when debugging.
-
-- If you’ve got functions, put them all together near the top of the file.\
-  Only includes, set statements and setting constants may be done\
-  before declaring functions.
+- Put all functions together just below the constants, near the top of the file.\
+  Only includes, `set` statements, and constant declarations may appear\
+  before function declarations.\
+  Don’t hide executable code between functions; doing so makes the code\
+  difficult to follow and results in nasty surprises when debugging.
 
 - Declare function-specific variables with `local`. Remember that Bash uses\
   dynamic scoping: local variables can be accessed by functions called from\
