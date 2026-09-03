@@ -15,7 +15,7 @@
 
 - [x] Step 1. Enable single-command host entry delegation
 - [x] Step 2. Enable argument and debug-flag forwarding
-- [ ] Step 3. Enable executable entry scripts that pass static checks
+- [x] Step 3. Enable executable entry scripts that pass static checks
 - [ ] Step 4. Enable prerequisite documentation for first use
 - [ ] Step 5. Enable dual-mode installation support
 
