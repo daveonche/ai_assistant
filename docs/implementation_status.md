@@ -17,7 +17,7 @@
 - [x] Step 2. Enable argument and debug-flag forwarding
 - [x] Step 3. Enable executable entry scripts that pass static checks
 - [x] Step 4. Enable prerequisite documentation for first use
-- [ ] Step 5. Enable dual-mode installation support
+- [x] Step 5. Enable dual-mode installation support
 
 ### Story S1.3: Bash Launch Script Implementation
 

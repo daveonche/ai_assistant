@@ -113,5 +113,11 @@ show-release-notes: false
 ## Specify multiple values like this:
 read:
 - .agent/AGENTS.md
-# If your project is in the supported list, copy the .md file in .agent/.aider.conventions into your project root and uncomment the line below. This will allow Aider to read the conventions for your project.
-# - AGENT-SKILLS.md
+# If your project uses one of the supported frameworks, uncomment the matching
+# line below so its conventions are read from .agent/.aider.conventions/ on
+# launch. Convention files stay in .agent/.aider.conventions/; never copy
+# them to the project root.
+# - .agent/.aider.conventions/AFM.md
+# - .agent/.aider.conventions/ELGG.md
+# - .agent/.aider.conventions/ODOO.md
+# - .agent/.aider.conventions/RAILS.md

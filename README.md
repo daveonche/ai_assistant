@@ -74,9 +74,13 @@ You can use this assistant in other projects by copying the `.agent` directory a
 ```bash
 cp -r .agent /path/to/your/project/
 cp agent.sh /path/to/your/project/
-# Copy the specific convention file for your project (e.g., ELGG.md, RAILS.md, ODOO.md)
-cp .agent/.aider.conventions/CONVENTIONS-FILENAME.md /path/to/your/project/
 ```
+
+The `.agent` copy already includes `.aider.conventions/`, so all
+convention files stay in that directory. Framework conventions are
+enabled per project via the `read:` setting in
+`.agent/.aider.conf.yml` — they are read on launch, never copied to
+the project root.
 
 Make the launchers executable and update the git index so you don't have to run the execute command again in that repo:
 
@@ -86,7 +90,20 @@ chmod +x agent.sh .agent/ai-assistant.sh
 git update-index --chmod=+x agent.sh .agent/ai-assistant.sh
 ```
 
-Then run `./agent.sh` from that project's directory.
+Configure the environment variables for the target project. The
+launcher reads `.env` from the project root, falling back to
+`.agent/.env`:
+
+```bash
+cp .agent/.env.example .env
+```
+
+Edit `.env` and fill in your `OPENAI_API_KEY`, `OPENROUTER_API_KEY`,
+`GEMINI_API_KEY`, and `HF_TOKEN`.
+
+Then run `./agent.sh` from that project's directory. The entry chain
+resolves its own paths at runtime, so it behaves exactly as it does in
+a standalone clone.
 
 If you prefer a direct `ai-assistant` command instead, install the `.agent` package in editable mode inside a Python virtual environment:
 
@@ -117,31 +134,10 @@ The `.agent` orchestration configuration supports long-running workflow sessions
 
 ## Continuous Integration (CI)
 
-This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that automatically runs tests on push or pull request events.
+This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that validates the assistant's own tooling on every push or pull request touching `.agent/**`, `agent.sh`, or `.github/workflows/**`, and on manual `workflow_dispatch`:
 
-**Supported Frameworks:**
-
-- **Ruby on Rails:** Detected if `RAILS.md` exists in the project root. Runs `bundle exec rails test`.
-- **Elgg:** Detected if `ELGG.md` exists in the project root. Runs `phpunit`.
-- **Odoo:** Detected if `ODOO.md` exists in the project root. Runs `odoo --test-enable --stop-after-init`.
-
-**Setup:**
-
-1. Ensure the `ci.yml` file is located in `.github/workflows/` in your repository.
-2. Add `DB_PASSWORD` to your repository's GitHub Actions Secrets.
-
-To avoid running CI for changes that only affect the `.agent` directory,
-add a `paths-ignore` entry for `.agent/**` in your workflow triggers:
-
-```yaml
-on:
-  push:
-    paths-ignore:
-      - '.agent/**'
-  pull_request:
-    paths-ignore:
-      - '.agent/**'
-```
+1. **Validate launcher and scripts** — Python syntax check of `.agent/ai_assistant.py`, then `shellcheck` over all tracked `*.sh` scripts.
+2. **Docker image build smoke test** — builds the image from `.agent/Dockerfile.aider`.
 
 > **Important:** GitHub Actions only runs workflows from
 > `.github/workflows/`. A `ci.yml` file inside `.agent/` will not be
