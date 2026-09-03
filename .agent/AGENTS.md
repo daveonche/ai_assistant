@@ -85,7 +85,7 @@ task touches. Before creating or editing any file, check this mapping:
 
 | Task touches | Reference to load |
 | --- | --- |
-| `.github/workflows/*.yml`, `.github/workflows/*.yaml`, or any CI/CD config (e.g., `ci.yml`) | `.agent/.aider.conventions/references/ci-cid-best-practices.md` |
+| `.github/workflows/*.yml`, `.github/workflows/*.yaml`, or any CI/CD config (e.g., `ci.yml`) | `.agent/.aider.conventions/references/ci-cd-best-practices.md` |
 | `*.sh` scripts | `.agent/.aider.conventions/references/bash-scripts.md` |
 | `*.md` documentation | `.agent/.aider.conventions/references/github-flavored-markdown.md` |
 | `SKILL.md` prompt files | `.agent/.aider.conventions/references/agent-skills.md` |
