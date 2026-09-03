@@ -6,7 +6,7 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 
 - **Isolated Environment:** Runs Aider inside a Docker container to keep your local system clean.
 - **Multi-Model Support:** Configured to use OpenRouter, OpenAI, Gemini, and Hugging Face APIs.
-- **Automated Testing:** Includes a GitHub Actions workflow (`ci.yml`) to automatically run tests for Rails, Elgg, or Odoo projects upon push.
+- **CI Validation:** Includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that validates the launcher, shell scripts, and the Docker image build on every push and pull request.
 - **Diagram Support:** Includes Mermaid CLI and Chromium for rendering diagrams.
 
 ## Prerequisites
