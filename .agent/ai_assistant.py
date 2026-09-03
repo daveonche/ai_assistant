@@ -69,11 +69,13 @@ def _remove_if_empty(path: Path) -> None:
         pass
 
 
-def _docker_available() -> bool:
+def _docker_available(debug: bool = False) -> bool:
     """Return True when the docker CLI can be executed."""
+    command = ["docker", "version"]
     try:
+        _trace_command(command, debug)
         result = subprocess.run(
-            ["docker", "version"],
+            command,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -82,9 +84,10 @@ def _docker_available() -> bool:
         return False
 
 
-def _trace_command(command: list[str]) -> None:
+def _trace_command(command: list[str], debug: bool) -> None:
     """Print a command to stderr when debug output is enabled."""
-    print("+", " ".join(command), file=sys.stderr)
+    if debug:
+        print("+", " ".join(command), file=sys.stderr)
 
 
 def _tail_lines(path: Path, count: int) -> list[str]:
@@ -128,18 +131,20 @@ def _aider_config_args(agent_dir: Path) -> list[str]:
     return args
 
 
-def _base_repo_digests(image: str) -> str:
+def _base_repo_digests(image: str, debug: bool = False) -> str:
     """Return local repo digests for an image, or "" when unknown."""
+    command = [
+        "docker",
+        "image",
+        "inspect",
+        "--format",
+        "{{range .RepoDigests}}{{.}} {{end}}",
+        image,
+    ]
     try:
+        _trace_command(command, debug)
         result = subprocess.run(
-            [
-                "docker",
-                "image",
-                "inspect",
-                "--format",
-                "{{range .RepoDigests}}{{.}} {{end}}",
-                image,
-            ],
+            command,
             capture_output=True,
             text=True,
         )
@@ -164,7 +169,7 @@ def _base_image(dockerfile_path: Path) -> str:
     return BASE_IMAGE_FALLBACK
 
 
-def _image_cache_tag(dockerfile_path: Path) -> str:
+def _image_cache_tag(dockerfile_path: Path, debug: bool = False) -> str:
     """Return a content-hash tag for the built image.
 
     Combines the Dockerfile bytes with the base image's repo digests, so the
@@ -178,15 +183,17 @@ def _image_cache_tag(dockerfile_path: Path) -> str:
         hasher.update(dockerfile_path.read_bytes())
     except OSError:
         pass
-    hasher.update(_base_repo_digests(_base_image(dockerfile_path)).encode())
+    hasher.update(_base_repo_digests(_base_image(dockerfile_path), debug).encode())
     return f"aider-agent:c-{hasher.hexdigest()[:16]}"
 
 
-def _image_exists(tag: str) -> bool:
+def _image_exists(tag: str, debug: bool = False) -> bool:
     """Return True when a local Docker image exists for the given tag."""
+    command = ["docker", "image", "inspect", tag]
     try:
+        _trace_command(command, debug)
         result = subprocess.run(
-            ["docker", "image", "inspect", tag],
+            command,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -224,26 +231,29 @@ def _warn_agent_dir_location(project_root: Path) -> None:
         )
 
 
-def cleanup_containers(workspace_hash: str) -> None:
+def cleanup_containers(workspace_hash: str, debug: bool = False) -> None:
     """Remove all containers associated with the current workspace.
 
     Arguments:
         workspace_hash: Aider directory hash used as a Docker label.
+        debug: Whether to print the underlying Docker commands to stderr.
 
     Returns:
         None
     """
+    command = [
+        "docker",
+        "ps",
+        "-a",
+        "--filter",
+        f"label=aider.dir={workspace_hash}",
+        "--format",
+        "{{.ID}}",
+    ]
     try:
+        _trace_command(command, debug)
         result = subprocess.run(
-            [
-                "docker",
-                "ps",
-                "-a",
-                "--filter",
-                f"label=aider.dir={workspace_hash}",
-                "--format",
-                "{{.ID}}",
-            ],
+            command,
             capture_output=True,
             text=True,
         )
@@ -266,8 +276,10 @@ def cleanup_containers(workspace_hash: str) -> None:
         line for line in (result.stdout or "").splitlines() if line.strip()
     ]
     for container_id in container_ids:
+        command = ["docker", "rm", "-f", container_id]
+        _trace_command(command, debug)
         subprocess.run(
-            ["docker", "rm", "-f", container_id],
+            command,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -310,8 +322,7 @@ def build_image(
             str(dockerfile_path),
             str(context_dir),
         ]
-        if debug:
-            _trace_command(command)
+        _trace_command(command, debug)
 
         env = os.environ.copy()
         env["DOCKER_BUILDKIT"] = "1"
@@ -543,8 +554,7 @@ def run_container(
 
     command.extend(assistant_args)
 
-    if debug:
-        _trace_command(command)
+    _trace_command(command, debug)
 
     try:
         return subprocess.run(command).returncode
@@ -569,7 +579,7 @@ def main() -> int:
         print("This assistant currently supports Linux only.", file=sys.stderr)
         return 1
 
-    if not _docker_available():
+    if not _docker_available(debug=debug):
         print(
             "Docker CLI is not available. Please install Docker and ensure it is accessible from PATH.",
             file=sys.stderr,
@@ -595,21 +605,23 @@ def main() -> int:
 
     _warn_agent_dir_location(project_root)
 
-    cleanup_containers(workspace_hash)
+    cleanup_containers(workspace_hash, debug=debug)
 
     # The Dockerfile performs no COPY, so the build context only needs the
     # Dockerfile itself. Using .agent (with its generated .dockerignore)
     # avoids shipping the whole repository to the daemon on every launch.
     _ensure_build_dockerignore(AGENT_DIR)
 
-    cache_tag = _image_cache_tag(dockerfile_path)
+    cache_tag = _image_cache_tag(dockerfile_path, debug=debug)
     if debug:
         print(f"Image cache tag: {cache_tag}", file=sys.stderr)
 
-    cache_hit = _image_exists(cache_tag)
+    cache_hit = _image_exists(cache_tag, debug=debug)
     if cache_hit:
+        command = ["docker", "tag", cache_tag, AIDER_IMAGE]
+        _trace_command(command, debug)
         tag_result = subprocess.run(
-            ["docker", "tag", cache_tag, AIDER_IMAGE],
+            command,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -623,17 +635,21 @@ def main() -> int:
     else:
         build_code = build_image(dockerfile_path, AGENT_DIR, debug=debug)
         if build_code == 0:
+            command = ["docker", "tag", AIDER_IMAGE, cache_tag]
+            _trace_command(command, debug)
             subprocess.run(
-                ["docker", "tag", AIDER_IMAGE, cache_tag],
+                command,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
             # Once the base image is local its repo digests are known;
             # re-hash so the next run gets a stable, digest-aware tag.
-            refreshed_tag = _image_cache_tag(dockerfile_path)
+            refreshed_tag = _image_cache_tag(dockerfile_path, debug=debug)
             if refreshed_tag != cache_tag:
+                command = ["docker", "tag", AIDER_IMAGE, refreshed_tag]
+                _trace_command(command, debug)
                 subprocess.run(
-                    ["docker", "tag", AIDER_IMAGE, refreshed_tag],
+                    command,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
