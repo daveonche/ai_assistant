@@ -28,7 +28,7 @@
 - [x] Step 5. Enable container image build management
 - [x] Step 6. Enable assistant configuration argument assembly
 - [x] Step 7. Enable interactive assistant session launch
-- [ ] Step 8. Enable session container cleanup
+- [x] Step 8. Enable session container cleanup
 
 ### Story S1.4: Aider Configuration and AGENT.md Setup
 
