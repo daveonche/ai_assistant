@@ -37,6 +37,7 @@ from typing import Optional
 TOOL_NAME = "ai-assistant"
 AIDER_IMAGE = "aider-agent:latest"
 BASE_IMAGE_FALLBACK = "paulgauthier/aider-full:latest"
+SESSION_ID_ENV_VAR = "AI_ASSISTANT_SESSION_ID"
 
 ANSI_RED = "\033[31m"
 ANSI_GREEN = "\033[32m"
@@ -229,6 +230,34 @@ def _warn_agent_dir_location(project_root: Path) -> None:
             "container.",
             file=sys.stderr,
         )
+
+
+def _resolve_session_id() -> str:
+    """Return the session identifier used for container naming and labels.
+
+    Resolution order:
+    1. The AI_ASSISTANT_SESSION_ID environment override, so any editor or
+       shell can group multiple terminals into a single session.
+    2. The tmux session identity (TMUX is shared by all panes of a session).
+    3. The GNU screen session name (STY).
+    4. The parent shell PID, giving each plain terminal its own session.
+
+    Returns:
+        A session identifier restricted to Docker's legal container-name
+        characters, because the value is embedded in the container name.
+    """
+    override = os.environ.get(SESSION_ID_ENV_VAR)
+    if override:
+        raw = override
+    elif os.environ.get("TMUX"):
+        # TMUX holds "<socket>,<server-pid>,<session>,..." and is shared by
+        # every pane attached to the same tmux session.
+        raw = "tmux-" + os.environ["TMUX"]
+    elif os.environ.get("STY"):
+        raw = "screen-" + os.environ["STY"]
+    else:
+        raw = str(os.getppid())
+    return re.sub(r"[^a-zA-Z0-9_.-]", "_", raw)
 
 
 def cleanup_containers(
@@ -606,9 +635,7 @@ def main() -> int:
     project_root = Path.cwd()
     dir_name = project_root.name
     workspace_hash = hashlib.md5((str(project_root) + "\n").encode()).hexdigest()
-    # Editor terminals share the editor-provided session PID; outside an
-    # editor the parent shell PID gives each terminal its own session.
-    session_id = os.environ.get("VSCODE_PID") or str(os.getppid())
+    session_id = _resolve_session_id()
     container_name = (
         f"{TOOL_NAME}-{dir_name}-{workspace_hash[:8]}-{session_id}-{os.getpid()}"
     )
