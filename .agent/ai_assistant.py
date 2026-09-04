@@ -130,6 +130,14 @@ def _aider_config_args(agent_dir: Path) -> list[str]:
     if model_settings_file.exists():
         args.extend(["--model-settings-file", str(model_settings_file)])
 
+    aiderignore_file = agent_dir / ".aiderignore"
+    if aiderignore_file.exists():
+        args.extend(["--aiderignore", str(aiderignore_file)])
+
+    model_metadata_file = agent_dir / ".aider.model.metadata.json"
+    if model_metadata_file.exists():
+        args.extend(["--model-metadata-file", str(model_metadata_file)])
+
     return args
 
 
@@ -686,10 +694,6 @@ def run_container(
         str(agent_dir / ".aider.chat.history.md"),
         "--input-history-file",
         str(agent_dir / ".aider.input.history"),
-        "--aiderignore",
-        str(agent_dir / ".aiderignore"),
-        "--model-metadata-file",
-        str(agent_dir / ".aider.model.metadata.json"),
     ])
 
     command.extend(assistant_args)
