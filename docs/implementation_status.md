@@ -19,12 +19,16 @@
 - [x] Step 4. Enable prerequisite documentation for first use
 - [x] Step 5. Enable dual-mode installation support
 
-### Story S1.3: Bash Launch Script Implementation
+### Story S1.3: Core Architecture Implementation (Launcher Layer)
 
-- [x] Step 1. Enable script creation and execution
-- [x] Step 2. Enable argument parsing and path resolution
-- [x] Step 3. Enable Docker container lifecycle management
-- [x] Step 4. Enable Aider environment launch
+- [x] Step 1. Enable launcher entry and argument forwarding
+- [x] Step 2. Enable command tracing and debug output
+- [ ] Step 3. Enable container engine availability gating
+- [ ] Step 4. Enable deterministic session container identity
+- [ ] Step 5. Enable container image build management
+- [ ] Step 6. Enable assistant configuration argument assembly
+- [ ] Step 7. Enable interactive assistant session launch
+- [ ] Step 8. Enable session container cleanup
 
 ### Story S1.4: Aider Configuration and AGENT.md Setup
 
