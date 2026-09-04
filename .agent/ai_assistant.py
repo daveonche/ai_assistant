@@ -231,16 +231,27 @@ def _warn_agent_dir_location(project_root: Path) -> None:
         )
 
 
-def cleanup_containers(workspace_hash: str, debug: bool = False) -> None:
-    """Remove all containers associated with the current workspace.
+def cleanup_containers(
+    workspace_hash: str,
+    session_id: str,
+    debug: bool = False,
+) -> None:
+    """Remove leftover containers from other sessions in the workspace.
+
+    Multiple containers may run concurrently within the same workspace and
+    session, so only containers labeled with the workspace hash but a
+    different session are removed.
 
     Arguments:
         workspace_hash: Aider directory hash used as a Docker label.
+        session_id: Aider session label identifying the current session.
         debug: Whether to print the underlying Docker commands to stderr.
 
     Returns:
         None
     """
+    # Docker label filters have no "not-equal" operator, so list each
+    # container together with its session label and compare in Python.
     command = [
         "docker",
         "ps",
@@ -248,7 +259,7 @@ def cleanup_containers(workspace_hash: str, debug: bool = False) -> None:
         "--filter",
         f"label=aider.dir={workspace_hash}",
         "--format",
-        "{{.ID}}",
+        '{{.ID}} {{.Label "aider.session"}}',
     ]
     try:
         _trace_command(command, debug)
@@ -272,10 +283,16 @@ def cleanup_containers(workspace_hash: str, debug: bool = False) -> None:
             )
         return
 
-    container_ids = [
-        line for line in (result.stdout or "").splitlines() if line.strip()
-    ]
-    for container_id in container_ids:
+    stale_ids = []
+    for line in (result.stdout or "").splitlines():
+        fields = line.split()
+        if not fields:
+            continue
+        # Containers without a session label are treated as foreign.
+        container_session = fields[1] if len(fields) > 1 else None
+        if container_session != session_id:
+            stale_ids.append(fields[0])
+    for container_id in stale_ids:
         command = ["docker", "rm", "-f", container_id]
         _trace_command(command, debug)
         subprocess.run(
@@ -589,7 +606,9 @@ def main() -> int:
     project_root = Path.cwd()
     dir_name = project_root.name
     workspace_hash = hashlib.md5((str(project_root) + "\n").encode()).hexdigest()
-    session_id = os.environ.get("VSCODE_PID", "0")
+    # Editor terminals share the editor-provided session PID; outside an
+    # editor the parent shell PID gives each terminal its own session.
+    session_id = os.environ.get("VSCODE_PID") or str(os.getppid())
     container_name = (
         f"{TOOL_NAME}-{dir_name}-{workspace_hash[:8]}-{session_id}-{os.getpid()}"
     )
@@ -605,7 +624,7 @@ def main() -> int:
 
     _warn_agent_dir_location(project_root)
 
-    cleanup_containers(workspace_hash, debug=debug)
+    cleanup_containers(workspace_hash, session_id, debug=debug)
 
     # The Dockerfile performs no COPY, so the build context only needs the
     # Dockerfile itself. Using .agent (with its generated .dockerignore)
