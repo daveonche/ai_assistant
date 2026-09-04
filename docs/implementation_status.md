@@ -23,7 +23,7 @@
 
 - [x] Step 1. Enable launcher entry and argument forwarding
 - [x] Step 2. Enable command tracing and debug output
-- [ ] Step 3. Enable container engine availability gating
+- [x] Step 3. Enable container engine availability gating
 - [ ] Step 4. Enable deterministic session container identity
 - [ ] Step 5. Enable container image build management
 - [ ] Step 6. Enable assistant configuration argument assembly
