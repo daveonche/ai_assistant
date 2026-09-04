@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import os
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -260,27 +261,124 @@ def _resolve_session_id() -> str:
     return re.sub(r"[^a-zA-Z0-9_.-]", "_", raw)
 
 
+def _pid_alive(pid_text: str) -> bool:
+    """Return True when the given host PID currently exists."""
+    try:
+        pid = int(pid_text)
+    except (TypeError, ValueError):
+        return False
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+    return True
+
+
+def _remove_container(container_ref: str, debug: bool = False) -> None:
+    """Force-remove a container by name or ID. Missing containers are ignored."""
+    command = ["docker", "rm", "-f", container_ref]
+    try:
+        _trace_command(command, debug)
+        subprocess.run(
+            command,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except FileNotFoundError:
+        pass
+
+
+def _set_parent_death_signal(sig: int) -> None:
+    """Ask the kernel to signal this process when its parent dies."""
+    try:
+        import ctypes
+
+        libc = ctypes.CDLL("libc.so.6", use_errno=True)
+        pr_set_pdeathsig = 1
+        libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong]
+        libc.prctl.restype = ctypes.c_int
+        libc.prctl(pr_set_pdeathsig, sig)
+    except (OSError, AttributeError):
+        pass
+
+
+def _start_container_watchdog(container_name: str, debug: bool = False) -> int:
+    """Fork a child that removes the container if this process dies.
+
+    Uses PR_SET_PDEATHSIG so SIGKILL of the launcher still stops the
+    container, and polls getppid() as a fallback when prctl is unavailable.
+    """
+    sys.stdout.flush()
+    sys.stderr.flush()
+    try:
+        pid = os.fork()
+    except OSError:
+        return -1
+    if pid > 0:
+        return pid
+
+    try:
+        os.setsid()
+    except OSError:
+        try:
+            os.setpgrp()
+        except OSError:
+            pass
+
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGHUP, signal.SIG_IGN)
+    parent = os.getppid()
+    _set_parent_death_signal(signal.SIGTERM)
+
+    def _cleanup(_signum=None, _frame=None):
+        _remove_container(container_name, debug)
+        os._exit(0)
+
+    signal.signal(signal.SIGTERM, _cleanup)
+    if os.getppid() != parent or os.getppid() == 1:
+        _cleanup()
+    while True:
+        time.sleep(1)
+        if os.getppid() != parent or os.getppid() == 1:
+            _cleanup()
+
+
+def _stop_watchdog(watchdog_pid: int) -> None:
+    """Terminate a watchdog child started by _start_container_watchdog."""
+    if watchdog_pid <= 0:
+        return
+    try:
+        os.kill(watchdog_pid, signal.SIGKILL)
+    except OSError:
+        pass
+    try:
+        os.waitpid(watchdog_pid, 0)
+    except OSError:
+        pass
+
+
 def cleanup_containers(
     workspace_hash: str,
-    session_id: str,
     debug: bool = False,
 ) -> None:
-    """Remove leftover containers from other sessions in the workspace.
+    """Remove leftover containers whose host launcher process is not alive.
 
-    Multiple containers may run concurrently within the same workspace and
-    session, so only containers labeled with the workspace hash but a
-    different session are removed.
+    Live launchers in the same workspace are left running so multiple
+    terminals can coexist. Session identity is not used for cleanup.
 
     Arguments:
         workspace_hash: Aider directory hash used as a Docker label.
-        session_id: Aider session label identifying the current session.
         debug: Whether to print the underlying Docker commands to stderr.
 
     Returns:
         None
     """
-    # Docker label filters have no "not-equal" operator, so list each
-    # container together with its session label and compare in Python.
     command = [
         "docker",
         "ps",
@@ -288,7 +386,7 @@ def cleanup_containers(
         "--filter",
         f"label=aider.dir={workspace_hash}",
         "--format",
-        '{{.ID}} {{.Label "aider.session"}}',
+        '{{.ID}} {{.Label "aider.hostpid"}}',
     ]
     try:
         _trace_command(command, debug)
@@ -317,18 +415,12 @@ def cleanup_containers(
         fields = line.split()
         if not fields:
             continue
-        # Containers without a session label are treated as foreign.
-        container_session = fields[1] if len(fields) > 1 else None
-        if container_session != session_id:
+        # Unlabeled leftovers (no hostpid) are treated as orphaned.
+        host_pid = fields[1] if len(fields) > 1 else ""
+        if not _pid_alive(host_pid):
             stale_ids.append(fields[0])
     for container_id in stale_ids:
-        command = ["docker", "rm", "-f", container_id]
-        _trace_command(command, debug)
-        subprocess.run(
-            command,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        _remove_container(container_id, debug=debug)
 
 
 def build_image(
@@ -497,6 +589,8 @@ def run_container(
         f"aider.dir={workspace_hash}",
         "--label",
         f"aider.session={session_id}",
+        "--label",
+        f"aider.hostpid={os.getpid()}",
         "--user",
         f"{uid}:{gid}",
     ]
@@ -602,14 +696,21 @@ def run_container(
 
     _trace_command(command, debug)
 
+    watchdog_pid = _start_container_watchdog(container_name, debug)
     try:
-        return subprocess.run(command).returncode
-    except FileNotFoundError:
-        print(
-            "Error: Docker CLI not found while starting assistant.",
-            file=sys.stderr,
-        )
-        return 127
+        try:
+            return subprocess.run(command).returncode
+        except FileNotFoundError:
+            print(
+                "Error: Docker CLI not found while starting assistant.",
+                file=sys.stderr,
+            )
+            return 127
+        except KeyboardInterrupt:
+            _remove_container(container_name, debug)
+            return 130
+    finally:
+        _stop_watchdog(watchdog_pid)
 
 
 def main() -> int:
@@ -651,7 +752,7 @@ def main() -> int:
 
     _warn_agent_dir_location(project_root)
 
-    cleanup_containers(workspace_hash, session_id, debug=debug)
+    cleanup_containers(workspace_hash, debug=debug)
 
     # The Dockerfile performs no COPY, so the build context only needs the
     # Dockerfile itself. Using .agent (with its generated .dockerignore)
