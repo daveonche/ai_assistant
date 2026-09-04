@@ -40,6 +40,7 @@ IMPLEMENTATION PHASE (code mode):
 
 ## Gotchas
 
+- Context check: a file is in context if its contents appear anywhere in the conversation, including the initial read-only reference set; scan the full transcript before requesting it via /read-only.
 - New dependencies: never assume uncovered functionality is covered by existing dependencies. STOP and invoke #manage-dependencies.
 - Sequential order: never skip steps or implement them out of order; subsequent steps must be explicitly reviewed when reached.
 - Verification: always verify prerequisites before implementing a step.
@@ -56,6 +57,8 @@ IMPLEMENTATION PHASE (code mode):
 1. The story steps report (S<X.Y>-story-steps.md)
 2. The sprint story
 3. Approved dependencies or dependency context from the Dependency Management workflow
+
+Context availability rule: a file counts as available when its contents appear anywhere in the conversation — including files provided before the workflow started (e.g., the initial read-only reference set) — not only via a recent "/read-only" confirmation. Scan the full transcript before listing items as missing; request a `/read-only` only when the contents are absent from the transcript or there is reason to believe the on-disk copy changed since it was added.
 
 Present findings exactly like this:
 ```

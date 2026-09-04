@@ -211,3 +211,4 @@ do not ask them to paste output manually.
 2. When outputting `/read-only` or `/drop` commands, embed the exact command in the sentence. Do not replace it with a paraphrase, and do not execute it yourself.
 3. Always wait for explicit user input at [STOP] points.
 4. If user input at a [STOP] point is invalid or unexpected, re-prompt with the original question.
+5. A file counts as in context when its contents appear anywhere in the conversation — including the initial read-only reference set — not only via a recent `/read-only` confirmation. Scan the full transcript before asking the user to run `/read-only`; request it only when the contents are absent from the transcript or the on-disk copy may have changed since it was added.
