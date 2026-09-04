@@ -2,10 +2,10 @@
 
 Conventions for creating and reviewing `AGENTS.md` files: the agent-facing
 documentation that tells coding agents how to work in this repository.
-Derived from the AGENTS.md standard at https://agents.md/, with structure
+Derived from the AGENTS.md standard at [AGENTS.md](https://agents.md/), with structure
 and metadata guidance adapted from the Agent-Flavored Markdown
 specification at
-https://wso2.github.io/agent-flavored-markdown/specification/.
+[AFGM Specification](https://wso2.github.io/agent-flavored-markdown/specification/).
 
 Use this file as the review criteria when creating or reviewing an
 `AGENTS.md` file.

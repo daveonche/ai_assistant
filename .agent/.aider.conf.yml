@@ -117,7 +117,9 @@ read:
 # line below so its conventions are read from .agent/.aider.conventions/ on
 # launch. Convention files stay in .agent/.aider.conventions/; never copy
 # them to the project root.
-# - .agent/.aider.conventions/AFM.md
 # - .agent/.aider.conventions/ELGG.md
-# - .agent/.aider.conventions/ODOO.md
 # - .agent/.aider.conventions/RAILS.md
+# TODO: Uncomment the following lines if you want to use the conventions for Odoo, Flask, or Django.
+# - .agent/.aider.conventions/ODOO.md
+# - .agent/.aider.conventions/FLASK.md
+# - .agent/.aider.conventions/DJANGO.md
