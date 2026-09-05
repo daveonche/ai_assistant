@@ -8,8 +8,8 @@
 - [x] Step 2. Enable the layered project layout
 - [x] Step 3. Enable placeholder tracking for empty directories
 - [x] Step 4. Enable transient artifact exclusion
-- [ ] Step 5. Enable project licensing and readme documentation
-- [ ] Step 6. Enable architecture alignment confirmation
+- [x] Step 5. Enable project licensing and readme documentation
+- [x] Step 6. Enable architecture alignment confirmation
 
 ### Story S1.2: Development Environment Setup
 

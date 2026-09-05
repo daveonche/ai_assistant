@@ -9,10 +9,12 @@
 #     host daemon through the mounted /var/run/docker.sock, so compose stacks
 #     are siblings of this container and all paths resolve on the host.
 #
-# For reproducible builds, pin the base image by digest once tested:
-#   docker buildx imagetools inspect paulgauthier/aider-full:latest
-# FROM paulgauthier/aider-full:latest@sha256:<DIGEST>
-FROM paulgauthier/aider-full:latest
+# Base image pinned by tag + manifest-list digest for reproducible builds
+# (verified against the Docker Hub tags API; recorded in docs/tech_stack.md
+# under "Verified Image Pins"). To upgrade: inspect the new tag's digest
+# with `docker buildx imagetools inspect` or the Docker Hub tags API, then
+# update this line and docs/tech_stack.md together and run ./agent.sh.
+FROM paulgauthier/aider-full:v0.86.2@sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4
 
 USER root
 

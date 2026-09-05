@@ -2,7 +2,7 @@
 
 ## Core Technology
 
-- Aider (via `paulgauthier/aider-full:latest`)
+- Aider (via `paulgauthier/aider-full:v0.86.2@sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4`)
 
 ## Required Dependencies
 
@@ -52,3 +52,13 @@ GitHub Actions `uses` references are pinned to full-length commit SHAs and verif
 | `actions/checkout` | v4.2.2 | `11bd71901bbe5b1630ceea73d27597364c9af683` | `.github/workflows/ci.yml` (both jobs) |
 
 Verification record: `git ls-remote https://github.com/actions/checkout.git 'refs/tags/v4.2.2*'` returned exactly one line, so `v4.2.2` is a lightweight tag and the advertised SHA is the commit itself; it matches the pinned value.
+
+### Verified Image Pins
+
+The base image in `.agent/Dockerfile.aider` is pinned to tag + manifest-list digest.
+
+| Image | Tag | Digest (manifest list) | Used in |
+| :--- | :--- | :--- | :--- |
+| `paulgauthier/aider-full` | `v0.86.2` | `sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4` | `.agent/Dockerfile.aider` `FROM` |
+
+Verification record: the Docker Hub tags API for `paulgauthier/aider-full:v0.86.2` reported digest `sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4`, the manifest-list digest covering all architectures, matching the pinned value. (`docker buildx imagetools inspect <ref>` is the equivalent local command when the buildx plugin is installed.)
