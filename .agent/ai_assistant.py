@@ -371,6 +371,17 @@ def _stop_watchdog(watchdog_pid: int) -> None:
         pass
 
 
+def _running_in_container() -> bool:
+    """Return True when this launcher is itself running inside a container.
+
+    Docker creates /.dockerenv in every container it starts, so the file's
+    presence is a reliable marker for a nested launcher invocation. From
+    inside a container the host PID space is invisible, so stale-container
+    cleanup must not run (see cleanup_containers).
+    """
+    return Path("/.dockerenv").exists()
+
+
 def cleanup_containers(
     workspace_hash: str,
     debug: bool = False,
@@ -774,7 +785,15 @@ def main() -> int:
 
     _warn_agent_dir_location(project_root)
 
-    cleanup_containers(workspace_hash, debug=debug)
+    if _running_in_container():
+        print(
+            "Warning: the launcher appears to be running inside a container; "
+            "skipping stale-container cleanup. The launcher must run on the "
+            "host, where container aliveness can be checked reliably.",
+            file=sys.stderr,
+        )
+    else:
+        cleanup_containers(workspace_hash, debug=debug)
 
     # The Dockerfile performs no COPY, so the build context only needs the
     # Dockerfile itself. Using .agent (with its generated .dockerignore)
