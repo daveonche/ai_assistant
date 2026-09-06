@@ -41,6 +41,6 @@
 
 - [x] Step 1. Enable reproducible container image build from a pinned base image
 - [x] Step 2. Enable read-write project root access inside the session container
-- [ ] Step 3. Enable container engine access from inside the container
+- [x] Step 3. Enable container engine access from inside the container
 - [ ] Step 4. Enable deterministic session container identity and automatic cleanup
 - [ ] Step 5. Enable credential passing at launch only
