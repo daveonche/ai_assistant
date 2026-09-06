@@ -1,7 +1,7 @@
 # CI pipeline validating the launcher, shell scripts, and Docker image build.
 #
 # Local validation: actionlint is the preferred validator (see
-# .agent/.aider.conventions/references/ci-cid-best-practices.md). When it is
+# .agent/.aider.conventions/references/ci-cd-best-practices.md). When it is
 # not installed, validate YAML syntax with PyYAML:
 #   python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print('YAML OK')"
 
@@ -9,17 +9,7 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
-    paths:
-      - '.agent/**'
-      - 'agent.sh'
-      - '.github/workflows/**'
   pull_request:
-    branches: [main, master]
-    paths:
-      - '.agent/**'
-      - 'agent.sh'
-      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
