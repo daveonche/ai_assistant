@@ -44,3 +44,7 @@
 - [x] Step 3. Enable container engine access from inside the container
 - [x] Step 4. Enable deterministic session container identity and automatic cleanup
 - [x] Step 5. Enable credential passing at launch only
+
+### Story S1.6: Initial Build Pipeline (CI Validation)
+
+- [x] Step 1. Enable the automated validation pipeline definition
