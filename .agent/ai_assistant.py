@@ -40,6 +40,25 @@ AIDER_IMAGE = "aider-agent:latest"
 BASE_IMAGE_FALLBACK = "paulgauthier/aider-full:latest"
 SESSION_ID_ENV_VAR = "AI_ASSISTANT_SESSION_ID"
 
+# Well-known provider credential variables forwarded from the host
+# environment into the container by name only (docker run -e VAR). Docker
+# fills the value from the launcher process's own environment, so secrets
+# never appear in commands or their debug traces (see run_container).
+CREDENTIAL_ENV_VARS = (
+    "ANTHROPIC_API_KEY",
+    "OPENAI_API_KEY",
+    "GEMINI_API_KEY",
+    "GOOGLE_API_KEY",
+    "OPENROUTER_API_KEY",
+    "AZURE_API_KEY",
+    "DEEPSEEK_API_KEY",
+    "GROQ_API_KEY",
+    "MISTRAL_API_KEY",
+    "COHERE_API_KEY",
+    "TOGETHER_API_KEY",
+    "HF_TOKEN",
+)
+
 ANSI_RED = "\033[31m"
 ANSI_GREEN = "\033[32m"
 ANSI_RESET = "\033[0m"
@@ -710,6 +729,14 @@ def run_container(
         command.extend(["--env-file", str(env_file)])
     elif agent_env_file.exists():
         command.extend(["--env-file", str(agent_env_file)])
+
+    # Forward host-exported credentials by name only: Docker fills the value
+    # from this process's environment, so secrets never appear in the command
+    # or its debug trace. Placed after --env-file so explicitly exported host
+    # credentials take precedence over file defaults.
+    for var in CREDENTIAL_ENV_VARS:
+        if var in os.environ:
+            command.extend(["-e", var])
 
     command.append(AIDER_IMAGE)
     command.extend(["--chat-mode", "ask"])
