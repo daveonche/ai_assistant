@@ -49,3 +49,4 @@
 
 - [x] Step 1. Enable the automated validation pipeline definition
 - [x] Step 2. Enable launcher source code validation in the pipeline
+- [x] Step 3. Enable shell script validation in the pipeline
