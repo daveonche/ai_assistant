@@ -36,3 +36,11 @@
 - [x] Step 2. Enable model settings configuration
 - [x] Step 3. Enable context exclusion rules
 - [x] Step 4. Enable AGENT.md workflow and context management rules
+
+### Story S1.5: Essential Infrastructure (Containerization Layer)
+
+- [x] Step 1. Enable reproducible container image build from a pinned base image
+- [x] Step 2. Enable read-write project root access inside the session container
+- [ ] Step 3. Enable container engine access from inside the container
+- [ ] Step 4. Enable deterministic session container identity and automatic cleanup
+- [ ] Step 5. Enable credential passing at launch only
