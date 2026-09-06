@@ -45,13 +45,13 @@ The base image is pinned to tag + manifest-list digest: `paulgauthier/aider-full
 
 ### Verified Action Pins
 
-GitHub Actions `uses` references are pinned to full-length commit SHAs and verified against their upstream tags before merge; the verification procedure is documented in "Steps and actions" in `.agent/.aider.conventions/references/ci-cd-best-practices.md`.
+GitHub Actions `uses` references are pinned to full-length commit SHAs and verified against their upstream tags before merge; the verification procedure is documented in "SHA pinning verification" in `.agent/.aider.conventions/references/ci-cd-best-practices.md`.
 
 | Action | Version | Pinned SHA | Used in |
 | :--- | :--- | :--- | :--- |
-| `actions/checkout` | v4.2.2 | `11bd71901bbe5b1630ceea73d27597364c9af683` | `.github/workflows/ci.yml` (both jobs) |
+| `actions/checkout` | v6.1.0 | `d23441a48e516b6c34aea4fa41551a30e30af803` | `.github/workflows/ci.yml` (both jobs) |
 
-Verification record: `git ls-remote https://github.com/actions/checkout.git 'refs/tags/v4.2.2*'` returned exactly one line, so `v4.2.2` is a lightweight tag and the advertised SHA is the commit itself; it matches the pinned value.
+Verification record: `git ls-remote https://github.com/actions/checkout.git 'refs/tags/v6*'` returned single-line (lightweight) entries for `v6`, `v6-beta`, `v6.0.0`, `v6.0.1`, `v6.0.2`, and `v6.1.0`, plus an annotated `v6.0.3` with a second line ending in `^{}` (commit `df4cb1c069e1874edd31b4311f1884172cec0e10`). The pinned `v6.1.0` is a lightweight tag, so the advertised SHA is the commit itself: `d23441a48e516b6c34aea4fa41551a30e30af803`; the floating `refs/tags/v6` advertises the same SHA, confirming `v6.1.0` is the newest release on the major line. The previous pin (`v4.2.2` @ `11bd71901bbe5b1630ceea73d27597364c9af683`) targets the deprecated Node.js 20 runtime and was forced onto Node.js 24 by runners; `v6.1.0` targets Node.js 24 natively.
 
 ### Verified Image Pins
 
