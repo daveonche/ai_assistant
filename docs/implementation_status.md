@@ -50,3 +50,5 @@
 - [x] Step 1. Enable the automated validation pipeline definition
 - [x] Step 2. Enable launcher source code validation in the pipeline
 - [x] Step 3. Enable shell script validation in the pipeline
+- [x] Step 4. Enable container image build validation in the pipeline
+- [x] Step 5. Enable end-to-end pipeline result confirmation on a clean tree
