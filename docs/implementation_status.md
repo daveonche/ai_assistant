@@ -48,3 +48,4 @@
 ### Story S1.6: Initial Build Pipeline (CI Validation)
 
 - [x] Step 1. Enable the automated validation pipeline definition
+- [x] Step 2. Enable launcher source code validation in the pipeline
