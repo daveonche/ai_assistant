@@ -52,3 +52,7 @@
 - [x] Step 3. Enable shell script validation in the pipeline
 - [x] Step 4. Enable container image build validation in the pipeline
 - [x] Step 5. Enable end-to-end pipeline result confirmation on a clean tree
+
+### Story S1.7: Basic Developer Workflow (Orchestration & Prompt Library)
+
+- [x] Step 1. Enable prompt directory structure
