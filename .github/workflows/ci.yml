@@ -49,4 +49,6 @@ jobs:
           persist-credentials: false
 
       - name: Build image from .agent/Dockerfile.aider
-        run: docker build -f .agent/Dockerfile.aider -t ai-assistant:ci .
+        run: docker build --progress=plain -f .agent/Dockerfile.aider -t ai-assistant:ci .agent
+        env:
+          DOCKER_BUILDKIT: "1"
