@@ -605,6 +605,13 @@ def run_container(
 
     if docker_gid is not None:
         command.extend(["--group-add", str(docker_gid)])
+    else:
+        print(
+            "Warning: host 'docker' group not found; skipping --group-add. "
+            "Docker commands inside the container may fail with permission "
+            "errors.",
+            file=sys.stderr,
+        )
 
     if Path("/dev/snd").exists():
         command.extend([
@@ -613,6 +620,17 @@ def run_container(
             "--device",
             "/dev/snd",
         ])
+
+    # Docker-outside-of-Docker prerequisite: mounting a nonexistent socket
+    # path makes the daemon create an empty directory in its place, which
+    # silently breaks engine access inside the container.
+    if not Path("/var/run/docker.sock").exists():
+        print(
+            "Warning: /var/run/docker.sock does not exist on the host; "
+            "Docker commands inside the container will fail (e.g. when the "
+            "host reaches its daemon through DOCKER_HOST).",
+            file=sys.stderr,
+        )
 
     command.extend([
         "-e",
