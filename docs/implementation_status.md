@@ -60,3 +60,11 @@
 - [x] Step 3. Enable shorthand command mapping
 - [x] Step 4. Enable context management rules in AGENT.md
 - [x] Step 5. Enable prompt loading and dropping verification
+
+### Story S1.8: Logging, Configuration & Environment Management
+
+- [x] Step 1. Enable engine command tracing and debug logging
+- [ ] Step 2. Enable progress feedback during long operations
+- [ ] Step 3. Enable credential handling at launch
+- [ ] Step 4. Enable empty artifact cleanup
+- [ ] Step 5. Enable logging and debug documentation
