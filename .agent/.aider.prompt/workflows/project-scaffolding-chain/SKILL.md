@@ -12,6 +12,8 @@ This role responds to the following commands:
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 7B: Unit Testing
 - `$coding-dependency-management` - Activates conditional dependency management during implementation
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 ## Gotchas
 
 - Chain integrity requires each phase's output to be available or approved before proceeding to the next phase.

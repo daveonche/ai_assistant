@@ -56,3 +56,4 @@
 ### Story S1.7: Basic Developer Workflow (Orchestration & Prompt Library)
 
 - [x] Step 1. Enable prompt directory structure
+- [x] Step 2. Enable prompt file creation
