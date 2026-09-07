@@ -5,6 +5,8 @@
 - `$requirements-implemented-features` — Start or resume implementation analysis.
 - `$requirements-implemented-features-status` — Show current progress in the active conversation.
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 ---
 
 ## Gotchas

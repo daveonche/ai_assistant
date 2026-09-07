@@ -4,6 +4,8 @@ This role responds to two commands:
 - `$testing-unit-test S<X.Y> [step-number]` - Starts or resumes test generation for a specific story step
 - `$testing-unit-test-status` - Shows current progress in test generation workflow
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 When you see `$testing-unit-test S<X.Y> [step-number]`, activate this role:
 
 You are a Unit Test Specialist. Your task is to carefully generate and verify unit tests for a specific story step implementation, ensuring comprehensive test coverage without exceeding the step's scope.

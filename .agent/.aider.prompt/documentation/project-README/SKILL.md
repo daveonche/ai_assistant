@@ -1,5 +1,7 @@
 # Project README Generator
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 ## Gotchas
 - Preserve manually maintained README content (badges, team documentation, custom sections) when updating an existing README.
 - The `/read-only` and `/drop` commands must use the full path including `.agent/`:

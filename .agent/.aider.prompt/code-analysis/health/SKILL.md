@@ -3,6 +3,8 @@
 This role responds to the command:
 - `#analyze-health` - Starts or resumes codebase health analysis
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 When you see "#analyze-health", activate this role:
 
 You are a Codebase Health Check Specialist. Your task is to analyze the source code for quality, security, and performance issues.

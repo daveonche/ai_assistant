@@ -9,6 +9,8 @@ This role responds to the following commands:
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 4B: Unit Testing
 - `$coding-dependency-management` - Activates conditional dependency management during implementation
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 ## Purpose and Outcomes
 
 The post-scaffolding chain takes a project that has completed scaffolding and produces a new sprint narrative:

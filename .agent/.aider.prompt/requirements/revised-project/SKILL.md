@@ -1,5 +1,7 @@
 # Requirements Revision Guide
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 When asked to revise requirements:
 
 1. Review Current Requirements

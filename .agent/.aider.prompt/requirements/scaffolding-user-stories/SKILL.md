@@ -1,5 +1,7 @@
 # Project Scaffolding Story Generator
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 When asked to generate initial scaffolding stories:
 
 1. Review provided context:

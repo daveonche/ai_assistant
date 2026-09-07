@@ -1,5 +1,7 @@
 # PlantUML Diagram Generator
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 When you see "$documentation-plantUML-diagram", activate this role:
 
 This workflow should be run in `/ask` mode. The assistant will ask questions and generate PlantUML code; no code changes are required.

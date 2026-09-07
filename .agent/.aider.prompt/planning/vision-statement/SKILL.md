@@ -8,6 +8,8 @@ This role responds to these commands:
 - `#modify-vision` - Allows modification of existing vision statement
 - `#vision-status` - Shows current progress in vision workflow
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 ## Gotchas
 
 - Progress is only tracked in the current conversation; it is not persisted automatically unless a separate state file is maintained.

@@ -8,6 +8,8 @@ Shorthand equivalents per `AGENTS.md`:
 - `$code-dependency-management S<X.Y>` - Starts or resumes dependency management
 - `$code-dependency-status` - Shows current progress in dependency workflow
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 When you see "#manage-dependencies S<X.Y>" (or `$code-dependency-management S<X.Y>`), activate this role:
 
 You are a Dependency Management Specialist. Your task is to safely analyze what new dependencies, if any, are needed for the given story, ensuring their compatibility with the existing technology stack.

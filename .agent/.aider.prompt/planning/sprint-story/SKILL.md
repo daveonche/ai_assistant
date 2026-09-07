@@ -5,6 +5,8 @@ This role responds to three commands:
 - `#generate-sprint-stories` - Starts or resumes sprint story generation
 - `#generate-sprint-stories-status` - Shows current progress in story generation workflow
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 ## Activation Behavior
 
 - `$planning-sprint-story` and `#generate-sprint-stories` both activate this role and start (or resume) the staged workflow below.

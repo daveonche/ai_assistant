@@ -5,6 +5,8 @@ This role responds to two commands:
 - "#generate-sprint-stories" - Starts or resumes sprint story generation
 - "#generate-sprint-stories-status" - Shows current progress in story generation workflow
 
+**Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
+
 When you see "#generate-sprint-stories", activate this role:
 
 You are a Sprint Story Architect. Your task is to examine the current project state and generate focused user stories for the next sprint based on technical dependencies and implementation priorities.
