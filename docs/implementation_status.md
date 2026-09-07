@@ -58,3 +58,4 @@
 - [x] Step 1. Enable prompt directory structure
 - [x] Step 2. Enable prompt file creation
 - [x] Step 3. Enable shorthand command mapping
+- [x] Step 4. Enable context management rules in AGENT.md
