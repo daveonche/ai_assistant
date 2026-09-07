@@ -40,6 +40,14 @@ AIDER_IMAGE = "aider-agent:latest"
 BASE_IMAGE_FALLBACK = "paulgauthier/aider-full:latest"
 SESSION_ID_ENV_VAR = "AI_ASSISTANT_SESSION_ID"
 
+# Per-session engine-command log. Configured once in main() from the
+# workspace hash + session ID; every traced command is appended so runs
+# stay auditable regardless of debug mode. None until configured.
+COMMAND_LOG_PATH: Optional[Path] = None
+
+# How many recent command-log lines to surface at failure checkpoints.
+COMMAND_LOG_TAIL_LINES = 10
+
 # Well-known provider credential variables forwarded from the host
 # environment into the container by name only (docker run -e VAR). Docker
 # fills the value from the launcher process's own environment, so secrets
@@ -106,9 +114,49 @@ def _docker_available(debug: bool = False) -> bool:
 
 
 def _trace_command(command: list[str], debug: bool) -> None:
-    """Print a command to stderr when debug output is enabled."""
+    """Append a command to the session log; print it when debug is enabled.
+
+    Engine commands reference credential variables by name only (Docker
+    fills the values from this process's environment; see run_container),
+    so the log never contains secret values.
+    """
+    line = "+ " + " ".join(command)
+    if COMMAND_LOG_PATH is not None:
+        try:
+            COMMAND_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+            with COMMAND_LOG_PATH.open("a", encoding="utf-8") as log_file:
+                log_file.write(line + "\n")
+        except OSError:
+            pass
     if debug:
-        print("+", " ".join(command), file=sys.stderr)
+        print(line, file=sys.stderr)
+
+
+def _configure_command_log(workspace_hash: str, session_id: str) -> Path:
+    """Point the command log at a predictable per-session file.
+
+    The file name is derived from the workspace hash and session ID, so the
+    location is stable for a given session. The file is created on first
+    write and appended to afterwards, never truncated.
+    """
+    global COMMAND_LOG_PATH
+    COMMAND_LOG_PATH = (
+        Path(tempfile.gettempdir())
+        / f"ai-assistant-{workspace_hash[:8]}-{session_id}.log"
+    )
+    return COMMAND_LOG_PATH
+
+
+def _dump_recent_log_lines(debug: bool) -> None:
+    """Surface the most recent command-log entries when debug is enabled."""
+    if not debug or COMMAND_LOG_PATH is None:
+        return
+    recent = _tail_lines(COMMAND_LOG_PATH, COMMAND_LOG_TAIL_LINES)
+    if not recent:
+        return
+    print("--- Recent command log entries ---", file=sys.stderr)
+    for line in recent:
+        print(line, file=sys.stderr)
 
 
 def _tail_lines(path: Path, count: int) -> list[str]:
@@ -765,6 +813,7 @@ def run_container(
                 "Error: Docker CLI not found while starting assistant.",
                 file=sys.stderr,
             )
+            _dump_recent_log_lines(debug)
             return 127
         except KeyboardInterrupt:
             _remove_container(container_name, debug)
@@ -786,17 +835,24 @@ def main() -> int:
         print("This assistant currently supports Linux only.", file=sys.stderr)
         return 1
 
+    # Configure the command log before the first engine command runs so the
+    # Docker availability check is recorded too.
+    project_root = Path.cwd()
+    dir_name = project_root.name
+    workspace_hash = hashlib.md5((str(project_root) + "\n").encode()).hexdigest()
+    session_id = _resolve_session_id()
+    command_log = _configure_command_log(workspace_hash, session_id)
+    if debug:
+        print(f"Command log: {command_log}", file=sys.stderr)
+
     if not _docker_available(debug=debug):
         print(
             "Docker CLI is not available. Please install Docker and ensure it is accessible from PATH.",
             file=sys.stderr,
         )
+        _dump_recent_log_lines(debug)
         return 1
 
-    project_root = Path.cwd()
-    dir_name = project_root.name
-    workspace_hash = hashlib.md5((str(project_root) + "\n").encode()).hexdigest()
-    session_id = _resolve_session_id()
     container_name = (
         f"{TOOL_NAME}-{dir_name}-{workspace_hash[:8]}-{session_id}-{os.getpid()}"
     )
