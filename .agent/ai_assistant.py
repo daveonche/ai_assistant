@@ -30,8 +30,11 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from collections import deque
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
 
@@ -174,6 +177,46 @@ def _print_spinner_update(char: str, message: str) -> None:
         return
     sys.stdout.write(f"\r[{char}] Loading AI Assistant... {message:<50}")
     sys.stdout.flush()
+
+
+def _spin_worker(message: str, stop_event: threading.Event) -> None:
+    """Animate the spinner until stop_event is set."""
+    spin_index = 0
+    while True:
+        char = SPIN_CHARS[spin_index % len(SPIN_CHARS)]
+        _print_spinner_update(char, message)
+        spin_index += 1
+        if stop_event.wait(0.25):
+            break
+
+
+@contextmanager
+def _spinner(message: str, debug: bool = False) -> Iterator[None]:
+    """Show a single-line spinner while the wrapped operation runs.
+
+    The spinner animates on a daemon thread and only when stdout is a
+    TTY; it is skipped in debug mode so traced commands print cleanly.
+    """
+    active = not debug and sys.stdout.isatty()
+    stop_event = threading.Event()
+    thread = threading.Thread(
+        target=_spin_worker,
+        args=(message, stop_event),
+        daemon=True,
+    )
+    if active:
+        thread.start()
+    try:
+        yield
+    finally:
+        stop_event.set()
+        if thread.is_alive():
+            thread.join()
+        if active:
+            # Overwrite the spinner line with spaces, then return the
+            # cursor to the start of the line.
+            sys.stdout.write("\r" + " " * 80 + "\r")
+            sys.stdout.flush()
 
 
 def _get_docker_gid() -> Optional[int]:
@@ -876,27 +919,29 @@ def main() -> int:
             file=sys.stderr,
         )
     else:
-        cleanup_containers(workspace_hash, debug=debug)
+        with _spinner("Checking for stale containers...", debug=debug):
+            cleanup_containers(workspace_hash, debug=debug)
 
     # The Dockerfile performs no COPY, so the build context only needs the
     # Dockerfile itself. Using .agent (with its generated .dockerignore)
     # avoids shipping the whole repository to the daemon on every launch.
     _ensure_build_dockerignore(AGENT_DIR)
 
-    cache_tag = _image_cache_tag(dockerfile_path, debug=debug)
-    if debug:
-        print(f"Image cache tag: {cache_tag}", file=sys.stderr)
+    with _spinner("Checking image cache...", debug=debug):
+        cache_tag = _image_cache_tag(dockerfile_path, debug=debug)
+        if debug:
+            print(f"Image cache tag: {cache_tag}", file=sys.stderr)
 
-    cache_hit = _image_exists(cache_tag, debug=debug)
-    if cache_hit:
-        command = ["docker", "tag", cache_tag, AIDER_IMAGE]
-        _trace_command(command, debug)
-        tag_result = subprocess.run(
-            command,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        cache_hit = tag_result.returncode == 0
+        cache_hit = _image_exists(cache_tag, debug=debug)
+        if cache_hit:
+            command = ["docker", "tag", cache_tag, AIDER_IMAGE]
+            _trace_command(command, debug)
+            tag_result = subprocess.run(
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            cache_hit = tag_result.returncode == 0
 
     if cache_hit:
         print(
