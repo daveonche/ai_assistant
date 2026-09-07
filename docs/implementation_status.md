@@ -59,3 +59,4 @@
 - [x] Step 2. Enable prompt file creation
 - [x] Step 3. Enable shorthand command mapping
 - [x] Step 4. Enable context management rules in AGENT.md
+- [x] Step 5. Enable prompt loading and dropping verification
