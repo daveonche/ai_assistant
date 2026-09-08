@@ -82,3 +82,31 @@ def test_agent_sh_forwards_debug_flag_to_launcher(sandbox, python3_stub):
         str(sandbox / ".agent" / "ai_assistant.py"),
         "--debug",
     ]
+
+
+def test_agent_sh_forwards_all_arguments_unchanged_in_order(
+    sandbox, python3_stub
+):
+    """The entry chain must deliver the full argv to the launcher intact.
+
+    Exact list equality proves unchanged content, original order, and no
+    consumption, reordering, dropping, or word-splitting by the chain.
+    """
+    stub_dir, log = python3_stub
+
+    args = [
+        "--debug",
+        "--model",
+        "gpt-4",
+        "--message",
+        "hello world",
+        "--no-auto-commits",
+    ]
+    result = run_entry(sandbox, stub_dir, args)
+
+    assert result.returncode == 0, result.stderr
+    invocations = log.read_text().splitlines()
+    assert invocations == [
+        str(sandbox / ".agent" / "ai_assistant.py"),
+        *args,
+    ]
