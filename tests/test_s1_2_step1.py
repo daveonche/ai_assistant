@@ -82,3 +82,22 @@ def test_agent_sh_delegates_to_launcher_via_wrapper(sandbox, python3_stub):
     broken = run_entry(sandbox, stub_dir)
     assert broken.returncode != 0
     assert len(log.read_text().splitlines()) == 1
+
+
+def test_agent_sh_contains_no_lifecycle_logic():
+    """agent.sh is a thin pass-through: no lifecycle logic of its own."""
+    source = (PROJECT_ROOT / "agent.sh").read_text()
+    tokens = {"docker", "build", "run", "image", "container"}
+    for raw_line in source.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        assert not tokens & set(line.lower().split()), line
+        assert (
+            line.startswith("set ")
+            or line.startswith("SCRIPT_DIR=")
+            or line.startswith("exec ")
+        ), line
+    exec_lines = [l for l in source.splitlines()
+                  if l.strip().startswith("exec ")]
+    assert len(exec_lines) == 1
