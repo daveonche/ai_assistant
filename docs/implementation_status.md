@@ -66,5 +66,5 @@
 - [x] Step 1. Enable engine command tracing and debug logging
 - [x] Step 2. Enable progress feedback during long operations
 - [x] Step 3. Enable credential handling at launch
-- [ ] Step 4. Enable empty artifact cleanup
+- [x] Step 4. Enable empty artifact cleanup
 - [ ] Step 5. Enable logging and debug documentation

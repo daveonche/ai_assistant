@@ -93,12 +93,29 @@ DOCKERIGNORE_CONTENT = """\
 
 
 def _remove_if_empty(path: Path) -> None:
-    """Remove a directory if it exists and is empty."""
+    """Remove a file or directory if it exists and is empty."""
     try:
-        if path.is_dir() and not any(path.iterdir()):
-            path.rmdir()
+        if path.is_dir():
+            if not any(path.iterdir()):
+                path.rmdir()
+        elif path.is_file() and path.stat().st_size == 0:
+            path.unlink()
     except OSError:
         pass
+
+
+def _cleanup_empty_artifacts(project_root: Path, agent_dir: Path) -> None:
+    """Remove known launcher artifacts that are empty after a session.
+
+    Conservative by design: only the launcher's own artifact paths are
+    checked, never a repository-wide scan. Artifacts left by an abnormally
+    killed launcher are re-checked and removed at the next session's exit.
+    Anything that contains content is left untouched (see _remove_if_empty).
+    """
+    _remove_if_empty(project_root / ".aider.tags.cache.v4")
+    _remove_if_empty(agent_dir / ".aider.tags.cache.v4")
+    _remove_if_empty(agent_dir / ".aider.chat.history.md")
+    _remove_if_empty(agent_dir / ".aider.input.history")
 
 
 def _docker_available(debug: bool = False) -> bool:
@@ -986,8 +1003,7 @@ def main() -> int:
         assistant_args,
     )
 
-    tag_cache_mount_point = project_root / ".aider.tags.cache.v4"
-    _remove_if_empty(tag_cache_mount_point)
+    _cleanup_empty_artifacts(project_root, AGENT_DIR)
 
     return result
 
