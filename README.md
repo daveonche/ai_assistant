@@ -124,6 +124,31 @@ ai-assistant
 
 If using with other projects that are built with Docker Compose, all the Docker files and configurations should be placed in the root directory, and the project's main source code should be placed in the `src/` folder.
 
+## Logging and Debug Mode
+
+Every Docker command the launcher runs is appended to a per-session command log in the system temporary directory. The log file is named `ai-assistant-<workspace-hash>-<session-id>.log` (for example, `/tmp/ai-assistant-1a2b3c4d-12345.log`), and the exact path is printed when debug mode is enabled. The log is appended to across runs of the same session and never contains secret values: credentials are forwarded to the container by variable name only.
+
+### Enabling Debug Mode
+
+Run the launcher with the `--debug` flag (short form `-x`):
+
+```bash
+./agent.sh --debug
+```
+
+In debug mode the launcher additionally prints to stderr:
+
+- Each Docker command just before it runs
+- The command log path at startup
+- The image cache tag used for the build-or-skip decision
+- The last 10 command-log entries when the assistant fails to start
+
+Spinner progress output is suppressed in debug mode so the traced commands print cleanly.
+
+### Normal Mode
+
+Without the flag, the launcher shows spinner progress feedback only while long operations run; Docker commands are still recorded to the command log file.
+
 ## Agent Workflow Sessions
 
 The `.agent` orchestration configuration supports long-running workflow sessions that survive chat resets. Session position is kept in `docs/workflow_state.md`.
