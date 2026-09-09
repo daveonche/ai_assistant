@@ -20,3 +20,12 @@ def test_aider_config_yaml_file_exists_and_is_valid_yaml():
     assert AIDER_CONFIG.is_file(), f"missing Aider config: {AIDER_CONFIG}"
     loaded = yaml.safe_load(AIDER_CONFIG.read_text(encoding="utf-8"))
     assert isinstance(loaded, dict), "aider config must parse as a YAML mapping"
+
+
+def test_config_specifies_default_model_setting():
+    """The config specifies a default model as a non-empty string."""
+    loaded = yaml.safe_load(AIDER_CONFIG.read_text(encoding="utf-8"))
+    assert "model" in loaded, "aider config must specify a default model"
+    assert isinstance(loaded["model"], str) and loaded["model"].strip(), (
+        "default model must be a non-empty string"
+    )
