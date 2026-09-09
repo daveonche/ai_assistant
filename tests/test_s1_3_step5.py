@@ -238,3 +238,44 @@ def test_definition_change_triggers_rebuild(tmp_path):
 
     f_idx = builds[0].index("-f")
     assert builds[0][f_idx + 1] == str(dockerfile)
+
+
+def test_repeated_unchanged_runs_skip_rebuild(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    offsets = []
+    for _ in range(3):
+        result = run_chain(sandbox, stub_dir, [])
+        assert result.returncode == 0, result.stderr
+        offsets.append(len(stub_invocations(sandbox)))
+
+    all_invocations = stub_invocations(sandbox)
+    assert len(_builds(all_invocations)) == 1, all_invocations
+
+    first_invocations = all_invocations[: offsets[0]]
+    assert len(_builds(first_invocations)) == 1, first_invocations
+
+    for start, end in ((offsets[0], offsets[1]), (offsets[1], offsets[2])):
+        run_invocations = all_invocations[start:end]
+        assert not _builds(run_invocations), run_invocations
+        runs = [inv for inv in run_invocations if inv[0] == "run"]
+        assert runs, "assistant should launch from the cached image"
+
+    # Determinism: an unchanged definition yields the same cache tag on
+    # every launch — run 3's cache-tag probe equals run 1's post-build tag.
+    first_cache_tags = [
+        inv[2]
+        for inv in first_invocations
+        if inv[0] == "tag" and inv[1] == "aider-agent:latest"
+    ]
+    third_probes = [
+        inv[2]
+        for inv in all_invocations[offsets[1] : offsets[2]]
+        if inv[0] == "image"
+        and inv[1] == "inspect"
+        and inv[2].startswith("aider-agent:c-")
+    ]
+    assert first_cache_tags, first_invocations
+    assert third_probes, all_invocations[offsets[1] : offsets[2]]
+    assert third_probes[0] == first_cache_tags[0]
