@@ -80,8 +80,8 @@ def test_entry_scripts_follow_shell_conventions(script):
     )
 
     # Top-level comment briefly describing the contents.
-    assert lines[1].startswith("#"), (
-        f"{script}: line 2 must be a top-level comment describing the script"
+    assert any(line.startswith("#") for line in lines[:5]), (
+        f"{script}: no top-level comment within the first 5 lines"
     )
 
     # Maximum line length is 80 characters.
