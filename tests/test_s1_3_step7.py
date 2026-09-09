@@ -216,3 +216,21 @@ def test_interactive_attach_and_assembled_plus_user_arguments_forwarded(tmp_path
     # User-supplied arguments forwarded verbatim, in order, at the tail.
     start = tail.index(user_args[0])
     assert tail[start : start + len(user_args)] == user_args
+
+
+def test_control_returns_cleanly_when_session_ends(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    result = run_chain(sandbox, stub_dir, [])
+
+    # The launcher returns control with a successful exit code when the
+    # assistant session (stub run) exits 0.
+    assert result.returncode == 0, result.stderr
+
+    # The foreground, attached session: the container's session output is
+    # surfaced on the launcher's stdout, and the launcher adds no error
+    # noise of its own.
+    assert "assistant-ready" in result.stdout, result.stdout
+    assert "Traceback" not in result.stderr
+    assert "Error" not in result.stderr
