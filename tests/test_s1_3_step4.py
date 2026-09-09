@@ -155,6 +155,19 @@ def container_name(invocation: list[str]) -> str:
     return invocation[invocation.index("--name") + 1]
 
 
+def label_value(invocation: list[str], name: str) -> str:
+    """Extract the value of a `--label <name>=<value>` pair from an argv."""
+    values = [
+        arg.split("=", 1)[1]
+        for i, arg in enumerate(invocation)
+        if i > 0
+        and invocation[i - 1] == "--label"
+        and arg.startswith(f"{name}=")
+    ]
+    assert values, f"label {name!r} not present in: {invocation}"
+    return values[0]
+
+
 def _strip_pid_suffix(name: str) -> str:
     """Mask the trailing per-launch PID segment of a container name."""
     return re.sub(r"-\d+$", "", name, count=1)
@@ -304,3 +317,40 @@ def test_multiple_containers_coexist_within_workspace(tmp_path: Path):
         if proc_a.poll() is None:
             proc_a.kill()
             proc_a.communicate()
+
+
+def test_container_labels_bind_to_host_launcher_process(tmp_path: Path):
+    """The docker run argv labels the container with the launcher process's
+    own PID — exactly the PID the test observes for the exec'd launcher
+    chain — alongside the resolved session identity and a stable workspace
+    hash, binding each container's lifetime to its host launcher process."""
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+    sandbox = _make_sandbox(tmp_path)
+
+    result = run_chain(
+        sandbox,
+        stub_dir,
+        args=[],
+        extra_env={"AI_ASSISTANT_SESSION_ID": "label-probe"},
+    )
+    assert result.returncode == 0, result.stderr
+
+    runs = run_invocations(sandbox)
+    assert len(runs) == 1, runs
+    run_argv = runs[0]
+
+    # The hostpid label is the launcher chain's own PID: every entry file
+    # exec's down to ai_assistant.py, so the Popen pid IS os.getpid() there.
+    host_pid = label_value(run_argv, "aider.hostpid")
+    assert host_pid == str(result.pid)
+
+    # The session label carries the resolved (overridden) session identity.
+    assert label_value(run_argv, "aider.session") == "label-probe"
+
+    # The workspace label is the hash the container name derives from: the
+    # name's hash segment is its first 8 characters.
+    workspace_hash = label_value(run_argv, "aider.dir")
+    assert re.fullmatch(r"[0-9a-f]{32}", workspace_hash), workspace_hash
+    assert container_name(run_argv).split("-")[3] == workspace_hash[:8]
