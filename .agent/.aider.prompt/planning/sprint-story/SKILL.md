@@ -166,7 +166,7 @@ Say EXACTLY:
 2. Reply with: save to file
 3. The stories will be written to the file
 4. After saving, enter command: /ask
-5. Optionally continue with the `$coding-dependency-management` prompt"
+5. Optionally continue with the `$code-dependency-management` prompt"
 
 [STOP]
 Wait for the user to switch to `/code` mode and reply with: `save to file`

@@ -6,11 +6,12 @@ After receiving testing stack confirmation:
 
 Say EXACTLY:
 "New testing dependencies are required. I will now:
+
 1. Pause test generation
-2. Invoke $coding-dependency-management to handle dependency setup
+2. Invoke $code-dependency-management to handle dependency setup
 3. Resume test generation after dependencies are configured
 
-Please use $coding-dependency-management now to proceed."
+Please use $code-dependency-management now to proceed."
 
 [STOP - Wait for user to complete dependency management process]
 
@@ -18,7 +19,7 @@ Please use $coding-dependency-management now to proceed."
 
 After dependencies are managed, present:
 
-```
+```txt
 Test Configuration Setup:
 
 1. Project Structure:
@@ -41,6 +42,7 @@ Shall I proceed with creating this configuration? (Y/N)
 
 After receiving 'Y', say EXACTLY:
 "Ready to create test configuration. To proceed:
+
 1. Enter command: /code
 2. Then simply say: 'create test configuration'
 3. After creation, enter command: /ask
@@ -53,7 +55,7 @@ Ask: "Shall I proceed with analyzing test scenarios? (Y/N)"
 
 ## Step 4 - Scenario Analysis Prompt
 
-```
+```txt
 Test Scenario Analysis for Step [number]:
 
 Must Support: [requirement from step]
@@ -71,6 +73,7 @@ Manual Verification Mapping:
 ```
 
 Ask: "I've mapped tests directly to step requirements. Reply with:
+
 - 'approved' to begin implementing tests
 - specific changes needed"
 
@@ -79,7 +82,8 @@ Ask: "I've mapped tests directly to step requirements. Reply with:
 For each NEW test scenario:
 
 1. First, present the test structure:
-```
+
+```txt
 Implementing Test: [test name]
 Verifies: [specific Must Support requirement being tested]
 Framework: [test framework]
@@ -92,7 +96,7 @@ Shall I proceed with implementing this test? (Y/N)"
 
 [STOP - Wait for user confirmation]
 
-2. After receiving 'Y', say EXACTLY:
+1. After receiving 'Y', say EXACTLY:
    "Ready to implement this test. To proceed:
    1. Enter command: /code
    2. Then simply say: 'implement test'
@@ -101,22 +105,25 @@ Shall I proceed with implementing this test? (Y/N)"
    4. After test execution, enter command: /ask
    5. Finally, confirm if test result is 'passing' or 'failing'"
 
-3. For test execution:
+2. For test execution:
    If framework detected:
-   ```
+
+   ```txt
    Framework-specific command for [detected framework]:
    [Show relevant command]
    ```
-   
+
    If framework not detected or custom:
-   ```
+
+   ```txt
    Please specify test execution command for your environment:
    [Wait for user input]
    ```
 
-4. After test execution command is provided/confirmed:
+3. After test execution command is provided/confirmed:
    Execute the appropriate test command and present results:
-   ```
+
+   ```txt
    Executing Test: [test name]
    Command: [exact command used]
    
@@ -127,26 +134,27 @@ Shall I proceed with implementing this test? (Y/N)"
    [If failed, show specific failure details]
    ```
 
-5. Ask: "Please confirm the test execution results. Is the test:
+4. Ask: "Please confirm the test execution results. Is the test:
    1. Passing and ready to proceed
    2. Failed and needs fixes
    3. Needs to be run manually
 
    Please choose an option (1-3)"
 
-[STOP - Wait for user confirmation]
+   [STOP - Wait for user confirmation]
 
-6. If option 2 (Failed):
+5. If option 2 (Failed):
    Return to start of STEP 5 for this test
-   
+
    If option 3 (Manual run needed):
    Say: "Please run the test manually using:
    [Provide exact test command]
-   
+
    After running, indicate if test is 'passing' or 'failing'"
 
-7. Only after confirmed passing, present:
-```
+6. Only after confirmed passing, present:
+
+```txt
 Test Status Check:
 ✓ Test implemented: [test name]
 ✓ File: [test file path]
@@ -164,7 +172,7 @@ Please choose an option (1-3)
 
 ## Step 6 - Summary Template
 
-```
+```txt
 Test Implementation Summary for S<X.Y> Step [number]:
 
 Must Support Coverage:
@@ -178,6 +186,7 @@ Test Execution Status:
 ```
 
 Ask: "Would you like to:
+
 1. Add more tests for untested requirements
 2. Mark test implementation complete
 3. Review existing tests
@@ -188,6 +197,7 @@ Please choose an option (1-3)"
 
 Say EXACTLY:
 "Test implementation for Step [number] is complete. To proceed:
+
 1. All Must Support items have corresponding passing tests ✓
 2. All tests map directly to step requirements ✓
 3. Use $testing-unit-test S<X.Y> [next-step] when ready to test the next step
@@ -197,7 +207,8 @@ IMPORTANT: Each story step must have its own dedicated tests. Even if subsequent
 ## Status Command Template
 
 When `$testing-unit-test-status` is seen, respond with:
-```
+
+```txt
 Test Generation Progress for Story S<X.Y>, Step [number]:
 
 Status: [Complete/In Progress]

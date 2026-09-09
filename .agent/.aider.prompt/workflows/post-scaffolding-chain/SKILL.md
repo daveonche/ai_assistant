@@ -5,9 +5,9 @@ This role responds to the following commands:
 - `$planning-implementation-analysis` - Activates Phase 1: Implementation Status Analysis
 - `$planning-sprint-story` - Activates Phase 2: Sprint Story Generation
 - `$planning-story-analysis S<X.Y>` - Activates Phase 3: Story Analysis
-- `$coding-implementation S<X.Y> [step-number]` - Activates Phase 4A: Implementation
+- `$code-implementation S<X.Y> [step-number]` - Activates Phase 4A: Implementation
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 4B: Unit Testing
-- `$coding-dependency-management` - Activates conditional dependency management during implementation (`.agent/.aider.prompt/code/dependency-management/SKILL.md`)
+- `$code-dependency-management` - Activates conditional dependency management during implementation (`.agent/.aider.prompt/code/dependency-management/SKILL.md`)
 
 **Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
 
@@ -53,9 +53,9 @@ Each phase depends on the output of the previous phase. Use this table to choose
 | `$planning-implementation-analysis` | Phase 1: Implementation Status Analysis |
 | `$planning-sprint-story` | Phase 2: Sprint Story Generation |
 | `$planning-story-analysis S<X.Y>` | Phase 3: Story Analysis |
-| `$coding-implementation S<X.Y> [step-number]` | Phase 4A: Implementation |
+| `$code-implementation S<X.Y> [step-number]` | Phase 4A: Implementation |
 | `$testing-unit-test S<X.Y> [step-number]` | Phase 4B: Unit Testing |
-| `$coding-dependency-management` | Conditional: Dependency Management |
+| `$code-dependency-management` | Conditional: Dependency Management |
 
 ### Chain Completion Checklist
 
@@ -71,7 +71,7 @@ Each phase depends on the output of the previous phase. Use this table to choose
 - `S<X.Y>` story IDs must come from Phase 2; do not guess them.
 - Phase 4A and Phase 4B can be resumed at a specific `[step-number]`, but only after the story has been analyzed in Phase 3.
 - Do not run implementation and unit-testing commands together; complete implementation before requesting validation tests.
-- `$coding-dependency-management` is conditional and should be activated only when a new dependency is identified during Phase 4A.
+- `$code-dependency-management` is conditional and should be activated only when a new dependency is identified during Phase 4A.
 - If you skip a phase, the next phase may not have the required input and should prompt you to run the missing phase first.
 
 [STOP - Wait for the user to run one of the phase commands above.]

@@ -78,9 +78,9 @@ Use this workflow chain when starting a new project or when the initial project 
 - `$architecture-design` - Activates Phase 4: Architecture Design Generation
 - `$planning-scaffolding-sprint-story` - Activates Phase 5: Scaffolding Sprint Story Generation
 - `$planning-story-analysis S<X.Y>` - Activates Phase 6: Story Analysis
-- `$coding-implementation S<X.Y> [step-number]` - Activates Phase 7A: Implementation
+- `$code-implementation S<X.Y> [step-number]` - Activates Phase 7A: Implementation
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 7B: Unit Testing
-- `$coding-dependency-management` - Activates conditional dependency management during implementation
+- `$code-dependency-management` - Activates conditional dependency management during implementation
 
 
 ## Overview
@@ -209,7 +209,7 @@ Break down user stories into atomic, implementable functional steps.
 
 - Story Steps Report (`S<X.Y>-story-steps.md`)
 
-### Phase 7A: Implementation (`$coding-implementation S<X.Y> [step-number]`)
+### Phase 7A: Implementation (`$code-implementation S<X.Y> [step-number]`)
 
 [Implementation Prompt](../../code/implementation/SKILL.md)
 
@@ -306,7 +306,7 @@ Generate and verify unit tests for the implemented story step.
 7. **Implement Stories, step by step:**
 
    ```cmd
-   $coding-implementation S<X.Y> [step-number]
+   $code-implementation S<X.Y> [step-number]
    ```
 
    - Requires complete story analysis outputs

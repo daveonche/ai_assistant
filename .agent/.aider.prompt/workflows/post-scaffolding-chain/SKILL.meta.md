@@ -76,9 +76,9 @@ Use this workflow chain after initial project scaffolding has been completed, wh
 - `$planning-implementation-analysis` - Activates Phase 1: Implementation Status Analysis
 - `$planning-sprint-story` - Activates Phase 2: Sprint Story Generation
 - `$planning-story-analysis S<X.Y>` - Activates Phase 3: Story Analysis
-- `$coding-implementation S<X.Y> [step-number]` - Activates Phase 4A: Implementation
+- `$code-implementation S<X.Y> [step-number]` - Activates Phase 4A: Implementation
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 4B: Unit Testing
-- `$coding-dependency-management` - Activates conditional dependency management during implementation
+- `$code-dependency-management` - Activates conditional dependency management during implementation
 
 ### Workflow
 
@@ -151,7 +151,7 @@ Break down user stories into atomic, implementable functional steps.
 
 - Story Steps Report (`S<X.Y>-story-steps.md`)
 
-### Phase 4A: Implementation (`$coding-implementation S<X.Y> [step-number]`)
+### Phase 4A: Implementation (`$code-implementation S<X.Y> [step-number]`)
 
 [Implementation Prompt](../../code/implementation/SKILL.md)
 
@@ -233,7 +233,7 @@ During the implementation phase, if the Implementation Prompt determines that ne
 4. **Implement Stories, step by step:**
 
    ```cmd
-   $coding-implementation S<X.Y> [step-number]
+   $code-implementation S<X.Y> [step-number]
    ```
 
    - Requires complete story analysis outputs

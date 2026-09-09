@@ -8,9 +8,9 @@ This role responds to the following commands:
 - `$architecture-design` - Activates Phase 4: Architecture Design Generation
 - `$planning-scaffolding-sprint-story` - Activates Phase 5: Scaffolding Sprint Story Generation
 - `$planning-story-analysis S<X.Y>` - Activates Phase 6: Story Analysis
-- `$coding-implementation S<X.Y> [step-number]` - Activates Phase 7A: Implementation
+- `$code-implementation S<X.Y> [step-number]` - Activates Phase 7A: Implementation
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 7B: Unit Testing
-- `$coding-dependency-management` - Activates conditional dependency management during implementation (`.agent/.aider.prompt/code/dependency-management/SKILL.md`)
+- `$code-dependency-management` - Activates conditional dependency management during implementation (`.agent/.aider.prompt/code/dependency-management/SKILL.md`)
 
 **Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
 
@@ -48,8 +48,8 @@ Example response: `I want to start with Phase 1: $planning-vision-statement`
 | `$architecture-design` | Phase 4: Architecture Design Generation |
 | `$planning-scaffolding-sprint-story` | Phase 5: Scaffolding Sprint Story Generation |
 | `$planning-story-analysis S<X.Y>` | Phase 6: Story Analysis |
-| `$coding-implementation S<X.Y> [step-number]` | Phase 7A: Implementation |
+| `$code-implementation S<X.Y> [step-number]` | Phase 7A: Implementation |
 | `$testing-unit-test S<X.Y> [step-number]` | Phase 7B: Unit Testing |
-| `$coding-dependency-management` | Conditional: Dependency Management |
+| `$code-dependency-management` | Conditional: Dependency Management |
 
 [STOP - Wait for the user to run one of the phase commands above.]
