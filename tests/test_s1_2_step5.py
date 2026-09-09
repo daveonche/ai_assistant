@@ -54,17 +54,26 @@ def python3_stub(tmp_path: Path):
     return stub_dir, log
 
 
-def run_entry(root: Path, stub_dir: Path, args: list[str] | None = None):
-    """Run the entry chain from `root` with the stub python3 on PATH.
+def run_entry(
+    root: Path,
+    stub_dir: Path,
+    args: list[str] | None = None,
+    script: Path | None = None,
+    cwd: Path | None = None,
+):
+    """Run the entry chain with the stub python3 first on PATH.
 
     The launcher is never executed (stubbed), consistent with the
     Step 1–2 tests: the invocation log alone proves delegation.
+    Default invocation: ./agent.sh with cwd=root. Pass `script`
+    (absolute path) and `cwd` to run from an unrelated directory.
     """
     env = os.environ.copy()
     env["PATH"] = f"{stub_dir}{os.pathsep}{env.get('PATH', '')}"
+    command = str(script) if script is not None else "./agent.sh"
     return subprocess.run(
-        ["./agent.sh", *(args or [])],
-        cwd=root,
+        [command, *(args or [])],
+        cwd=root if cwd is None else cwd,
         env=env,
         capture_output=True,
         text=True,
@@ -85,4 +94,62 @@ def test_entry_chain_works_from_standalone_clone(sandbox, python3_stub):
     assert result.returncode == 0, result.stderr
     assert log.read_text().splitlines() == [
         str(sandbox / ".agent" / "ai_assistant.py")
+    ]
+
+
+@pytest.fixture
+def target_project(tmp_path: Path) -> Path:
+    """Another project's root with the documented copy applied.
+
+    Mirrors the README 'Using in Other Projects' steps: `cp -r .agent`
+    and `cp agent.sh` into the target root, then `chmod +x` on both
+    launchers. Copying the real `.agent` tree keeps the test faithful
+    to the documented procedure.
+    """
+    target = tmp_path / "target-project"
+    target.mkdir()
+    shutil.copytree(PROJECT_ROOT / ".agent", target / ".agent")
+    shutil.copy2(PROJECT_ROOT / "agent.sh", target / "agent.sh")
+    executable = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+    for script in (
+        target / "agent.sh",
+        target / ".agent" / "ai-assistant.sh",
+    ):
+        script.chmod(script.stat().st_mode | executable)
+    return target
+
+
+@pytest.mark.parametrize(
+    "from_target_root",
+    [True, False],
+    ids=["from-target-root", "from-unrelated-cwd"],
+)
+def test_entry_chain_works_from_copied_project_root(
+    target_project, python3_stub, from_target_root
+):
+    """Copied-in chain reaches the target's own launcher copy.
+
+    Maps to Step 5 Must Support: "The entry chain works after the core
+    configuration is copied into another project's root." Both the
+    documented invocation (./agent.sh from the target root) and an
+    invocation from an unrelated cwd must reach <target>/.agent/
+    ai_assistant.py — paths resolve from the scripts' own location
+    (Step 5 Developer Note), never from the caller's directory or the
+    source repository.
+    """
+    stub_dir, log = python3_stub
+
+    if from_target_root:
+        result = run_entry(target_project, stub_dir)
+    else:
+        result = run_entry(
+            target_project,
+            stub_dir,
+            script=target_project / "agent.sh",
+            cwd=PROJECT_ROOT,
+        )
+
+    assert result.returncode == 0, result.stderr
+    assert log.read_text().splitlines() == [
+        str(target_project / ".agent" / "ai_assistant.py")
     ]
