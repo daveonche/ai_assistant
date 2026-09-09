@@ -30,7 +30,7 @@
         # Forces OpenRouter to strictly select the lowest-cost candidate endpoint
         sort: "price"
         # Disables high-cost safety fallback routes if the cheap host fails
-        allow_fallbacks: false
+        allow_fallbacks: true
         # Denies providers from logging your code data for training metrics
         data_collection: "deny"
 
@@ -42,7 +42,7 @@
       provider:
         # Keeps editor operations anchored to the absolute cheapest endpoint
         sort: "price"
-        allow_fallbacks: false
+        allow_fallbacks: true
         data_collection: "deny"
     temperature: 0.1
     max_tokens: 4096

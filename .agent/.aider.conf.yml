@@ -26,11 +26,11 @@ model-settings-file: .aider.model.settings.yml
 
 ## Specify multiple values like this:
 alias:
- - "genius:openrouter/x-ai/grok-4.6"
- - "specialist:openrouter/z-ai/glm-5.3"
- - "architect:openrouter/z-ai/glm-5.3-flash"
- - "editor:openrouter/deepseek/deepseek-v4-flash-0731"
- - "helper:gemini/gemini-3.1-flash-lite"
+ - "Genius:openrouter/anthropic/claude-fable-5.1"
+ - "Specialist:openrouter/z-ai/glm-5.3"
+ - "Architect:openrouter/z-ai/glm-5.3-flash"
+ - "Editor:openrouter/deepseek/deepseek-v4-flash-0731"
+ - "Helper:gemini/gemini-3.1-flash-lite"
 
 ## Specify a file with context window and costs for unknown models
 #model-metadata-file: .aider.model.metadata.json
@@ -113,6 +113,7 @@ show-release-notes: false
 ## Specify multiple values like this:
 read:
 - .agent/AGENTS.md
+- docs/workflow_state.md
 # If your project uses one of the supported frameworks, uncomment the matching
 # line below so its conventions are read from .agent/.aider.conventions/ on
 # launch. Convention files stay in .agent/.aider.conventions/; never copy
