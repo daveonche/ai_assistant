@@ -23,6 +23,7 @@ Must Support verified:
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import re
@@ -180,6 +181,17 @@ def _wait_for(predicate, timeout: float, description: str) -> None:
             return
         time.sleep(0.2)
     raise AssertionError(f"timed out waiting for {description}")
+
+
+def _load_launcher_module():
+    """Import .agent/ai_assistant.py as a module for direct unit calls."""
+    spec = importlib.util.spec_from_file_location(
+        "ai_assistant_under_test",
+        PROJECT_ROOT / ".agent" / "ai_assistant.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_container_name_deterministic_and_stable_per_workspace(tmp_path: Path):
@@ -354,3 +366,57 @@ def test_container_labels_bind_to_host_launcher_process(tmp_path: Path):
     workspace_hash = label_value(run_argv, "aider.dir")
     assert re.fullmatch(r"[0-9a-f]{32}", workspace_hash), workspace_hash
     assert container_name(run_argv).split("-")[3] == workspace_hash[:8]
+
+
+def test_launch_cleanup_removes_only_dead_launcher_containers(
+    tmp_path: Path, monkeypatch
+):
+    """Stale-container cleanup removes exactly the containers whose host
+    launcher PID is dead and leaves live-launcher containers untouched; the
+    ps query filters by the workspace label only, so session identity never
+    drives destructive cleanup.
+
+    cleanup_containers is called directly: the launcher skips stale-container
+    cleanup whenever it detects /.dockerenv (see main()), and this test
+    suite runs inside the aider container. PID liveness is checked in the
+    same PID namespace as this test process, so the dead/live simulation is
+    real.
+    """
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+    sandbox = _make_sandbox(tmp_path)
+
+    # A killed-and-reaped child provides a guaranteed-dead host PID; a
+    # sleeping child provides a guaranteed-live one for the duration.
+    victim = subprocess.Popen(["sleep", "30"])
+    victim.kill()
+    victim.wait()
+    dead_pid = victim.pid
+    live = subprocess.Popen(["sleep", "60"])
+    try:
+        launcher = _load_launcher_module()
+        workspace_hash = "0123456789abcdef0123456789abcdef"
+        monkeypatch.setenv("PATH", f"{stub_dir}{os.pathsep}{os.environ['PATH']}")
+        monkeypatch.setenv("DOCKER_STUB_LOG", str(sandbox / "docker-stub.log"))
+        monkeypatch.setenv(
+            "DOCKER_STUB_PS_ROWS",
+            f"deadbeef1 {dead_pid}\ndeadbeef2 {live.pid}",
+        )
+        launcher.cleanup_containers(workspace_hash, debug=False)
+    finally:
+        live.kill()
+        live.wait()
+
+    invocations = stub_invocations(sandbox)
+    assert invocations, "docker stub was never invoked"
+
+    # The cleanup query is scoped by the workspace label only; the session
+    # identity appears in no filter and drives no removal.
+    ps_inv = next(inv for inv in invocations if inv[0] == "ps")
+    filters = [arg for arg in ps_inv if arg.startswith("label=")]
+    assert filters == [f"label=aider.dir={workspace_hash}"], ps_inv
+
+    # Exactly the dead-launcher container is removed; the live one untouched.
+    rm_invocations = [inv for inv in invocations if inv[:2] == ["rm", "-f"]]
+    assert rm_invocations == [["rm", "-f", "deadbeef1"]], rm_invocations
