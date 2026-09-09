@@ -26,6 +26,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import pytest
 import re
 import signal
 import subprocess
@@ -420,3 +421,71 @@ def test_launch_cleanup_removes_only_dead_launcher_containers(
     # Exactly the dead-launcher container is removed; the live one untouched.
     rm_invocations = [inv for inv in invocations if inv[:2] == ["rm", "-f"]]
     assert rm_invocations == [["rm", "-f", "deadbeef1"]], rm_invocations
+
+
+@pytest.mark.parametrize(
+    "sig",
+    [signal.SIGKILL, signal.SIGTERM, signal.SIGHUP],
+    ids=["SIGKILL", "SIGTERM", "SIGHUP"],
+)
+def test_launcher_death_removes_container_without_later_launch(
+    tmp_path: Path, sig: signal.Signals
+):
+    """When the launcher process dies, its container is stopped and removed
+    without waiting for a later launch: with the container up (docker run in
+    flight), the launcher is killed with the signal under test and the
+    death-watch reaps the container on its own."""
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+    sandbox = _make_sandbox(tmp_path)
+    hold = sandbox / "run-hold"
+
+    env = _launcher_env(
+        sandbox,
+        stub_dir,
+        extra_env={
+            "AI_ASSISTANT_SESSION_ID": "demise",
+            "DOCKER_STUB_RUN_HOLD": str(hold),
+        },
+    )
+    proc = _popen_chain(sandbox, env, args=[])
+    try:
+        _wait_for(
+            lambda: bool(run_invocations(sandbox)),
+            timeout=30,
+            description="docker run to start",
+        )
+        name = container_name(run_invocations(sandbox)[0])
+
+        # The launcher dies: SIGHUP/SIGTERM (terminal or editor close) or
+        # SIGKILL (hard kill). The chain exec's to Python, so this PID is
+        # the launcher itself.
+        os.kill(proc.pid, sig)
+
+        # The death-watch removes the container by itself — no later launch
+        # and no test intervention involved.
+        _wait_for(
+            lambda: [
+                inv
+                for inv in stub_invocations(sandbox)
+                if inv[:2] == ["rm", "-f"]
+            ],
+            timeout=30,
+            description=f"container removal after {sig.name}",
+        )
+        rm_invocations = [
+            inv for inv in stub_invocations(sandbox) if inv[:2] == ["rm", "-f"]
+        ]
+        assert rm_invocations == [["rm", "-f", name]], rm_invocations
+
+        # Release the stub's docker run so it exits and closes the inherited
+        # pipe, then reap the launcher.
+        hold.write_text("release")
+        proc.communicate(timeout=60)
+        assert proc.returncode == -int(sig), proc.returncode
+    finally:
+        hold.write_text("release")
+        if proc.poll() is None:
+            proc.kill()
+            proc.communicate()
