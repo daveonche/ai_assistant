@@ -4,6 +4,7 @@ Must Support verified:
 - A launcher entry file within the `.agent/` configuration directory that
   executes on the host and completes the delegation chain started by
   agent.sh.
+- Accepting a debug flag that turns on verbose output.
 """
 
 from __future__ import annotations
@@ -89,3 +90,25 @@ def test_agent_chain_completes_via_launcher(tmp_path: Path):
     assert invocations[0][0] == "version", invocations[0]
     # The launcher attempts to launch the assistant container.
     assert any(inv[0] == "run" for inv in invocations), invocations
+
+
+def test_launcher_debug_flag_enables_verbose_output(tmp_path: Path):
+    """--debug prints each performed command before it runs; without the
+    flag no trace output appears while behavior stays otherwise identical."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    # With --debug: every performed command is printed before it runs.
+    debug_run = run_chain(sandbox, stub_dir, args=["--debug"])
+    assert debug_run.returncode == 0, debug_run.stderr
+    assert "+ docker version" in debug_run.stderr  # traced availability gate
+    assert "Command log:" in debug_run.stderr  # log path announced
+
+    # Without the flag: no trace output, behavior otherwise identical.
+    before = len(stub_invocations(sandbox))
+    quiet_run = run_chain(sandbox, stub_dir, args=[])
+    assert quiet_run.returncode == 0, quiet_run.stderr
+    assert "+ docker" not in quiet_run.stderr
+    assert len(stub_invocations(sandbox)) > before  # same work still done
