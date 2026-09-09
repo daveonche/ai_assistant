@@ -36,6 +36,10 @@ from typing import NamedTuple
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
+# Raw tmux/GNU screen session markers used by the identity-source scenarios.
+TMUX_SESSION = "/tmp/tmux-0/default,123,0"
+STY_SESSION = "12345.pts-0.host"
+
 # Fake docker: records argv as a JSON array per invocation and always
 # succeeds. Optional behaviors armed per test via environment:
 # - DOCKER_STUB_PS_ROWS: printed verbatim in response to `docker ps ...`
@@ -193,6 +197,32 @@ def _load_launcher_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _sanitize(raw: str) -> str:
+    """The documented identity sanitization: Docker container-name-safe
+    characters only (alphanumerics, underscore, dot, hyphen)."""
+    return re.sub(r"[^a-zA-Z0-9_.-]", "_", raw)
+
+
+def _name_session_and_hash(
+    name: str, launcher_pid: int, workspace: str
+) -> tuple[str, str]:
+    """Split a documented-format container name into (hash8, session).
+
+    Format: ai-assistant-<workspace>-<hash8>-<session>-<pid>. Parsed from
+    both ends so sanitized session values containing hyphens cannot shift
+    the split.
+    """
+    prefix = f"ai-assistant-{workspace}-"
+    assert name.startswith(prefix), name
+    body = name[len(prefix):]
+    suffix = f"-{launcher_pid}"
+    assert body.endswith(suffix), name
+    body = body[: -len(suffix)]
+    hash8, sep, session = body.partition("-")
+    assert sep and re.fullmatch(r"[0-9a-f]{8}", hash8), name
+    return hash8, session
 
 
 def test_container_name_deterministic_and_stable_per_workspace(tmp_path: Path):
@@ -489,3 +519,92 @@ def test_launcher_death_removes_container_without_later_launch(
         if proc.poll() is None:
             proc.kill()
             proc.communicate()
+
+
+@pytest.mark.parametrize(
+    "extra_env, expected_session",
+    [
+        pytest.param(
+            {"AI_ASSISTANT_SESSION_ID": "plain"},
+            "plain",
+            id="override",
+        ),
+        pytest.param(
+            {"AI_ASSISTANT_SESSION_ID": "my session/id!"},
+            _sanitize("my session/id!"),
+            id="override-sanitized",
+        ),
+        pytest.param(
+            {"AI_ASSISTANT_SESSION_ID": "wins", "TMUX": TMUX_SESSION},
+            "wins",
+            id="override-beats-tmux",
+        ),
+        pytest.param(
+            {"TMUX": TMUX_SESSION},
+            _sanitize("tmux-" + TMUX_SESSION),
+            id="tmux-session",
+        ),
+        pytest.param(
+            {"TMUX": TMUX_SESSION, "STY": STY_SESSION},
+            _sanitize("tmux-" + TMUX_SESSION),
+            id="tmux-beats-screen",
+        ),
+        pytest.param(
+            {"STY": STY_SESSION},
+            _sanitize("screen-" + STY_SESSION),
+            id="screen-session",
+        ),
+    ],
+)
+def test_session_identity_sources_and_sanitization(
+    tmp_path: Path, extra_env: dict[str, str], expected_session: str
+):
+    """The session identity is resolved editor-agnostically for naming: the
+    explicit AI_ASSISTANT_SESSION_ID override wins over tmux, tmux wins over
+    GNU screen, and every raw identity is sanitized to Docker's legal
+    container-name characters before it reaches the container name and the
+    session label. (Its independence from destructive cleanup is proven by
+    test_launch_cleanup_removes_only_dead_launcher_containers: the cleanup
+    query carries no session filter.)"""
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+    sandbox = _make_sandbox(tmp_path)
+
+    result = run_chain(sandbox, stub_dir, args=[], extra_env=extra_env)
+    assert result.returncode == 0, result.stderr
+
+    runs = run_invocations(sandbox)
+    assert len(runs) == 1, runs
+    run_argv = runs[0]
+
+    _, session = _name_session_and_hash(
+        container_name(run_argv), result.pid, sandbox.name
+    )
+    assert session == expected_session, container_name(run_argv)
+    # The same resolved identity labels the container.
+    assert label_value(run_argv, "aider.session") == expected_session
+
+
+def test_session_identity_defaults_to_parent_shell_pid(tmp_path: Path):
+    """With no override and no tmux/screen markers, the session identity is
+    the launcher's parent shell PID: the entry chain exec's down to the
+    Python launcher, so its parent is this test process, and the session
+    segment and session label must carry this test's own PID."""
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+    sandbox = _make_sandbox(tmp_path)
+
+    result = run_chain(sandbox, stub_dir, args=[])
+    assert result.returncode == 0, result.stderr
+
+    runs = run_invocations(sandbox)
+    assert len(runs) == 1, runs
+    run_argv = runs[0]
+
+    _, session = _name_session_and_hash(
+        container_name(run_argv), result.pid, sandbox.name
+    )
+    assert session == str(os.getpid()), container_name(run_argv)
+    assert label_value(run_argv, "aider.session") == session
