@@ -5,6 +5,8 @@ Must Support verified:
   executes on the host and completes the delegation chain started by
   agent.sh.
 - Accepting a debug flag that turns on verbose output.
+- Forwarding all remaining user arguments, unchanged and in order, to the
+  assistant environment launch.
 """
 
 from __future__ import annotations
@@ -112,3 +114,26 @@ def test_launcher_debug_flag_enables_verbose_output(tmp_path: Path):
     assert quiet_run.returncode == 0, quiet_run.stderr
     assert "+ docker" not in quiet_run.stderr
     assert len(stub_invocations(sandbox)) > before  # same work still done
+
+
+def test_launcher_forwards_arguments_unchanged_in_order(tmp_path: Path):
+    """User arguments appear at the tail of the docker run argv verbatim and
+    in order; the debug flag is consumed by the launcher, never forwarded."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    user_args = ["--model", "gpt-4", "--message", "verify forwarding"]
+    result = run_chain(sandbox, stub_dir, args=["--debug", *user_args])
+    assert result.returncode == 0, result.stderr
+
+    run_inv = next(
+        inv for inv in stub_invocations(sandbox) if inv[0] == "run"
+    )
+    # main() pops the leading debug flag and appends the rest verbatim after
+    # all launcher-owned args, so the run argv must END with the user args
+    # exactly as given (grouping preserved: "verify forwarding" is one arg).
+    assert run_inv[-len(user_args):] == user_args
+    # The debug flag is consumed by the launcher, never forwarded.
+    assert "--debug" not in run_inv
