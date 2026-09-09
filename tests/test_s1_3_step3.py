@@ -98,3 +98,24 @@ def test_unavailable_engine_gates_all_lifecycle_actions(tmp_path: Path):
     # Gate: the probe ran and nothing else — no build/run lifecycle action.
     assert result.returncode != 0, result.stderr
     assert stub_invocations(sandbox) == [["version"]], stub_invocations(sandbox)
+
+
+def test_missing_engine_exits_unsuccessfully_with_actionable_error(tmp_path: Path):
+    """With the engine missing, the launcher exits unsuccessfully with a
+    clear, actionable error — no traceback, no partial lifecycle run."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    result = run_chain(sandbox, stub_dir, args=[], extra_env={"FAIL_VERSION": "1"})
+
+    # Unsuccessful result.
+    assert result.returncode != 0
+    # No crash: a Python traceback means the launcher died instead of
+    # handling the missing engine deliberately.
+    assert "Traceback" not in result.stderr
+    # Clear, actionable error: names what is missing and what to do next.
+    error_text = (result.stderr + result.stdout).lower()
+    assert "docker" in error_text
+    assert "install" in error_text or "path" in error_text
