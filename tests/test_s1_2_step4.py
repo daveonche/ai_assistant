@@ -39,3 +39,63 @@ def test_readme_documents_every_required_host_prerequisite(prerequisite):
     assert prerequisite in section, (
         f"README.md Prerequisites section does not document: {prerequisite}"
     )
+
+
+PYPROJECT = PROJECT_ROOT / ".agent" / "pyproject.toml"
+
+
+def _declared_python_minimum() -> str:
+    """Return the minimum host Python version declared in pyproject.toml.
+
+    Parsed with a regex instead of tomllib so the tests themselves stay
+    compatible with the declared minimum (tomllib requires 3.11+).
+    """
+    match = re.search(
+        r'^requires-python\s*=\s*"(.*?)"', PYPROJECT.read_text(), re.M
+    )
+    assert match, ".agent/pyproject.toml: requires-python not found"
+    version = re.search(r">=\s*(\d+(?:\.\d+)*)", match.group(1))
+    assert version, f"unsupported requires-python specifier: {match.group(1)}"
+    return version.group(1)
+
+
+def _entry_line(section: str, prerequisite: str) -> str:
+    """Return the bullet line documenting `prerequisite`, or '' if absent."""
+    for line in section.splitlines():
+        if line.startswith("- ") and prerequisite in line:
+            return line
+    return ""
+
+
+@pytest.mark.parametrize(
+    "prerequisite, expected_fragments",
+    [
+        pytest.param("Docker", ("CLI", "Compose Plugin"),
+                     id="docker-cli-compose"),
+        pytest.param("Bash", ("entry scripts",),
+                     id="bash-command-shell"),
+        pytest.param("Python", (f">={_declared_python_minimum()}",),
+                     id="python-host-minimum"),
+    ],
+)
+def test_documented_set_matches_acceptance_criteria(
+    prerequisite, expected_fragments
+):
+    """Each prerequisite entry matches the acceptance criteria.
+
+    Maps to Step 4 Must Support: "The documented set matches the story's
+    acceptance criteria: the container platform CLI with its compose
+    plugin, the command shell, and the host runtime at its declared
+    minimum version." The Python minimum is parsed live from
+    `requires-python` in .agent/pyproject.toml rather than hardcoded.
+    """
+    line = _entry_line(_prerequisites_section(), prerequisite)
+    assert line, (
+        f"README.md Prerequisites section has no dedicated "
+        f"entry for {prerequisite}"
+    )
+    for fragment in expected_fragments:
+        assert fragment in line, (
+            f"README.md entry for {prerequisite} missing "
+            f"expected text: {fragment!r}"
+        )
