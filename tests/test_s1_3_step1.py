@@ -86,6 +86,6 @@ def test_agent_chain_completes_via_launcher(tmp_path: Path):
     invocations = stub_invocations(sandbox)
     assert invocations, "docker stub was never invoked; chain did not complete"
     # _docker_available() runs first as the availability gate.
-    assert invocations[0][:2] == ["version"], invocations[0]
+    assert invocations[0][0] == "version", invocations[0]
     # The launcher attempts to launch the assistant container.
-    assert any(inv[:2] == ["run"] for inv in invocations), invocations
+    assert any(inv[0] == "run" for inv in invocations), invocations
