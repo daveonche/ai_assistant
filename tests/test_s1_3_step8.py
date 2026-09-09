@@ -155,3 +155,43 @@ def test_session_container_removed_when_assistant_session_ends(tmp_path):
     # container automatically when the session ends.
     image_idx = run_inv.index(AIDER_IMAGE)
     assert "--rm" in run_inv[:image_idx], run_inv
+
+
+def test_other_sessions_untouched_and_rerun_leaves_no_errors(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    # Seed the container list with a live same-workspace container from
+    # another session: its host launcher PID is this test process, which is
+    # certainly alive during both launches.
+    other_id = "other-session-container-01"
+    (stub_dir / "ps_output.txt").write_text(
+        f"{other_id} {os.getpid()}\n", encoding="utf-8"
+    )
+
+    offsets = []
+    for _ in range(2):
+        result = run_chain(sandbox, stub_dir, [])
+        assert result.returncode == 0, result.stderr
+        assert "Traceback" not in result.stderr
+        assert "Error" not in result.stderr
+        offsets.append(len(stub_invocations(sandbox)))
+
+    invocations = stub_invocations(sandbox)
+
+    # The other session's live container is never an rm target — neither at
+    # launch-time cleanup nor after either session ends.
+    rm_targets = [inv[-1] for inv in invocations if inv[0] == "rm"]
+    assert other_id not in rm_targets, rm_targets
+
+    # Session-end removal is engine-side (--rm): after each run invocation
+    # the launcher issues no container-destructive command of its own.
+    bounds = ((0, offsets[0]), (offsets[0], offsets[1]))
+    for start, end in bounds:
+        window = invocations[start:end]
+        run_indices = [i for i, inv in enumerate(window) if inv[0] == "run"]
+        assert run_indices, window
+        after_run = window[run_indices[-1] + 1 :]
+        assert not [
+            inv for inv in after_run if inv[0] in ("rm", "stop", "kill")
+        ], after_run
