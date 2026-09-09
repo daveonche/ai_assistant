@@ -105,6 +105,13 @@ RUN --mount=type=cache,target=/var/cache/apt \
     install -m 0755 "/tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck && \
     rm -rf "/tmp/shellcheck-${SHELLCHECK_VERSION}" /tmp/shellcheck.tar.xz
 
+# ---- Layer D3: pytest testing dependency (pip) ------------------------------
+# pytest pinned to match .agent/pyproject.toml (8.3.5) so the container's
+# /venv interpreter can run the project's test suite exactly like the host.
+# The pip cache mount avoids re-downloading wheels on rebuilds.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /venv/bin/python3 -m pip install pytest==8.3.5
+
 # ---- Layer E: runtime configuration ----------------------------------------
 # Sticky bit (1777) instead of 777: /home stays writable as a shared scratch
 # HOME (the launcher sets HOME=/home and mounts host caches into it) without
