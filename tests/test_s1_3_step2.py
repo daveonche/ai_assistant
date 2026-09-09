@@ -34,6 +34,10 @@ for arg in "$@"; do
 done
 printf '%s\\n' "${json%,}]" >> "$DOCKER_STUB_LOG"
 
+if [[ -n "${DOCKER_STUB_TRACE:-}" ]]; then
+  printf '+ docker %s\n' "$*" >> "$DOCKER_STUB_TRACE"
+fi
+
 if [[ -n "${DOCKER_CMD_LOG:-}" && -n "${DOCKER_STUB_MISSING:-}" ]]; then
   trace="+ docker $*"
   if ! grep -Fqx -- "$trace" "$DOCKER_CMD_LOG"; then
@@ -138,3 +142,39 @@ def test_every_command_recorded_before_execution(tmp_path: Path):
     assert invocations, "docker stub was never invoked; chain did not complete"
     # The availability gate runs first and is traced like every other command.
     assert invocations[0] == ["version"], invocations[0]
+
+
+def test_command_log_matches_executed_invocations_in_order(tmp_path: Path):
+    """In normal (non-debug) mode the launcher's command log still records
+    every executed docker command, in the same order the stub received them
+    and in the identical trace-line format — no command bypasses the single
+    tracing routine."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    # Phase 1: discover the per-session command log path in debug mode.
+    discovery = run_chain(sandbox, stub_dir, args=["--debug"])
+    assert discovery.returncode == 0, discovery.stderr
+    command_log = command_log_path(discovery)
+
+    # Phase 2: truncate both records, arm the stub's own trace, rerun in
+    # normal mode (no --debug) and compare the two sides.
+    command_log.write_text("")
+    stub_trace = sandbox / "stub-trace.log"
+    result = run_chain(
+        sandbox,
+        stub_dir,
+        args=[],
+        extra_env={"DOCKER_STUB_TRACE": str(stub_trace)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    launcher_lines = command_log.read_text().splitlines()
+    stub_lines = stub_trace.read_text().splitlines()
+    assert launcher_lines, "launcher recorded no commands; chain did not run"
+    assert stub_lines, "docker stub was never invoked; chain did not run"
+    # Every executed command was logged before running, 1:1, same order,
+    # same format ("+ docker <args>"): logging is independent of debug mode.
+    assert launcher_lines == stub_lines
