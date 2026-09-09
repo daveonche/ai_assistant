@@ -198,3 +198,30 @@ def test_config_file_set_change_is_reflected_in_assembled_arguments(tmp_path):
     # ...and never-present files never gained a flag.
     for _name, flag in absent:
         assert not any(pair[0] == flag for pair in second_pairs), second_run
+
+
+def test_user_arguments_appear_alongside_config_arguments(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    for name, _flag in CONFIG_FLAG_FILES:
+        (sandbox / ".agent" / name).write_text("# config\n", encoding="utf-8")
+    stub_dir = _write_docker_stub(sandbox)
+
+    user_args = ["--no-auto-commits", "--message", "hello"]
+    result = run_chain(sandbox, stub_dir, user_args)
+    assert result.returncode == 0, result.stderr
+
+    run_inv = [inv for inv in stub_invocations(sandbox) if inv[0] == "run"][-1]
+    tail = _run_tail(run_inv)
+    pairs = _flag_pairs(tail)
+
+    # Configuration-derived arguments are present in the same invocation...
+    for name, flag in CONFIG_FLAG_FILES:
+        assert [flag, str(sandbox / ".agent" / name)] in pairs
+    # ...and the user's arguments appear in the same invocation, unchanged,
+    # in order, after the image name (i.e., at the invocation tail)...
+    start = tail.index(user_args[0])
+    assert tail[start : start + len(user_args)] == user_args
+    # ...with every config flag positioned before the first user argument.
+    user_args_start_index = run_inv.index(user_args[0])
+    for name, flag in CONFIG_FLAG_FILES:
+        assert run_inv.index(flag) < user_args_start_index
