@@ -209,3 +209,31 @@ def test_debug_mode_prints_each_performed_command(tmp_path: Path):
     assert trace_lines == expected
     assert trace_lines[0] == "+ docker version"
     assert trace_lines[-1].startswith("+ docker run")
+
+
+def test_non_debug_mode_no_trace_and_identical_behavior(tmp_path: Path):
+    """Without the debug flag no trace output appears in stderr while the
+    launcher performs exactly the same sequence of docker commands as the
+    debug baseline — identical behavior, only the verbose output differs."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    # Baseline: debug run defines the canonical invocation sequence.
+    debug_run = run_chain(sandbox, stub_dir, args=["--debug"])
+    assert debug_run.returncode == 0, debug_run.stderr
+    baseline = stub_invocations(sandbox)
+    assert baseline, "docker stub was never invoked in the debug run"
+
+    # Normal mode: same sandbox, same stub log (append-only).
+    before = len(baseline)
+    quiet_run = run_chain(sandbox, stub_dir, args=[])
+    assert quiet_run.returncode == 0, quiet_run.stderr
+
+    # No verbose trace output in normal mode.
+    assert "+ docker" not in quiet_run.stderr
+
+    # Identical behavior: the new invocations match the baseline 1:1, in order.
+    new_invocations = stub_invocations(sandbox)[before:]
+    assert new_invocations == baseline
