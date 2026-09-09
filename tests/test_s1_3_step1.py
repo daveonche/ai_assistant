@@ -7,13 +7,17 @@ Must Support verified:
 - Accepting a debug flag that turns on verbose output.
 - Forwarding all remaining user arguments, unchanged and in order, to the
   assistant environment launch.
+- Implementing all launcher functionality using only the host runtime's
+  built-in capabilities, with no external packages.
 """
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -73,6 +77,24 @@ def stub_invocations(sandbox: Path) -> list[list[str]]:
     if not log.exists():
         return []
     return [json.loads(line) for line in log.read_text().splitlines() if line]
+
+
+def _imported_roots(path: Path) -> set[str]:
+    """AST-walk the file and collect every import's root module name.
+
+    Covers function-level (lazy) imports — grp, ctypes — which a
+    top-of-file scan would miss.
+    """
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    roots: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                roots.add(alias.name.split(".")[0])
+        elif isinstance(node, ast.ImportFrom):
+            if node.level == 0 and node.module:  # absolute imports only
+                roots.add(node.module.split(".")[0])
+    return roots
 
 
 def test_agent_chain_completes_via_launcher(tmp_path: Path):
@@ -137,3 +159,14 @@ def test_launcher_forwards_arguments_unchanged_in_order(tmp_path: Path):
     assert run_inv[-len(user_args):] == user_args
     # The debug flag is consumed by the launcher, never forwarded.
     assert "--debug" not in run_inv
+
+
+def test_launcher_imports_stdlib_only():
+    """Every import in .agent/ai_assistant.py resolves to a stdlib module,
+    proving the launcher uses no external packages."""
+    launcher = PROJECT_ROOT / ".agent" / "ai_assistant.py"
+    assert launcher.is_file(), f"launcher not found at {launcher}"
+    roots = _imported_roots(launcher)
+    assert roots, "no imports found in launcher"
+    non_stdlib = sorted(roots - set(sys.stdlib_module_names))
+    assert not non_stdlib, f"non-stdlib imports: {non_stdlib}"
