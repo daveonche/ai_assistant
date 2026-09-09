@@ -122,7 +122,7 @@ def stub_invocations(sandbox: Path) -> list[list[str]]:
 
 
 def _builds(invocations: list[list[str]]) -> list[list[str]]:
-    return [inv for inv in invocations if inv[:2] == ["docker", "build"]]
+    return [inv for inv in invocations if inv[0] == "build"]
 
 
 def test_missing_image_triggers_build_from_agent_definition(tmp_path):
@@ -144,6 +144,6 @@ def test_missing_image_triggers_build_from_agent_definition(tmp_path):
     assert build[t_idx + 1] == "aider-agent:latest"
     assert build[-1] == str(sandbox / ".agent")
 
-    runs = [inv for inv in invocations if inv[:2] == ["docker", "run"]]
+    runs = [inv for inv in invocations if inv[0] == "run"]
     assert runs, "assistant should launch after the build"
     assert invocations.index(build) < invocations.index(runs[0])
