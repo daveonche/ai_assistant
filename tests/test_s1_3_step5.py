@@ -101,12 +101,18 @@ def _launcher_env(sandbox: Path, stub_dir: Path) -> dict[str, str]:
 
 
 def run_chain(
-    sandbox: Path, stub_dir: Path, args: list[str]
+    sandbox: Path,
+    stub_dir: Path,
+    args: list[str],
+    extra_env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess:
+    env = _launcher_env(sandbox, stub_dir)
+    if extra_env:
+        env.update(extra_env)
     return subprocess.run(
         ["bash", str(sandbox / "agent.sh"), *args],
         cwd=sandbox,
-        env=_launcher_env(sandbox, stub_dir),
+        env=env,
         capture_output=True,
         text=True,
         timeout=180,
@@ -147,3 +153,22 @@ def test_missing_image_triggers_build_from_agent_definition(tmp_path):
     runs = [inv for inv in invocations if inv[0] == "run"]
     assert runs, "assistant should launch after the build"
     assert invocations.index(build) < invocations.index(runs[0])
+
+
+def test_build_failure_gates_assistant_launch(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    result = run_chain(sandbox, stub_dir, [], extra_env={"FAIL_BUILD": "1"})
+    assert result.returncode != 0, result.stdout
+
+    invocations = stub_invocations(sandbox)
+    builds = _builds(invocations)
+    assert len(builds) == 1, invocations
+
+    runs = [inv for inv in invocations if inv[0] == "run"]
+    assert not runs, "assistant must not launch when the build fails"
+    tags = [inv for inv in invocations if inv[0] == "tag"]
+    assert not tags, "failed image must not be cached under the cache tag"
+
+    assert "--- Last lines of build log ---" in result.stderr
