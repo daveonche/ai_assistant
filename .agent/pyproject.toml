@@ -9,6 +9,7 @@ description = "Launch an AI assistant in Docker"
 requires-python = ">=3.8"
 dependencies = [
     "pytest==8.3.5",
+    "PyYAML==6.0.3",
 ]
 
 [project.scripts]
