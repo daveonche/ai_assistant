@@ -99,3 +99,37 @@ def test_documented_set_matches_acceptance_criteria(
             f"README.md entry for {prerequisite} missing "
             f"expected text: {fragment!r}"
         )
+
+
+def _purpose_text(entry_line: str, prerequisite: str) -> str:
+    """Return the purpose text after the 'Name: purpose' separator.
+
+    Markdown link URLs (e.g., https://...) contain a colon too, so the
+    separator is searched starting after the prerequisite name; the
+    'https:' colon never matches because it is not followed by a space.
+    """
+    name_index = entry_line.index(prerequisite)
+    separator_index = entry_line.find(": ", name_index)
+    if separator_index == -1:
+        return ""
+    return entry_line[separator_index + 2:].strip()
+
+
+@pytest.mark.parametrize("prerequisite", REQUIRED_PREREQUISITES)
+def test_each_prerequisite_states_its_purpose(prerequisite):
+    """Every documented prerequisite states what it is needed for.
+
+    Maps to Step 4 Must Support: "Each prerequisite states its purpose
+    (what it is needed for)." Documented assumption: the section uses a
+    "Name: purpose" bullet format; the purpose is the non-empty text
+    following the ': ' separator on the prerequisite's bullet line.
+    """
+    line = _entry_line(_prerequisites_section(), prerequisite)
+    assert line, (
+        f"README.md Prerequisites section has no dedicated "
+        f"entry for {prerequisite}"
+    )
+    purpose = _purpose_text(line, prerequisite)
+    assert purpose, (
+        f"README.md entry for {prerequisite} states no purpose text"
+    )
