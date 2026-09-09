@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -103,6 +104,28 @@ def command_log_path(result: subprocess.CompletedProcess) -> Path:
         if line.startswith(prefix):
             return Path(line[len(prefix):])
     raise AssertionError("Command log path not announced in debug output")
+
+
+def _normalize_invocations(invocations: list[list[str]]) -> list[list[str]]:
+    """Mask the per-launch PID values that two-run comparisons must ignore.
+
+    The launcher embeds os.getpid() in the container-name suffix and in the
+    aider.hostpid label (Story S1.3 Step 4); each run_chain() spawns a fresh
+    launcher process, so those values legitimately differ between runs.
+    """
+    normalized = []
+    for inv in invocations:
+        masked = [
+            re.sub(r"aider\.hostpid=\d+", "aider.hostpid=<pid>", arg)
+            for arg in inv
+        ]
+        for i, arg in enumerate(masked):
+            if i > 0 and masked[i - 1] == "--name":
+                # Strip only the trailing "-<pid>" suffix: the session-id
+                # segment (e.g. "s13-step2") has no hyphen before its digits.
+                masked[i] = re.sub(r"-\d+$", "-<pid>", arg)
+        normalized.append(masked)
+    return normalized
 
 
 def test_every_command_recorded_before_execution(tmp_path: Path):
@@ -234,6 +257,8 @@ def test_non_debug_mode_no_trace_and_identical_behavior(tmp_path: Path):
     # No verbose trace output in normal mode.
     assert "+ docker" not in quiet_run.stderr
 
-    # Identical behavior: the new invocations match the baseline 1:1, in order.
-    new_invocations = stub_invocations(sandbox)[before:]
-    assert new_invocations == baseline
+    # Identical behavior: the new invocations match the baseline 1:1, in
+    # order, after masking the per-launch PID values the launcher embeds in
+    # the container name and hostpid label (each run spawns a new process).
+    new_invocations = _normalize_invocations(stub_invocations(sandbox)[before:])
+    assert new_invocations == _normalize_invocations(baseline)
