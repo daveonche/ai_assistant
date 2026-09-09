@@ -172,3 +172,36 @@ def test_build_failure_gates_assistant_launch(tmp_path):
     assert not tags, "failed image must not be cached under the cache tag"
 
     assert "--- Last lines of build log ---" in result.stderr
+
+
+def test_existing_image_reused_without_rebuild(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    first = run_chain(sandbox, stub_dir, [])
+    assert first.returncode == 0, first.stderr
+
+    first_invocations = stub_invocations(sandbox)
+    assert len(_builds(first_invocations)) == 1, first_invocations
+    offset = len(first_invocations)
+
+    second = run_chain(sandbox, stub_dir, [])
+    assert second.returncode == 0, second.stderr
+
+    second_invocations = stub_invocations(sandbox)[offset:]
+    assert not _builds(second_invocations), second_invocations
+
+    runs = [inv for inv in second_invocations if inv[0] == "run"]
+    assert runs, "assistant should still launch from the cached image"
+
+    # Cache-hit path retags the cached image as AIDER_IMAGE before launch.
+    retags = [
+        inv
+        for inv in second_invocations
+        if inv[0] == "tag" and inv[-1] == "aider-agent:latest"
+    ]
+    assert retags, second_invocations
+    assert (
+        second_invocations.index(retags[0])
+        < second_invocations.index(runs[0])
+    )
