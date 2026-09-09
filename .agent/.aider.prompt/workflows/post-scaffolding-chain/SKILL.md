@@ -7,7 +7,7 @@ This role responds to the following commands:
 - `$planning-story-analysis S<X.Y>` - Activates Phase 3: Story Analysis
 - `$coding-implementation S<X.Y> [step-number]` - Activates Phase 4A: Implementation
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 4B: Unit Testing
-- `$coding-dependency-management` - Activates conditional dependency management during implementation
+- `$coding-dependency-management` - Activates conditional dependency management during implementation (`.agent/.aider.prompt/code/dependency-management/SKILL.md`)
 
 **Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
 

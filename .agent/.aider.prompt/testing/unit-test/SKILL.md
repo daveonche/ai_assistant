@@ -144,7 +144,7 @@ Please specify:
 I'll verify compatibility before proceeding.
 ```
 
-Read `.agent/.aider.prompt/testing/unit-test/references/templates.md` for exact dependency-management invocation and configuration templates.
+Read `.agent/.aider.prompt/testing/unit-test/references/templates.md` for exact dependency-management invocation and configuration templates. The `$coding-dependency-management` command maps to `.agent/.aider.prompt/code/dependency-management/SKILL.md`.
 
 [STOP - Continue after dependency management and configuration are complete]
 
