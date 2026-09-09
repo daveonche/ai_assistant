@@ -161,3 +161,40 @@ def test_present_config_files_assemble_corresponding_launch_arguments(tmp_path):
         assert [flag, expected_path] in pairs, (
             f"{flag} {expected_path} missing from assembled arguments"
         )
+
+
+def test_config_file_set_change_is_reflected_in_assembled_arguments(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    present = CONFIG_FLAG_FILES[:2]   # .aider.conf.yml, .aider.model.settings.yml
+    absent = CONFIG_FLAG_FILES[2:]    # .aiderignore, .aider.model.metadata.json
+
+    for name, _flag in present:
+        (sandbox / ".agent" / name).write_text("# config\n", encoding="utf-8")
+    stub_dir = _write_docker_stub(sandbox)
+
+    first = run_chain(sandbox, stub_dir, [])
+    assert first.returncode == 0, first.stderr
+    offset = len(stub_invocations(sandbox))
+
+    # Remove one present config file and re-run.
+    removed_name, removed_flag = present[1]
+    (sandbox / ".agent" / removed_name).unlink()
+
+    second = run_chain(sandbox, stub_dir, [])
+    assert second.returncode == 0, second.stderr
+
+    second_run = [
+        inv
+        for inv in stub_invocations(sandbox)[offset:]
+        if inv[0] == "run"
+    ][-1]
+    second_pairs = _flag_pairs(_run_tail(second_run))
+
+    # Removed file's flag is no longer assembled...
+    assert not any(pair[0] == removed_flag for pair in second_pairs), second_run
+    # ...the still-present file keeps its flag with the sandbox path...
+    kept_name, kept_flag = present[0]
+    assert [kept_flag, str(sandbox / ".agent" / kept_name)] in second_pairs
+    # ...and never-present files never gained a flag.
+    for _name, flag in absent:
+        assert not any(pair[0] == flag for pair in second_pairs), second_run
