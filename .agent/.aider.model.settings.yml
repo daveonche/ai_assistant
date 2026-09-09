@@ -50,9 +50,3 @@
 # Switch with /model helper
 - name: gemini/gemini-3.1-flash-lite
   edit_format: diff
-  extra_params:
-    extra_body:
-      provider:
-        sort: "price"
-        allow_fallbacks: false
-        data_collection: "deny"
