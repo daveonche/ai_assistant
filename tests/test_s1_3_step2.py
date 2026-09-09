@@ -178,3 +178,34 @@ def test_command_log_matches_executed_invocations_in_order(tmp_path: Path):
     # Every executed command was logged before running, 1:1, same order,
     # same format ("+ docker <args>"): logging is independent of debug mode.
     assert launcher_lines == stub_lines
+
+
+def test_debug_mode_prints_each_performed_command(tmp_path: Path):
+    """With --debug, every performed docker command appears in stderr as a
+    trace line, in invocation order, with no duplicates or omissions."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    result = run_chain(sandbox, stub_dir, args=["--debug"])
+    assert result.returncode == 0, result.stderr
+
+    invocations = stub_invocations(sandbox)
+    assert invocations, "docker stub was never invoked; chain did not run"
+
+    stderr_lines = result.stderr.splitlines()
+    trace_lines = [line for line in stderr_lines if line.startswith("+ docker")]
+
+    # Every performed command was printed before it ran: one trace line per
+    # stub invocation, nothing missing, nothing extra.
+    assert len(trace_lines) == len(invocations), (
+        f"{len(trace_lines)} trace lines vs {len(invocations)} invocations"
+    )
+
+    # Rebuild the expected trace text for each recorded invocation and
+    # compare the sequences in order (first: availability gate, last: launch).
+    expected = ["+ docker " + " ".join(inv) for inv in invocations]
+    assert trace_lines == expected
+    assert trace_lines[0] == "+ docker version"
+    assert trace_lines[-1].startswith("+ docker run")
