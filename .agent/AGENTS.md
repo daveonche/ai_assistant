@@ -110,7 +110,9 @@ Routing rules:
 
 To let a new session pinpoint the last activity, maintain
 `docs/workflow_state.md` as the session checkpoint file. It records at
-most one active workflow and is a pointer, not a log.
+most one active workflow and is a pointer, not a log. If the file does
+not exist yet (e.g., in a project using a copied-in `.agent/`), draft
+it as a new file (empty SEARCH block) at the first checkpoint.
 
 1. While a workflow is active, track its position: the current step,
    the last completed step, the next action, and the files in context.
