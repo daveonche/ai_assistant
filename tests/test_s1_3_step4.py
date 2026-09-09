@@ -196,3 +196,35 @@ def test_container_name_deterministic_and_stable_per_workspace(tmp_path: Path):
     assert third.returncode == 0, third.stderr
     other_name = container_name(run_invocations(other)[0])
     assert _strip_pid_suffix(other_name) != _strip_pid_suffix(names[0])
+
+
+def test_separate_sessions_produce_distinguishable_names(tmp_path: Path):
+    """Two sessions in the identical workspace yield container names that
+    share the workspace-hash portion but carry distinct session segments —
+    separate sessions produce distinguishable names for the same workspace."""
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+    sandbox = _make_sandbox(tmp_path)
+
+    alpha = run_chain(
+        sandbox, stub_dir, args=[], extra_env={"AI_ASSISTANT_SESSION_ID": "alpha"}
+    )
+    beta = run_chain(
+        sandbox, stub_dir, args=[], extra_env={"AI_ASSISTANT_SESSION_ID": "beta"}
+    )
+    assert alpha.returncode == 0, alpha.stderr
+    assert beta.returncode == 0, beta.stderr
+
+    names = [container_name(inv) for inv in run_invocations(sandbox)]
+    assert len(names) == 2, names
+
+    # Documented format: ai-assistant-<workspace>-<hash8>-<session>-<pid>.
+    alpha_parts = names[0].split("-")
+    beta_parts = names[1].split("-")
+    assert len(alpha_parts) == 6, names
+    # Same workspace: the hash segment matches; only the session differs.
+    assert alpha_parts[3] == beta_parts[3]
+    assert alpha_parts[4] != beta_parts[4]
+    # Therefore the name portions are fully distinguishable.
+    assert _strip_pid_suffix(names[0]) != _strip_pid_suffix(names[1])
