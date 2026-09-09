@@ -52,3 +52,43 @@ def test_entry_scripts_pass_shellcheck(script):
         f"{script}: shellcheck reported issues:\n"
         f"{result.stdout}{result.stderr}"
     )
+
+
+@pytest.mark.parametrize("script", ENTRY_SCRIPTS, ids=lambda p: p.name)
+def test_entry_scripts_follow_shell_conventions(script):
+    """Both entry scripts follow machine-checkable shell conventions.
+
+    Maps to Step 3 Must Support: "Script style follows the project's
+    shell-script conventions reference." Only rules enforceable by
+    inspecting the script text are checked: a plain
+    `#!/usr/bin/env bash` shebang with no flags, the
+    `set -euo pipefail` baseline option set, a top-level comment
+    describing the script, 80-character maximum line length, and
+    2-space indentation with no tabs.
+    """
+    text = script.read_text()
+    lines = text.splitlines()
+
+    # Plain shebang; flags on the shebang line are unreliable across platforms.
+    assert lines[0] == "#!/usr/bin/env bash", (
+        f"{script}: first line must be '#!/usr/bin/env bash' without flags"
+    )
+
+    # Baseline option set present near the top of the script.
+    assert "set -euo pipefail" in lines[:5], (
+        f"{script}: 'set -euo pipefail' missing from the first 5 lines"
+    )
+
+    # Top-level comment briefly describing the contents.
+    assert lines[1].startswith("#"), (
+        f"{script}: line 2 must be a top-level comment describing the script"
+    )
+
+    # Maximum line length is 80 characters.
+    for number, line in enumerate(lines, start=1):
+        assert len(line) <= 80, (
+            f"{script}: line {number} is {len(line)} chars (max 80)"
+        )
+
+    # Indent 2 spaces; tabs are forbidden.
+    assert "\t" not in text, f"{script}: tab character found (use 2 spaces)"
