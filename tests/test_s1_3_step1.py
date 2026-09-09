@@ -18,8 +18,14 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DOCKER_STUB = """\
 #!/usr/bin/env bash
 set -euo pipefail
-# Fake docker: records argv as JSON lines and always succeeds.
-printf '%s\\n' "$*" >> "$DOCKER_STUB_LOG"
+# Fake docker: records argv as a JSON array per invocation and always succeeds.
+json="["
+for arg in "$@"; do
+  esc=${arg//\\\\/\\\\\\\\}
+  esc=${esc//\\"/\\\\\\\"}
+  json+="\\"$esc\\","
+done
+printf '%s\\n' "${json%,}]" >> "$DOCKER_STUB_LOG"
 exit 0
 """
 
