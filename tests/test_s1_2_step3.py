@@ -32,3 +32,23 @@ def test_entry_scripts_are_executable(script):
     assert mode & stat.S_IXUSR, f"{script}: not executable by user"
     assert mode & stat.S_IXGRP, f"{script}: not executable by group"
     assert mode & stat.S_IXOTH, f"{script}: not executable by other"
+
+
+@pytest.mark.parametrize("script", ENTRY_SCRIPTS, ids=lambda p: p.name)
+def test_entry_scripts_pass_shellcheck(script):
+    """Both entry scripts pass shellcheck with zero warnings.
+
+    Maps to Step 3 Must Support: "Both scripts pass the project's
+    shell-script static checks with no warnings." The default severity
+    (style included) applies, so exit status 0 means a clean report.
+    """
+    result = subprocess.run(
+        ["shellcheck", "--shell=bash", str(script)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, (
+        f"{script}: shellcheck reported issues:\n"
+        f"{result.stdout}{result.stderr}"
+    )
