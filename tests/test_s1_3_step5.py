@@ -205,3 +205,36 @@ def test_existing_image_reused_without_rebuild(tmp_path):
         second_invocations.index(retags[0])
         < second_invocations.index(runs[0])
     )
+
+
+def test_definition_change_triggers_rebuild(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    first = run_chain(sandbox, stub_dir, [])
+    assert first.returncode == 0, first.stderr
+
+    first_invocations = stub_invocations(sandbox)
+    assert len(_builds(first_invocations)) == 1, first_invocations
+    offset = len(first_invocations)
+
+    dockerfile = sandbox / ".agent" / "Dockerfile.aider"
+    with dockerfile.open("a", encoding="utf-8") as handle:
+        handle.write("# rebuild probe\n")
+
+    second = run_chain(sandbox, stub_dir, [])
+    assert second.returncode == 0, second.stderr
+
+    second_invocations = stub_invocations(sandbox)[offset:]
+    builds = _builds(second_invocations)
+    assert len(builds) == 1, second_invocations
+
+    runs = [inv for inv in second_invocations if inv[0] == "run"]
+    assert runs, "assistant should launch after the rebuild"
+    assert (
+        second_invocations.index(builds[0])
+        < second_invocations.index(runs[0])
+    )
+
+    f_idx = builds[0].index("-f")
+    assert builds[0][f_idx + 1] == str(dockerfile)
