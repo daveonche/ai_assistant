@@ -228,3 +228,79 @@ def test_separate_sessions_produce_distinguishable_names(tmp_path: Path):
     assert alpha_parts[4] != beta_parts[4]
     # Therefore the name portions are fully distinguishable.
     assert _strip_pid_suffix(names[0]) != _strip_pid_suffix(names[1])
+
+
+def test_multiple_containers_coexist_within_workspace(tmp_path: Path):
+    """Two concurrent launchers in the identical workspace each obtain their
+    own container and neither disturbs the other: the second launcher sees
+    the first's container with a live host PID and leaves it untouched, and
+    the first launcher survives the second's entire lifecycle."""
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+    sandbox = _make_sandbox(tmp_path)
+    hold = sandbox / "run-hold"
+
+    # Launcher A: its docker run blocks until the hold file appears, so A's
+    # launcher process stays alive while B runs.
+    env_a = _launcher_env(
+        sandbox,
+        stub_dir,
+        extra_env={
+            "AI_ASSISTANT_SESSION_ID": "one",
+            "DOCKER_STUB_RUN_HOLD": str(hold),
+        },
+    )
+    proc_a = _popen_chain(sandbox, env_a, args=[])
+    try:
+        _wait_for(
+            lambda: bool(run_invocations(sandbox)),
+            timeout=30,
+            description="launcher A's docker run to start",
+        )
+        assert proc_a.poll() is None  # A alive, holding its container
+
+        # Launcher B runs in the same workspace while A lives. The stub's
+        # `docker ps` reports A's container with A's live launcher PID —
+        # exactly what the host daemon would list.
+        env_b = _launcher_env(
+            sandbox,
+            stub_dir,
+            extra_env={
+                "AI_ASSISTANT_SESSION_ID": "two",
+                "DOCKER_STUB_PS_ROWS": f"c0ffee {proc_a.pid}",
+            },
+        )
+        proc_b = _popen_chain(sandbox, env_b, args=[])
+        try:
+            _, err_b = proc_b.communicate(timeout=60)
+        except subprocess.TimeoutExpired:
+            proc_b.kill()
+            proc_b.communicate()
+            raise
+        assert proc_b.returncode == 0, err_b
+
+        # A's launcher survived B's entire lifecycle, cleanup included.
+        assert proc_a.poll() is None
+        # Nothing was removed: A's container is bound to a live PID, and no
+        # session identity drives any destructive cleanup.
+        rm_invocations = [
+            inv for inv in stub_invocations(sandbox) if inv[:2] == ["rm", "-f"]
+        ]
+        assert rm_invocations == [], rm_invocations
+
+        # Both containers exist in the same workspace: shared hash segment,
+        # distinct sessions.
+        names = [container_name(inv) for inv in run_invocations(sandbox)]
+        assert len(names) == 2, names
+        assert names[0].split("-")[3] == names[1].split("-")[3]
+        assert names[0].split("-")[4] != names[1].split("-")[4]
+
+        # Release A's docker run so the launcher completes normally.
+        hold.write_text("release")
+        _, err_a = proc_a.communicate(timeout=60)
+        assert proc_a.returncode == 0, err_a
+    finally:
+        if proc_a.poll() is None:
+            proc_a.kill()
+            proc_a.communicate()
