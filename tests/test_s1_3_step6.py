@@ -225,3 +225,38 @@ def test_user_arguments_appear_alongside_config_arguments(tmp_path):
     user_args_start_index = run_inv.index(user_args[0])
     for name, flag in CONFIG_FLAG_FILES:
         assert run_inv.index(flag) < user_args_start_index
+
+
+def test_user_arguments_take_precedence_on_overlap(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    for name, _flag in CONFIG_FLAG_FILES:
+        (sandbox / ".agent" / name).write_text("# config\n", encoding="utf-8")
+    stub_dir = _write_docker_stub(sandbox)
+
+    overlap = ["--aiderignore", "custom.ignore"]
+    result = run_chain(sandbox, stub_dir, overlap)
+    assert result.returncode == 0, result.stderr
+
+    run_inv = [inv for inv in stub_invocations(sandbox) if inv[0] == "run"][-1]
+    tail = _run_tail(run_inv)
+    pairs = _flag_pairs(tail)
+
+    # The config-derived occurrence is assembled...
+    config_pair = ["--aiderignore", str(sandbox / ".agent" / ".aiderignore")]
+    assert config_pair in pairs
+
+    # ...and the user's overlapping occurrence is forwarded verbatim as the
+    # LAST --aiderignore occurrence in the invocation...
+    occurrences = [i for i, arg in enumerate(tail) if arg == "--aiderignore"]
+    assert len(occurrences) == 2, tail
+    user_idx = occurrences[-1]
+    assert tail[user_idx : user_idx + len(overlap)] == overlap
+    # ...positioned after the config-derived occurrence, so the user's value
+    # wins under aider's last-flag-wins semantics.
+    config_idx = occurrences[0]
+    assert tail[config_idx : config_idx + 2] == config_pair
+    assert config_idx < user_idx
+
+    # The effective (last) --aiderignore value is the user's, not the config path.
+    values = [pair[1] for pair in pairs if pair[0] == "--aiderignore"]
+    assert values[-1] == "custom.ignore"
