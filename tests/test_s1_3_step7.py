@@ -168,3 +168,51 @@ def test_run_uses_built_image_session_identity_and_exposes_workspace(tmp_path):
     mounts = _values_after(run_inv, "-v")
     assert f"{sandbox}:{sandbox}" in mounts, mounts
     assert _values_after(run_inv, "-w") == [str(sandbox)]
+
+
+# Config-derived aider flags (full assembly matrix is Step 6's coverage).
+CONFIG_FLAG_FILES = (
+    (".aider.conf.yml", "--config"),
+    (".aider.model.settings.yml", "--model-settings-file"),
+    (".aiderignore", "--aiderignore"),
+    (".aider.model.metadata.json", "--model-metadata-file"),
+)
+
+
+def _run_tail(invocation: list[str]) -> list[str]:
+    """Return the assistant argument tail after the image name."""
+    return invocation[invocation.index(AIDER_IMAGE) + 1 :]
+
+
+def test_interactive_attach_and_assembled_plus_user_arguments_forwarded(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    for name, _flag in CONFIG_FLAG_FILES:
+        (sandbox / ".agent" / name).write_text("# config\n", encoding="utf-8")
+    stub_dir = _write_docker_stub(sandbox)
+
+    user_args = ["--no-auto-commits", "--message", "hello"]
+    result = run_chain(sandbox, stub_dir, user_args)
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+    tail = _run_tail(run_inv)
+    pairs = [tail[i : i + 2] for i in range(len(tail) - 1)]
+
+    # Interactive session attached to the user's terminal.
+    assert "-it" in run_inv[: run_inv.index(AIDER_IMAGE)]
+
+    # Assembled arguments: chat mode, history files under the sandbox
+    # `.agent/`, and the config-derived flags.
+    assert ["--chat-mode", "ask"] in pairs
+    assert _values_after(tail, "--chat-history-file") == [
+        str(sandbox / ".agent" / ".aider.chat.history.md")
+    ]
+    assert _values_after(tail, "--input-history-file") == [
+        str(sandbox / ".agent" / ".aider.input.history")
+    ]
+    for name, flag in CONFIG_FLAG_FILES:
+        assert [flag, str(sandbox / ".agent" / name)] in pairs
+
+    # User-supplied arguments forwarded verbatim, in order, at the tail.
+    start = tail.index(user_args[0])
+    assert tail[start : start + len(user_args)] == user_args
