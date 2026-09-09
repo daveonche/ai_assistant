@@ -8,6 +8,7 @@ modes with the exact steps for each.
 """
 
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -153,3 +154,47 @@ def test_entry_chain_works_from_copied_project_root(
     assert log.read_text().splitlines() == [
         str(target_project / ".agent" / "ai_assistant.py")
     ]
+
+
+def _section(text: str, heading: str) -> str:
+    """Return the text of the README section starting at `heading`.
+
+    The lookahead stops at the next '## ' heading or end of file;
+    '### ' subsections do not match '^##\\s', so a '### ' subsection
+    stays inside its parent '## ' section.
+    """
+    match = re.search(
+        rf"^{re.escape(heading)}\b.*?(?=^##\s|\Z)", text, re.M | re.S
+    )
+    assert match, f"README.md: no '{heading}' section found"
+    return match.group(0)
+
+
+def test_readme_documents_both_usage_modes_with_exact_steps():
+    """README documents standalone and copy-into-project usage modes.
+
+    Maps to Step 5 Must Support: "The readme documents both usage
+    modes with the exact steps for each." Standalone mode: the Usage
+    section launching ./agent.sh from the project root. Copy mode: the
+    'Using in Other Projects' section with the exact copy, permission,
+    environment, and launch steps.
+    """
+    text = README.read_text()
+
+    # Standalone mode: Usage section documents ./agent.sh from the root.
+    usage = _section(text, "## Usage")
+    assert "./agent.sh" in usage, (
+        "README.md Usage section does not document ./agent.sh"
+    )
+
+    # Copy mode: exact steps in 'Using in Other Projects'.
+    other = _section(text, "### Using in Other Projects")
+    for step in (
+        "cp -r .agent",
+        "cp agent.sh",
+        "chmod +x agent.sh .agent/ai-assistant.sh",
+        "git update-index --chmod=+x agent.sh .agent/ai-assistant.sh",
+        "cp .agent/.env.example .env",
+        "./agent.sh",
+    ):
+        assert step in other, f"copy-mode steps missing: {step!r}"
