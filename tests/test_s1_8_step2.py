@@ -26,8 +26,10 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SESSION_ID = "s18-step2"
 
-# Spinner frame: "\r[<char>] Loading AI Assistant... <status message>".
-SPINNER_FRAME = re.compile(r"\[[^\]]+\] Loading AI Assistant\.\.\. +\S")
+# Spinner frame: "\r[<char>] Loading AI Assistant... <status message>",
+# with the message padded to 50 columns. The message is captured in full,
+# up to the frame separator (\r) or line end.
+SPINNER_FRAME = re.compile(r"\[[^\]]+\] Loading AI Assistant\.\.\. +([^\r\n]*)")
 
 # Fake docker: records argv as a JSON array per invocation (same recording
 # body as tests/test_s1_8_step1.py). `docker version` succeeds, every
