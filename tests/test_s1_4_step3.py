@@ -40,3 +40,31 @@ def test_ignore_file_specifies_exclusion_patterns():
         assert pattern and not set(pattern) <= {"*", "?", "/", "."}, (
             f"pattern line must be a meaningful glob pattern: {pattern!r}"
         )
+
+
+CATEGORY_PATTERNS = {
+    "dependencies": (
+        "node_modules/", "env/", "venv/", ".venv/", "__pycache__/",
+        "*.egg-info/",
+    ),
+    "build artifacts": (
+        "dist/", "build/", "*.zip", "*.tar.gz", "*.egg", "coverage/",
+        "htmlcov/",
+    ),
+    "non-essential files": (
+        "*.log", ".cache/", ".pytest_cache/", ".DS_Store", ".vscode/",
+        ".idea/",
+    ),
+}
+
+
+def test_patterns_exclude_dependencies_build_artifacts_and_non_essential_files():
+    """The exclusion patterns cover dependencies, build artifacts, and
+    non-essential files (Developer Notes focus)."""
+    patterns = set(_ignore_patterns())
+    for category, candidates in CATEGORY_PATTERNS.items():
+        matched = patterns & set(candidates)
+        assert matched, (
+            f"ignore file must exclude {category}: expected at least one "
+            f"of {sorted(candidates)}, found none"
+        )
