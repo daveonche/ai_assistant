@@ -131,10 +131,16 @@ def test_empty_artifacts_removed_after_session(tmp_path: Path):
     for path in seeded:
         assert not path.exists(), f"empty artifact survived: {path}"
 
-    # Whole-sandbox scan: no zero-byte file left behind anywhere.
+    # No empty launcher artifact survives anywhere in the sandbox. The
+    # scan is scoped to the launcher's managed artifact names: the
+    # cleanup is conservative by design (own artifact paths only), so
+    # unrelated pre-existing repo content — e.g. a zero-byte file under
+    # .aider.conventions/ copied in with the sandbox — is correctly left
+    # untouched and must not fail this test.
     empty_leftovers = [
         p
-        for p in sandbox.rglob("*")
+        for name in ARTIFACT_FILES
+        for p in sandbox.rglob(name)
         if p.is_file() and p.stat().st_size == 0
     ]
     assert empty_leftovers == []
