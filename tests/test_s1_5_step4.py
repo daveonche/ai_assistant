@@ -209,3 +209,19 @@ def test_container_name_distinguishes_sessions(tmp_path):
 
     # The overriding session's identity is embedded in the second name.
     assert other_session in name_2, name_2
+
+
+def test_session_container_removed_on_session_end(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    result = run_chain(sandbox, stub_dir, [])
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+
+    # The session container is removed automatically when the session ends:
+    # the run invocation carries --rm among the docker flags (before the
+    # image token), so the engine removes the container at session end.
+    image_idx = run_inv.index(AIDER_IMAGE)
+    assert "--rm" in run_inv[:image_idx], run_inv
