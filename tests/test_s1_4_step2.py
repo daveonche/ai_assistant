@@ -24,3 +24,15 @@ def test_model_settings_file_exists_and_is_valid_yaml():
     assert all(isinstance(entry, dict) for entry in loaded), (
         "each model settings entry must be a mapping"
     )
+
+
+def test_entries_specify_model_names():
+    """Each model settings entry specifies a model name."""
+    loaded = yaml.safe_load(MODEL_SETTINGS.read_text(encoding="utf-8"))
+    for entry in loaded:
+        assert "name" in entry, (
+            f"model settings entry missing 'name': {entry}"
+        )
+        assert isinstance(entry["name"], str) and entry["name"].strip(), (
+            f"model name must be a non-empty string: {entry.get('name')!r}"
+        )
