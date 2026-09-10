@@ -20,3 +20,32 @@ def test_agent_md_file_exists():
     assert AGENT_MD.read_text(encoding="utf-8").strip(), (
         "AGENT.md must not be empty"
     )
+
+
+def _headings(text: str) -> list[str]:
+    """ATX heading lines of the document."""
+    return [
+        line.strip()
+        for line in text.splitlines()
+        if line.strip().startswith("#")
+    ]
+
+
+def test_defines_context_management_rules():
+    """The document defines context management rules: a dedicated
+    context-management section plus read-only and drop command
+    definitions."""
+    text = AGENT_MD.read_text(encoding="utf-8")
+    context_headings = [
+        h for h in _headings(text)
+        if "context" in h.lower() and "management" in h.lower()
+    ]
+    assert context_headings, (
+        "AGENT.md must have a section dedicated to context management"
+    )
+    assert "/read-only" in text, (
+        "context management rules must define the read-only command"
+    )
+    assert "/drop" in text, (
+        "context management rules must define the drop command"
+    )
