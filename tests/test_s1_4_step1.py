@@ -29,3 +29,21 @@ def test_config_specifies_default_model_setting():
     assert isinstance(loaded["model"], str) and loaded["model"].strip(), (
         "default model must be a non-empty string"
     )
+
+
+def test_config_specifies_operational_settings():
+    """The config specifies additional recognized Aider runtime
+    directives beyond the default model (e.g., auto-commits)."""
+    loaded = yaml.safe_load(AIDER_CONFIG.read_text(encoding="utf-8"))
+    operational_keys = {"auto-commits", "attribute-co-authored-by",
+                        "edit-format", "commit-prompt"}
+    present = operational_keys & loaded.keys()
+    assert present, (
+        "aider config must specify at least one operational setting "
+        f"from: {sorted(operational_keys)}"
+    )
+    # auto-commits, if specified, must be an explicit boolean
+    if "auto-commits" in loaded:
+        assert isinstance(loaded["auto-commits"], bool), (
+            "auto-commits must be a boolean"
+        )
