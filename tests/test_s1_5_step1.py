@@ -60,3 +60,17 @@ def test_tech_stack_doc_records_base_image_pin():
     assert matches, (
         f"{TECH_STACK_DOC} records no base image pin (tag + digest)"
     )
+
+
+def test_definition_pin_matches_documented_pin():
+    # the image definition's pinned base image reference
+    reference = _from_references()[0]
+
+    # the technology stack documentation records the exact same
+    # tag + digest pin
+    assert TECH_STACK_DOC.is_file(), f"{TECH_STACK_DOC} does not exist"
+    doc_text = TECH_STACK_DOC.read_text()
+    assert reference in doc_text, (
+        f"base image pin {reference!r} from {DOCKERFILE} is not recorded "
+        f"in {TECH_STACK_DOC}"
+    )
