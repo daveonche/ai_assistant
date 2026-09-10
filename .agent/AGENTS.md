@@ -140,6 +140,12 @@ it as a new file (empty SEARCH block) at the first checkpoint.
    Workflow section of `docs/workflow_state.md`.
 6. Never record secrets or API keys in the state file.
 7. Update the `Last updated` date on every write.
+8. The `Last completed` line is a one-line summary of only the most recent
+   step (target ~300 characters, hard cap 400 — enforced by
+   `tests/test_workflow_state_pointer.py`). Never prepend, append, or
+   accumulate per-step history into it: per-step details live in git commit
+   messages and the test files. When drafting a checkpoint, replace the
+   entire line; never extend it.
 
 ## Workflow Orchestration Mode
 
