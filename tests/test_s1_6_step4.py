@@ -6,12 +6,14 @@ launcher's own image build (same definition and build inputs)", and "A build
 failure marks the overall pipeline run as failed".
 """
 
+import shlex
 from pathlib import Path
 
 import yaml
 
 CI_WORKFLOW = Path(".github/workflows/ci.yml")
 IMAGE_DEFINITION = ".agent/Dockerfile.aider"
+LAUNCHER = Path(".agent/ai_assistant.py")
 
 
 def _load_workflow() -> dict:
@@ -56,4 +58,53 @@ def test_image_build_is_dedicated_pipeline_stage():
     assert "shellcheck" not in run and "py_compile" not in run, (
         "the image build stage must be its own stage: the source validations "
         "must live in their own job/steps so failures remain clearly attributable"
+    )
+
+
+def test_ci_build_mirrors_launcher_build_inputs():
+    steps = _build_steps()
+    assert steps, "an image build step must exist"
+    step = steps[0]
+    run = step.get("run") or ""
+    tokens = shlex.split(run)
+
+    # Same definition: -f .agent/Dockerfile.aider
+    assert "-f" in tokens, "the CI build must select the image definition with -f"
+    assert tokens[tokens.index("-f") + 1] == IMAGE_DEFINITION, (
+        f"the CI build must use the same image definition as the launcher "
+        f"({IMAGE_DEFINITION})"
+    )
+
+    # Same context: trailing positional argument .agent
+    assert tokens[-1] == ".agent", (
+        "the CI build context must be the same directory the launcher uses "
+        "(.agent, the image definition's own directory)"
+    )
+
+    # Same flag: --progress=plain
+    assert "--progress=plain" in tokens, (
+        "the CI build must pass --progress=plain like the launcher's build"
+    )
+
+    # Same build input env: DOCKER_BUILDKIT=1
+    env = step.get("env") or {}
+    assert env.get("DOCKER_BUILDKIT") == "1", (
+        "the CI build must set DOCKER_BUILDKIT=1 like the launcher's build"
+    )
+
+    # Launcher cross-check: build_image() must still declare these same
+    # inputs, so a launcher-side change forces re-verification of the mirror.
+    source = LAUNCHER.read_text(encoding="utf-8")
+    assert '"--progress=plain"' in source, (
+        "launcher build_image() must still build with --progress=plain"
+    )
+    assert 'env["DOCKER_BUILDKIT"] = "1"' in source, (
+        "launcher build_image() must still set DOCKER_BUILDKIT=1"
+    )
+    assert 'AGENT_DIR / "Dockerfile.aider"' in source, (
+        "launcher must still build from AGENT_DIR / Dockerfile.aider "
+        "(the .agent image definition)"
+    )
+    assert "build_image(dockerfile_path, AGENT_DIR" in source, (
+        "launcher must still use AGENT_DIR (.agent) as the build context"
     )
