@@ -108,3 +108,22 @@ def test_ci_build_mirrors_launcher_build_inputs():
     assert "build_image(dockerfile_path, AGENT_DIR" in source, (
         "launcher must still use AGENT_DIR (.agent) as the build context"
     )
+
+
+def test_image_build_failure_fails_overall_run():
+    job = _docker_build_job()
+    assert not job.get("continue-on-error"), \
+        "the docker-build job must not suppress failures (continue-on-error)"
+    steps = _build_steps()
+    assert steps, "an image build step must exist"
+    step = steps[0]
+    assert step.get("continue-on-error") not in (True, "true"), (
+        "the image build step must not suppress failures "
+        "(continue-on-error); a failed build must fail the run"
+    )
+    run = step.get("run") or ""
+    for pattern in ("|| true", "|| exit 0", "; true", "&& true"):
+        assert pattern not in run, (
+            f"build command must not swallow errors (found '{pattern}'); "
+            "a build failure must mark the overall run as failed"
+        )
