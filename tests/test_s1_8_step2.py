@@ -160,3 +160,61 @@ def test_progress_indicator_visible_during_long_operation(tmp_path: Path):
     # Completion marker rendered; the failure branch never fired.
     assert "[✔] Loading AI Assistant... done." in transcript
     assert "[✖] Loading AI Assistant... failed." not in transcript
+
+
+def _timestamped_frames(
+    chunks: list[tuple[float, str]],
+) -> list[tuple[float, str, str]]:
+    """Flatten transcript chunks into (timestamp, spinner char, status).
+
+    Spinner frames are \r-separated and several can land in one read
+    chunk, so every frame inherits its chunk's timestamp.
+    """
+    frames: list[tuple[float, str, str]] = []
+    for timestamp, text in chunks:
+        for piece in text.split("\r"):
+            match = SPINNER_FRAME.search(piece)
+            if not match:
+                continue
+            char = re.match(r"\[([^\]]+)\]", piece).group(1)
+            frames.append((timestamp, char, match.group(1).rstrip()))
+    return frames
+
+
+def test_feedback_updates_automatically_without_user_action(tmp_path: Path):
+    """While the fake build runs, the status line changes on its own: the
+    FROM-derived status renders first and the CACHED-derived status about
+    one fake-build-second later, at strictly increasing timestamps — with
+    nothing ever written to stdin (run_in_pty never feeds input), every
+    update happened without user action."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    returncode, chunks = run_in_pty(sandbox, stub_dir)
+    assert returncode == 0, "".join(text for _, text in chunks)
+
+    frames = _timestamped_frames(chunks)
+    assert frames, "no spinner frames found in transcript"
+
+    # Build-log-derived statuses appeared in log order: the fake build
+    # writes FROM, sleeps 1s, then writes CACHED; the rendered status
+    # follows the log tail, so FROM frames precede the last CACHED frame.
+    from_times = [t for t, _, msg in frames if "FROM" in msg]
+    cached_times = [t for t, _, msg in frames if "CACHED" in msg]
+    assert from_times, f"no FROM-derived status rendered: {frames}"
+    assert cached_times, f"no CACHED-derived status rendered: {frames}"
+    assert from_times[0] < cached_times[-1], (from_times, cached_times)
+
+    # The two updates were observed at least 0.5s apart (the fake build
+    # sleeps 1s between the log lines; slack for scheduler jitter) — the
+    # display refreshed over time while the operation ran.
+    assert cached_times[-1] - from_times[0] >= 0.5
+
+    # The spinner character cycled across the build phase (redraw every
+    # 0.25s tick): repeated automatic redraws, not a single static frame.
+    build_phase_chars = [
+        char for _, char, msg in frames if "FROM" in msg or "CACHED" in msg
+    ]
+    assert len(set(build_phase_chars)) >= 2, build_phase_chars
