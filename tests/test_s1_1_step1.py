@@ -57,3 +57,22 @@ def test_project_files_tracked_from_initial_commit():
             entry == layer or entry.startswith(f"{layer}/")
             for entry in tracked
         ), f"layer {layer!r} is not currently tracked"
+
+
+def test_fresh_clone_checks_out_cleanly(tmp_path):
+    # re-clone the project into a fresh location
+    clone_dir = tmp_path / "clone"
+    result = subprocess.run(
+        ["git", "clone", str(PROJECT_ROOT), str(clone_dir)],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, (
+        f"clone failed: {result.stderr.strip()}"
+    )
+
+    # the fresh clone checks out cleanly with every documented layer present
+    for layer in DOCUMENTED_LAYERS:
+        assert (clone_dir / layer).exists(), (
+            f"layer {layer!r} missing from fresh clone"
+        )
