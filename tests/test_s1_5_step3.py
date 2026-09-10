@@ -187,3 +187,21 @@ def test_engine_group_mapping_uses_host_docker_gid(tmp_path):
         # the branch. Without a docker group, the launcher reports the
         # skipped mapping instead of failing silently.
         assert "host 'docker' group not found" in result.stderr, result.stderr
+
+
+def test_no_engine_redirect_in_run_environment(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    result = run_chain(sandbox, stub_dir, [])
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+
+    # The launcher forwards no DOCKER_HOST override into the container, so
+    # engine commands issued inside it use the CLI's default socket path —
+    # which Test 1 confirmed is the mounted host daemon socket.
+    env_values = _values_after(run_inv, "-e")
+    assert not any(
+        value.startswith("DOCKER_HOST=") for value in env_values
+    ), env_values
