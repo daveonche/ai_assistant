@@ -166,3 +166,22 @@ def test_project_root_bind_mounted_at_same_path(tmp_path):
 
     # The same path is the container's working directory.
     assert _values_after(run_inv, "-w") == [str(sandbox)]
+
+
+def test_assistant_config_directory_included_in_mount(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    result = run_chain(sandbox, stub_dir, [])
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+
+    # The bind-mount source is the project root, which contains the
+    # assistant configuration directory (.agent) — so the configuration
+    # directory is included in the mounted tree at its host-relative path.
+    mounts = _values_after(run_inv, "-v")
+    mount = _root_mount(mounts, sandbox)
+    assert mount is not None, mounts
+    source = mount.split(":")[0]
+    assert (Path(source) / ".agent").is_dir(), source
