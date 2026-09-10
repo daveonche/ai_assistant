@@ -179,3 +179,33 @@ def test_container_name_deterministic_per_workspace_and_session(tmp_path):
 
     # The current session's identity is embedded in the name.
     assert "s1-5-4" in name_1, name_1
+
+
+def test_container_name_distinguishes_sessions(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    first = run_chain(sandbox, stub_dir, [])
+    assert first.returncode == 0, first.stderr
+    other_session = "s1-5-4-other"
+    second = run_chain(
+        sandbox, stub_dir, [], extra_env={"AI_ASSISTANT_SESSION_ID": other_session}
+    )
+    assert second.returncode == 0, second.stderr
+
+    runs = [inv for inv in stub_invocations(sandbox) if inv[0] == "run"]
+    assert len(runs) == 2
+
+    name_1 = _container_name(runs[0])
+    name_2 = _container_name(runs[1])
+
+    # Different session identities in the same workspace produce
+    # distinguishable container names (compared after PID-suffix removal,
+    # so the difference comes from the session component alone).
+    assert _strip_pid_suffix(name_1) != _strip_pid_suffix(name_2), (
+        name_1,
+        name_2,
+    )
+
+    # The overriding session's identity is embedded in the second name.
+    assert other_session in name_2, name_2
