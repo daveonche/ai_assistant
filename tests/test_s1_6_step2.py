@@ -54,3 +54,26 @@ def test_launcher_syntax_validation_is_dedicated_pipeline_stage():
         "launcher validation must be its own dedicated stage running exactly "
         f"'{EXPECTED_CHECK}'; other validations must not share the step"
     )
+
+
+def test_launcher_validation_uses_builtin_checker_without_extra_packages():
+    steps = _launcher_validation_steps()
+    assert steps, "a launcher validation step must exist"
+    step = steps[0]
+    run = step.get("run") or ""
+    assert "python3 -m py_compile" in run, (
+        "validation must use the language's built-in py_compile module "
+        "(Python standard library)"
+    )
+    assert not step.get("uses"), (
+        "the validation step must not pull in an additional action/component; "
+        "the preinstalled python3 provides the built-in checker"
+    )
+    for pattern in (
+        "pip install", "pip3 install", "npm install",
+        "apt-get install", "apt install",
+    ):
+        assert pattern not in run, (
+            f"validation step must not install packages (found '{pattern}'); "
+            "the built-in checker requires no additional packages"
+        )
