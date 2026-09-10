@@ -47,3 +47,38 @@ def test_logging_section_documents_what_and_where():
     assert re.search(r"ai-assistant-[\w<>/ -]*\.log", section), (
         "log file naming pattern (ai-assistant-*.log) not documented"
     )
+
+
+def _subsection(text: str, heading: str) -> str:
+    """Return the content under an H3 heading, up to the next heading
+    (H3 or H2, whichever comes first)."""
+    start = text.index(f"### {heading}")
+    next_h3 = text.find("\n### ", start + 1)
+    next_h2 = text.find("\n## ", start + 1)
+    candidates = [c for c in (next_h3, next_h2) if c != -1]
+    end = min(candidates) if candidates else len(text)
+    return text[start:end]
+
+
+def test_debug_mode_documentation_matches_requirements():
+    """The Enabling Debug Mode subsection documents the --debug flag with
+    its -x short form and the enumerated additional stderr output; the
+    Normal Mode subsection documents the no-debug contrast."""
+    readme = _read_readme()
+    enabling = _subsection(readme, "Enabling Debug Mode").casefold()
+    normal = _subsection(readme, "Normal Mode").casefold()
+
+    # How to enable debug mode: the flag and its short form.
+    assert "--debug" in enabling
+    assert "-x" in enabling
+
+    # What additional output appears: enumerated stderr output.
+    assert "stderr" in enabling
+    assert "each docker command" in enabling
+    assert "command log path" in enabling
+    assert "last 10" in enabling
+
+    # The normal-mode contrast: spinner feedback only, commands still
+    # recorded.
+    assert "spinner" in normal
+    assert "command log" in normal
