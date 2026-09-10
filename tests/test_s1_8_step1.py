@@ -175,6 +175,12 @@ def test_surfaced_entries_are_bounded_to_a_recent_tail(tmp_path: Path):
     # Bounded: a non-empty, strictly shorter, contiguous most-recent block.
     assert 0 < len(surfaced) < len(log_lines)
     assert surfaced == log_lines[-len(surfaced):]
-    # Most recent command included, earliest entries dropped.
+    # Most recent command included.
     assert surfaced[-1] == "+ docker version"
-    assert log_lines[0] not in surfaced
+    # Earliest entries dropped: each run traces "docker version" exactly
+    # once (4 runs total), so the surfaced tail must hold strictly fewer
+    # occurrences than the full log — value membership is unusable here
+    # because identical "+ docker version" lines legitimately recur.
+    assert surfaced.count("+ docker version") < log_lines.count(
+        "+ docker version"
+    )
