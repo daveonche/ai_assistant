@@ -134,3 +134,48 @@ def test_credentials_forwarded_by_name_only(tmp_path: Path):
     }
     for name in CREDENTIAL_VARS:
         assert name in forwarded, f"{name} not forwarded as -e NAME"
+
+
+def _git(*args: str) -> subprocess.CompletedProcess:
+    """Run a git command from the project root."""
+    return subprocess.run(
+        ["git", "--no-pager", *args],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+
+def test_no_credential_value_in_any_git_tracked_file(tmp_path: Path):
+    """After debug and normal runs with sentinel credentials exported, no
+    credential value appears in any git-tracked file (git grep -F, exit 1
+    = no match)."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    sentinels = {
+        name: f"sentinel-{name.lower()}-{uuid.uuid4().hex}"
+        for name in CREDENTIAL_VARS
+    }
+
+    # Debug run: exercises command-log writing and trace output paths.
+    debug_result = run_chain(
+        sandbox, stub_dir, args=["--debug"], extra_env=sentinels
+    )
+    assert debug_result.returncode == 0, debug_result.stderr
+
+    # Normal run: exercises the default (non-debug) launch path.
+    normal_result = run_chain(sandbox, stub_dir, args=[], extra_env=sentinels)
+    assert normal_result.returncode == 0, normal_result.stderr
+
+    # No tracked file contains any sentinel value. git grep exit codes:
+    # 0 = match found, 1 = no match, >=2 = error (show stderr).
+    for name, sentinel in sentinels.items():
+        grep = _git("grep", "--fixed-strings", "--quiet", sentinel)
+        assert grep.returncode == 1, (
+            f"credential value for {name} leaked into a git-tracked file "
+            f"(grep exit {grep.returncode}): {grep.stderr or grep.stdout}"
+        )
