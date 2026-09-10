@@ -49,3 +49,27 @@ def test_defines_context_management_rules():
     assert "/drop" in text, (
         "context management rules must define the drop command"
     )
+
+
+def test_defines_staged_execution_workflow_instructions():
+    """The document defines workflow instructions for staged
+    execution: a workflow section with [STEP n] stages, [STOP]
+    points, and wait-for-user-input guidance."""
+    text = AGENT_MD.read_text(encoding="utf-8")
+    workflow_headings = [
+        h for h in _headings(text) if "workflow" in h.lower()
+    ]
+    assert workflow_headings, (
+        "AGENT.md must have a section dedicated to workflow instructions"
+    )
+    assert "[STEP" in text, (
+        "workflow instructions must define staged execution steps"
+    )
+    assert "[STOP" in text, (
+        "workflow instructions must define stop points that pause "
+        "staged execution"
+    )
+    assert "wait" in text.lower(), (
+        "workflow instructions must instruct the assistant to wait for "
+        "user input at stop points"
+    )
