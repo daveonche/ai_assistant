@@ -179,3 +179,69 @@ def test_no_credential_value_in_any_git_tracked_file(tmp_path: Path):
             f"credential value for {name} leaked into a git-tracked file "
             f"(grep exit {grep.returncode}): {grep.stderr or grep.stdout}"
         )
+
+
+def command_log_path(result: subprocess.CompletedProcess) -> Path:
+    """Extract the per-session command log path announced in debug mode."""
+    prefix = "Command log: "
+    for line in result.stderr.splitlines():
+        if line.startswith(prefix):
+            return Path(line[len(prefix):])
+    raise AssertionError("Command log path not announced in debug output")
+
+
+def test_traces_and_logs_never_reveal_secret_values(tmp_path: Path):
+    """With sentinel credentials exported, the variable NAME appears in the
+    debug trace, the command log, and the surfaced recent-entries block —
+    proving those mechanisms ran — while the sentinel VALUE appears in none
+    of the three channels."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    sentinels = {
+        name: f"sentinel-{name.lower()}-{uuid.uuid4().hex}"
+        for name in CREDENTIAL_VARS
+    }
+    values = list(sentinels.values())
+
+    # Channel (a)+(b): successful debug run — trace lines on stderr, and
+    # the command log file announced by the launcher.
+    ok = run_chain(sandbox, stub_dir, args=["--debug"], extra_env=sentinels)
+    assert ok.returncode == 0, ok.stderr
+
+    # Channel (a): stderr trace. NAME visible, value never.
+    traces = [l for l in ok.stderr.splitlines() if l.startswith("+ docker")]
+    assert traces, "no debug trace lines found"
+    assert any("-e OPENAI_API_KEY" in l for l in traces), traces[-1]
+    for sentinel in values:
+        assert sentinel not in ok.stderr
+
+    # Channel (b): the command log file. Same guarantee.
+    command_log = command_log_path(ok)
+    log_text = command_log.read_text()
+    assert "+ docker" in log_text, "command log holds no traced commands"
+    assert "-e OPENAI_API_KEY" in log_text
+    for sentinel in values:
+        assert sentinel not in log_text
+
+    # Channel (c): failing debug run — the failure checkpoint surfaces the
+    # recent log entries; the surfaced block must stay value-free.
+    fail = run_chain(
+        sandbox,
+        stub_dir,
+        args=["--debug"],
+        extra_env={**sentinels, "DOCKER_STUB_FAIL": "version"},
+    )
+    assert fail.returncode == 1, fail.stderr
+
+    stderr_lines = fail.stderr.splitlines()
+    header_index = stderr_lines.index("--- Recent command log entries ---")
+    surfaced = [
+        l for l in stderr_lines[header_index + 1:] if l.startswith("+ docker")
+    ]
+    assert surfaced, "failure checkpoint surfaced no recent entries"
+    assert "+ docker version" in surfaced
+    for sentinel in values:
+        assert sentinel not in fail.stderr
