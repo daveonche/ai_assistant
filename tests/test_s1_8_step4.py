@@ -144,3 +144,44 @@ def test_empty_artifacts_removed_after_session(tmp_path: Path):
         if p.is_file() and p.stat().st_size == 0
     ]
     assert empty_leftovers == []
+
+
+# Distinctive seeded content per artifact for the preservation test.
+SEEDED_CONTENT = {
+    ".aider.chat.history.md": "# Chat history\nseeded-content-s18-step4\n",
+    ".aider.input.history": "seeded-input-history-line-s18-step4\n",
+}
+
+
+def test_content_bearing_artifacts_left_untouched(tmp_path: Path):
+    """With the managed artifacts seeded WITH content, an identical
+    complete session leaves both in place with their seeded content
+    intact — preservation, not removal."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    agent_dir = sandbox / ".agent"
+    seeded = {
+        agent_dir / name: content for name, content in SEEDED_CONTENT.items()
+    }
+    for path, content in seeded.items():
+        path.write_text(content)
+    assert all(p.is_file() and p.stat().st_size > 0 for p in seeded)
+
+    result = run_chain(sandbox, stub_dir, args=[])
+    assert result.returncode == 0, result.stderr
+
+    # The docker run actually happened: the session was complete and the
+    # cleanup pass ran, so "left untouched" is a real result, not a
+    # vacuous pass from a session that never started.
+    invocations = stub_invocations(sandbox)
+    assert any(inv[:1] == ["run"] for inv in invocations), invocations
+
+    # Content-bearing artifacts left untouched: still present, seeded
+    # content intact byte-for-byte (the stubbed container never writes,
+    # so exact equality is deterministic).
+    for path, content in seeded.items():
+        assert path.is_file(), f"content-bearing artifact was removed: {path}"
+        assert path.read_text() == content, f"content of {path.name} was altered"
