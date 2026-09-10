@@ -50,3 +50,42 @@ def test_exclusion_rules_cover_transient_artifact_categories():
             assert path in ignored, (
                 f"{category} artifact {path!r} is not excluded by .gitignore"
             )
+
+
+SAMPLE_TRANSIENT_FILES = {
+    "sample log file": "sample.log",
+    "sample credentials file": "credentials.json",
+    "sample container output file": ".aider.chat.history",
+}
+
+
+def test_sample_transient_files_not_reported_as_pending_changes():
+    created = []
+    try:
+        # create the three manual-verification sample files in the working tree
+        for description, path in SAMPLE_TRANSIENT_FILES.items():
+            sample = PROJECT_ROOT / path
+            assert not sample.exists(), (
+                f"sample path {path!r} already exists; refusing to overwrite"
+            )
+            sample.write_text("transient sample content\n")
+            created.append(sample)
+
+        # the version control status reports none of them as pending
+        # tracked changes
+        result = subprocess.run(
+            ["git", "-C", str(PROJECT_ROOT), "--no-pager", "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        reported_paths = {
+            line[3:] for line in result.stdout.splitlines() if len(line) > 3
+        }
+        for description, path in SAMPLE_TRANSIENT_FILES.items():
+            assert path not in reported_paths, (
+                f"{description} ({path!r}) reported as pending tracked changes"
+            )
+    finally:
+        for sample in created:
+            sample.unlink(missing_ok=True)
