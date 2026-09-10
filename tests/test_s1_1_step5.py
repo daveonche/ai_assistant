@@ -46,3 +46,29 @@ def test_readme_describes_project_purpose():
     ), (
         "README.md opening prose does not describe the wrapper/orchestrator purpose"
     )
+
+
+def _section(text: str, heading: str) -> str:
+    """Return the body of the `## <heading>` section, up to the next `## `."""
+    marker = f"## {heading}"
+    start = text.find(marker)
+    assert start != -1, f"README.md has no '{heading}' section"
+    rest = text[start + len(marker):]
+    end = rest.find("\n## ")
+    return rest[:end] if end != -1 else rest
+
+
+def test_readme_describes_basic_usage():
+    # the readme contains getting-started guidance: an Installation
+    # section and a Usage section
+    text = (PROJECT_ROOT / "README.md").read_text()
+    installation = _section(text, "Installation")
+    usage = _section(text, "Usage")
+
+    # each getting-started section includes at least one runnable command
+    assert "git clone" in installation, (
+        "README.md Installation section has no clone command"
+    )
+    assert "./agent.sh" in usage, (
+        "README.md Usage section does not show how to start the assistant"
+    )
