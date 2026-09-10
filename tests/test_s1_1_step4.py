@@ -89,3 +89,36 @@ def test_sample_transient_files_not_reported_as_pending_changes():
     finally:
         for sample in created:
             sample.unlink(missing_ok=True)
+
+
+def _git(*args: str) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(PROJECT_ROOT), "--no-pager", *args],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
+def test_exclusion_rules_present_from_initial_commit_onward():
+    # history begins with exactly one initial project commit
+    root_commits = _git("rev-list", "--max-parents=0", "HEAD").splitlines()
+    assert len(root_commits) == 1, (
+        f"expected exactly one root commit, found {len(root_commits)}"
+    )
+    root_commit = root_commits[0]
+
+    # the exclusion rules were tracked in the initial commit's tree
+    # (active from the initial commit onward)
+    root_tree = set(_git("ls-tree", "--name-only", root_commit).splitlines())
+    assert ".gitignore" in root_tree, (
+        f".gitignore missing from the initial commit {root_commit}"
+    )
+
+    # the exclusion rules remain tracked and non-empty in the working tree
+    tracked = _git("ls-files").splitlines()
+    assert ".gitignore" in tracked, ".gitignore is not currently tracked"
+    assert (PROJECT_ROOT / ".gitignore").read_text().strip(), (
+        ".gitignore is empty"
+    )
