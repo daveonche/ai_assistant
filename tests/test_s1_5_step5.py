@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -189,3 +191,38 @@ def test_only_well_known_credentials_forwarded(tmp_path):
 
     # The probe value never appears in the invocation either.
     assert probe_value not in run_inv, run_inv
+
+
+def test_credential_value_absent_from_files_and_traces(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    result = run_chain(
+        sandbox,
+        stub_dir,
+        [],
+        extra_env={"ANTHROPIC_API_KEY": FAKE_CREDENTIAL},
+    )
+    assert result.returncode == 0, result.stderr
+
+    # The fake credential value appears nowhere in the launcher's output.
+    assert FAKE_CREDENTIAL not in result.stdout
+    assert FAKE_CREDENTIAL not in result.stderr
+
+    # ...nor in any file the launcher session produced or touched in the
+    # sandbox workspace (a superset of any git-tracked set, including the
+    # stub's invocation records).
+    for path in sandbox.rglob("*"):
+        if path.is_file():
+            assert FAKE_CREDENTIAL.encode() not in path.read_bytes(), path
+
+    # ...nor in the per-session command log (asserted written this session,
+    # so the absence check is meaningful, not vacuous). The log path mirrors
+    # the launcher's own derivation: md5 of the workspace path + session id.
+    workspace_hash = hashlib.md5((str(sandbox) + "\n").encode()).hexdigest()
+    command_log = (
+        Path(tempfile.gettempdir())
+        / f"ai-assistant-{workspace_hash[:8]}-s1-5-5.log"
+    )
+    assert command_log.is_file(), command_log
+    assert FAKE_CREDENTIAL not in command_log.read_text(errors="replace")
