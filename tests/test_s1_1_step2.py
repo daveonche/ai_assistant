@@ -24,8 +24,8 @@ ALLOWED_TOP_LEVEL_ENTRIES = {
     "agent.sh", ".agent", "docs", "scripts", "src",
     # test-suite layer established by the unit-testing workflow
     "tests",
-    # recognized configuration files
-    ".gitignore", "pytest.ini",
+    # recognized configuration files and directories
+    ".gitignore", "pytest.ini", ".github",
     ".aider.conf.yml", ".aider.model.settings.yml", ".aiderignore",
     ".env.example", "Dockerfile.aider",
     # license/readme deliverables (Step 5)
