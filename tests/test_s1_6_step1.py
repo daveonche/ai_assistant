@@ -11,6 +11,7 @@ from pathlib import Path
 import yaml
 
 CI_WORKFLOW = Path(".github/workflows/ci.yml")
+TECH_STACK_DOC = Path("docs/tech_stack.md")
 
 
 def _load_workflow() -> dict:
@@ -63,4 +64,48 @@ def test_action_references_pinned_to_full_sha_with_version_comment():
         assert comment and re.match(r"#\s*v\d", comment), (
             f"'{value}' must carry a version comment recording the pinned "
             "version (e.g., '# v6.1.0')"
+        )
+
+
+def _verified_action_pins_section(doc_text: str) -> str:
+    match = re.search(r"^### Verified Action Pins\s*$", doc_text, re.MULTILINE)
+    assert match, "docs/tech_stack.md must contain a 'Verified Action Pins' section"
+    start = match.end()
+    next_heading = re.search(r"^#+ ", doc_text[start:], re.MULTILINE)
+    return doc_text[start : start + next_heading.start()] if next_heading else doc_text[start:]
+
+
+def test_pinned_action_versions_recorded_in_tech_stack_doc():
+    workflow_refs = {}
+    for line in CI_WORKFLOW.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"^\s*uses:\s*(\S+)(?:\s+(#.*))?$", line)
+        if match:
+            action, sha = match.group(1).split("@", 1)
+            version = (match.group(2) or "").lstrip("#").strip()
+            workflow_refs[action] = (sha, version)
+    assert workflow_refs, "workflow must reference at least one reusable action"
+
+    section = _verified_action_pins_section(
+        TECH_STACK_DOC.read_text(encoding="utf-8")
+    )
+    recorded = {}
+    for line in section.splitlines():
+        row = re.match(
+            r"^\|\s*`([^`]+)`\s*\|\s*(\S+)\s*\|\s*`([0-9a-f]{40})`\s*\|", line
+        )
+        if row:
+            recorded[row.group(1)] = (row.group(3), row.group(2))
+
+    for action, (sha, version) in workflow_refs.items():
+        assert action in recorded, (
+            f"action '{action}' pinned in ci.yml must be recorded in the "
+            "'Verified Action Pins' table of docs/tech_stack.md"
+        )
+        recorded_sha, recorded_version = recorded[action]
+        assert recorded_sha == sha, (
+            f"recorded SHA for '{action}' does not match the SHA pinned in ci.yml"
+        )
+        assert recorded_version == version, (
+            f"recorded version '{recorded_version}' for '{action}' does not "
+            f"match the version comment '{version}' in ci.yml"
         )
