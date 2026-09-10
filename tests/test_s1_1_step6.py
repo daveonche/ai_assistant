@@ -1,4 +1,5 @@
 import re
+import subprocess
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -53,3 +54,43 @@ def test_each_architecture_layer_has_repository_location():
         assert _location_resolves(location), (
             f"architecture layer {name!r} has no repository location at {location!r}"
         )
+
+
+ALLOWED_TOP_LEVEL_ENTRIES = {
+    # documented layers
+    "agent.sh", ".agent", "docs", "scripts", "src",
+    # test-suite layer established by the unit-testing workflow
+    "tests",
+    # recognized configuration files and directories
+    ".gitignore", "pytest.ini", ".github",
+    ".aider.conf.yml", ".aider.model.settings.yml", ".aiderignore",
+    ".env.example", "Dockerfile.aider",
+    # license/readme deliverables (Step 5)
+    "LICENSE", "LICENSE.md", "README", "README.md",
+}
+
+
+def _tracked_top_level_entries() -> set[str]:
+    result = subprocess.run(
+        ["git", "--no-pager", "ls-files"],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return {
+        line.split("/", 1)[0]
+        for line in result.stdout.splitlines()
+        if line
+    }
+
+
+def test_no_undocumented_top_level_entries_beyond_recognized_config():
+    entries = _tracked_top_level_entries()
+
+    # no undocumented top-level entries exist beyond recognized
+    # configuration files
+    undocumented = sorted(entries - ALLOWED_TOP_LEVEL_ENTRIES)
+    assert not undocumented, (
+        f"undocumented top-level entries: {undocumented}"
+    )
