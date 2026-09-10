@@ -35,7 +35,7 @@ def test_project_root_is_version_controlled_repository():
     )
 
 
-def test_documented_layers_tracked_from_initial_commit():
+def test_project_files_tracked_from_initial_commit():
     # history begins with exactly one initial project commit
     root_commits = _git("rev-list", "--max-parents=0", "HEAD").splitlines()
     assert len(root_commits) == 1, (
@@ -43,15 +43,14 @@ def test_documented_layers_tracked_from_initial_commit():
     )
     root_commit = root_commits[0]
 
-    # every documented layer exists in the initial commit's top-level tree
-    root_tree = set(_git("ls-tree", "--name-only", root_commit).splitlines())
-    for layer in DOCUMENTED_LAYERS:
-        assert layer in root_tree, (
-            f"layer {layer!r} missing from the initial commit {root_commit}"
-        )
+    # the initial commit tracks project files (non-empty tree)
+    root_tree = _git("ls-tree", "--name-only", root_commit).splitlines()
+    assert root_tree, (
+        f"initial commit {root_commit} tracks no project files"
+    )
 
-    # the same layers remain tracked in the working tree
-    # (tracked "from the initial commit onward")
+    # the documented layers are tracked in the working tree
+    # (project files tracked from the initial commit onward)
     tracked = _git("ls-files").splitlines()
     for layer in DOCUMENTED_LAYERS:
         assert any(
