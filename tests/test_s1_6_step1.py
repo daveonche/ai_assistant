@@ -5,6 +5,7 @@ Verifies the Must Support item: "A pipeline definition at
 request".
 """
 
+import re
 from pathlib import Path
 
 import yaml
@@ -44,3 +45,22 @@ def test_pipeline_permissions_explicit_and_read_only():
         if isinstance(job, dict) and "permissions" in job:
             assert job["permissions"] == {"contents": "read"}, \
                 f"job '{name}' must not grant permissions beyond read-only contents"
+
+
+def test_action_references_pinned_to_full_sha_with_version_comment():
+    text = CI_WORKFLOW.read_text(encoding="utf-8")
+    references = []
+    for line in text.splitlines():
+        match = re.match(r"^\s*uses:\s*(\S+)(?:\s+(#.*))?$", line)
+        if match:
+            references.append((match.group(1), match.group(2)))
+    assert references, "workflow must reference at least one reusable action"
+    for value, comment in references:
+        assert re.fullmatch(r"\S+@[0-9a-f]{40}", value), (
+            f"'{value}' must be pinned to a full-length 40-character commit SHA "
+            "(immutable identifier); mutable tags or branches are not allowed"
+        )
+        assert comment and re.match(r"#\s*v\d", comment), (
+            f"'{value}' must carry a version comment recording the pinned "
+            "version (e.g., '# v6.1.0')"
+        )
