@@ -36,3 +36,25 @@ def test_entries_specify_model_names():
         assert isinstance(entry["name"], str) and entry["name"].strip(), (
             f"model name must be a non-empty string: {entry.get('name')!r}"
         )
+
+
+def test_entries_specify_model_usage_parameters():
+    """Each model settings entry specifies parameters for model
+    usage beyond the model name (e.g., edit_format, extra_params,
+    temperature, max_tokens)."""
+    loaded = yaml.safe_load(MODEL_SETTINGS.read_text(encoding="utf-8"))
+    usage_parameter_keys = {
+        "edit_format", "extra_params", "temperature", "max_tokens"
+    }
+    for entry in loaded:
+        name = entry.get("name", "<unnamed>")
+        present = usage_parameter_keys & entry.keys()
+        assert present, (
+            f"model settings entry {name!r} must specify at least one "
+            f"usage parameter from: {sorted(usage_parameter_keys)}"
+        )
+        # extra_params, if specified, must be a mapping
+        if "extra_params" in entry:
+            assert isinstance(entry["extra_params"], dict), (
+                f"extra_params for {name!r} must be a mapping"
+            )
