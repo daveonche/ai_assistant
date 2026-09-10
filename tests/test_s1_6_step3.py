@@ -102,3 +102,22 @@ def test_shell_scripts_discovered_by_pattern_not_hardcoded_list():
         "the currently known scripts (agent.sh, .agent/ai-assistant.sh) must "
         "be covered by the discovery pattern"
     )
+
+
+def test_shell_analysis_failure_fails_overall_run():
+    job = _validate_job()
+    assert not job.get("continue-on-error"), \
+        "the validate job must not suppress failures (continue-on-error)"
+    steps = _shell_analysis_steps()
+    assert steps, "a shell analysis step must exist"
+    step = steps[0]
+    assert step.get("continue-on-error") not in (True, "true"), (
+        "the shell analysis step must not suppress failures "
+        "(continue-on-error); a detected finding must fail the run"
+    )
+    run = step.get("run") or ""
+    for pattern in ("|| true", "|| exit 0", "; true", "&& true"):
+        assert pattern not in run, (
+            f"analysis command must not swallow errors (found '{pattern}'); "
+            "a detected analysis finding must mark the overall run as failed"
+        )
