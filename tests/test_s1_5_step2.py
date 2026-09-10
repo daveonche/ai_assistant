@@ -185,3 +185,23 @@ def test_assistant_config_directory_included_in_mount(tmp_path):
     assert mount is not None, mounts
     source = mount.split(":")[0]
     assert (Path(source) / ".agent").is_dir(), source
+
+
+def test_project_root_mount_is_read_write(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    result = run_chain(sandbox, stub_dir, [])
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+
+    # The project-root bind mount carries no read-only option, so changes
+    # made to project files inside the container persist on the host.
+    mounts = _values_after(run_inv, "-v")
+    mount = _root_mount(mounts, sandbox)
+    assert mount is not None, mounts
+    parts = mount.split(":")
+    options = parts[2:]  # empty for a plain read-write mount
+    flags = {f for opt in options for f in opt.split(",")}
+    assert not flags & {"ro", "readonly"}, mount
