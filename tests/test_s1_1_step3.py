@@ -32,3 +32,29 @@ def test_each_documented_directory_contains_tracked_placeholder():
         assert placeholder in tracked, (
             f"placeholder {placeholder!r} is not tracked by git"
         )
+
+
+def test_directories_and_placeholders_present_after_fresh_clone(tmp_path):
+    # re-clone the repository into a fresh location
+    clone_dir = tmp_path / "clone"
+    result = subprocess.run(
+        ["git", "clone", str(PROJECT_ROOT), str(clone_dir)],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, (
+        f"clone failed: {result.stderr.strip()}"
+    )
+
+    # docs/, scripts/, and src/ all exist in the fresh clone
+    for placeholder in PLACEHOLDERS:
+        assert (clone_dir / placeholder).parent.is_dir(), (
+            f"directory {(clone_dir / placeholder).parent.name!r} missing "
+            "from fresh clone"
+        )
+
+    # each directory in the clone contains its placeholder file
+    for placeholder in PLACEHOLDERS:
+        assert (clone_dir / placeholder).is_file(), (
+            f"placeholder {placeholder!r} missing from fresh clone"
+        )
