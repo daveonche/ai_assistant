@@ -77,3 +77,22 @@ def test_launcher_validation_uses_builtin_checker_without_extra_packages():
             f"validation step must not install packages (found '{pattern}'); "
             "the built-in checker requires no additional packages"
         )
+
+
+def test_launcher_validation_failure_fails_overall_run():
+    job = _validate_job()
+    assert not job.get("continue-on-error"), \
+        "the validate job must not suppress failures (continue-on-error)"
+    steps = _launcher_validation_steps()
+    assert steps, "a launcher validation step must exist"
+    step = steps[0]
+    assert step.get("continue-on-error") not in (True, "true"), (
+        "the launcher validation step must not suppress failures "
+        "(continue-on-error); a detected error must fail the run"
+    )
+    run = step.get("run") or ""
+    for pattern in ("|| true", "|| exit 0", "; true", "&& true"):
+        assert pattern not in run, (
+            f"validation command must not swallow errors (found '{pattern}'); "
+            "a detected validation error must mark the overall run as failed"
+        )
