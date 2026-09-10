@@ -164,3 +164,28 @@ def test_host_credential_forwarded_by_name_at_launch(tmp_path):
 
     # The credential value itself never appears in the invocation.
     assert FAKE_CREDENTIAL not in run_inv, run_inv
+
+
+def test_only_well_known_credentials_forwarded(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    probe = "PROBE_NOT_A_CREDENTIAL_S1_5_5"
+    probe_value = "probe-value-s1-5-5"
+    result = run_chain(
+        sandbox,
+        stub_dir,
+        [],
+        extra_env={probe: probe_value},
+    )
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+
+    # The forwarding channel is the credential mechanism, not a blanket
+    # environment dump: a non-credential variable is not forwarded.
+    env_names = _values_after(run_inv, "-e")
+    assert probe not in env_names, env_names
+
+    # The probe value never appears in the invocation either.
+    assert probe_value not in run_inv, run_inv
