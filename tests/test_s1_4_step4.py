@@ -73,3 +73,28 @@ def test_defines_staged_execution_workflow_instructions():
         "workflow instructions must instruct the assistant to wait for "
         "user input at stop points"
     )
+
+
+def test_document_structured_with_clear_sections():
+    """The document is structured with clear sections: context
+    management and workflow instructions each have a dedicated
+    heading, distinct from one another (Developer Notes focus)."""
+    text = AGENT_MD.read_text(encoding="utf-8")
+    headings = _headings(text)
+    context_sections = [
+        h for h in headings
+        if "context" in h.lower() and "management" in h.lower()
+    ]
+    workflow_sections = [
+        h for h in headings if "workflow" in h.lower()
+    ]
+    assert context_sections, (
+        "document must have a clear section for context management"
+    )
+    assert workflow_sections, (
+        "document must have a clear section for workflow instructions"
+    )
+    assert set(context_sections).isdisjoint(workflow_sections), (
+        "context management and workflow instructions must be "
+        "structured as distinct sections"
+    )
