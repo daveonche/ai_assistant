@@ -5,7 +5,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 DOCKERFILE = PROJECT_ROOT / ".agent" / "Dockerfile.aider"
 
+TECH_STACK_DOC = PROJECT_ROOT / "docs" / "tech_stack.md"
+
 _DIGEST_PATTERN = re.compile(r"@sha256:([0-9a-f]{64})\b")
+
+_PINNED_REFERENCE_PATTERN = re.compile(r"[\w./-]+:[\w.-]+@sha256:[0-9a-f]{64}")
 
 _MOVING_TAGS = {"latest", "dev", "main"}
 
@@ -43,4 +47,16 @@ def test_image_definition_pins_base_image_by_tag_and_digest():
     )
     assert tag not in _MOVING_TAGS, (
         f"base image tag {tag!r} is a moving tag, not a specific version"
+    )
+
+
+def test_tech_stack_doc_records_base_image_pin():
+    assert TECH_STACK_DOC.is_file(), f"{TECH_STACK_DOC} does not exist"
+    text = TECH_STACK_DOC.read_text()
+
+    # the documentation records at least one fully pinned base image
+    # reference (tag + sha256 digest)
+    matches = _PINNED_REFERENCE_PATTERN.findall(text)
+    assert matches, (
+        f"{TECH_STACK_DOC} records no base image pin (tag + digest)"
     )
