@@ -12,3 +12,15 @@ def test_shorthand_command_syntax_defined():
         f"{AGENTS_MD} does not define the shorthand syntax "
         "`$<category>-<promptname>`"
     )
+
+
+def test_shorthand_commands_map_to_skill_md_files():
+    content = AGENTS_MD.read_text(encoding="utf-8")
+    for command in ("/read-only", "/drop"):
+        mapping = (
+            f"{command} .agent/.aider.prompt/<category>/<promptname>/SKILL.md"
+        )
+        assert mapping in content, (
+            f"{AGENTS_MD} does not map shorthand commands to SKILL.md files "
+            f"via `{mapping}`"
+        )
