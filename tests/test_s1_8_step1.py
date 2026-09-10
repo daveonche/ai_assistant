@@ -126,3 +126,55 @@ def test_failure_checkpoint_surfaces_recent_command_log_entries(tmp_path: Path):
         if line.startswith("+ docker")
     ]
     assert surfaced == log_lines
+
+
+def test_surfaced_entries_are_bounded_to_a_recent_tail(tmp_path: Path):
+    """When the command log holds more entries than the recent window, the
+    failure checkpoint surfaces only the most recent tail: earliest entries
+    are dropped and the most recent command is included."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_docker_stub(stub_dir)
+
+    # Phase 1: discover the per-session log path via a debug run (stub OK);
+    # the run itself appends traced commands to the log.
+    discovery = run_chain(sandbox, stub_dir, args=["--debug"])
+    assert discovery.returncode == 0, discovery.stderr
+    command_log = command_log_path(discovery)
+
+    # Phase 2: accumulate more logged commands than the surface window via
+    # additional normal-mode runs (the per-session log is append-only).
+    for _ in range(2):
+        extra = run_chain(sandbox, stub_dir, args=[])
+        assert extra.returncode == 0, extra.stderr
+
+    # Phase 3: drive the failure checkpoint in debug mode.
+    result = run_chain(
+        sandbox,
+        stub_dir,
+        args=["--debug"],
+        extra_env={"DOCKER_STUB_FAIL": "version"},
+    )
+    assert result.returncode == 1, result.stderr
+
+    log_lines = command_log.read_text().splitlines()
+    assert len(log_lines) > 10, (
+        "precondition failed: log holds too few entries to exercise the "
+        f"recent-entry window ({len(log_lines)} lines)"
+    )
+
+    stderr_lines = result.stderr.splitlines()
+    header_index = stderr_lines.index("--- Recent command log entries ---")
+    surfaced = [
+        line
+        for line in stderr_lines[header_index + 1:]
+        if line.startswith("+ docker")
+    ]
+
+    # Bounded: a non-empty, strictly shorter, contiguous most-recent block.
+    assert 0 < len(surfaced) < len(log_lines)
+    assert surfaced == log_lines[-len(surfaced):]
+    # Most recent command included, earliest entries dropped.
+    assert surfaced[-1] == "+ docker version"
+    assert log_lines[0] not in surfaced
