@@ -9,3 +9,11 @@ def test_prompt_directory_exists():
     assert PROMPT_DIR.is_dir(), (
         f"{PROMPT_DIR} does not exist or is not a directory"
     )
+
+
+def test_core_category_subdirectories_exist():
+    for category in ("code", "testing", "workflows"):
+        category_dir = PROMPT_DIR / category
+        assert category_dir.is_dir(), (
+            f"{category_dir} does not exist or is not a directory"
+        )
