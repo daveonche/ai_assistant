@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import grp
 import os
 import shutil
 import subprocess
@@ -141,6 +142,14 @@ def _values_after(invocation: list[str], flag: str) -> list[str]:
     ]
 
 
+def _docker_gid() -> int | None:
+    """Return the host docker group's GID, or None when unresolvable."""
+    try:
+        return grp.getgrnam("docker").gr_gid
+    except (KeyError, ImportError):
+        return None
+
+
 def test_engine_socket_mounted_into_session_container(tmp_path):
     sandbox = _make_sandbox(tmp_path)
     stub_dir = _write_docker_stub(sandbox)
@@ -155,3 +164,26 @@ def test_engine_socket_mounted_into_session_container(tmp_path):
     # commands reach the host daemon.
     mounts = _values_after(run_inv, "-v")
     assert "/var/run/docker.sock:/var/run/docker.sock" in mounts, mounts
+
+
+def test_engine_group_mapping_uses_host_docker_gid(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    result = run_chain(sandbox, stub_dir, [])
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+    group_adds = _values_after(run_inv, "--group-add")
+
+    gid = _docker_gid()
+    if gid is not None:
+        # Group-based permission mapping: the launcher resolves the host
+        # docker group's GID and maps it into the container (no privilege
+        # elevation — membership, not root).
+        assert str(gid) in group_adds, group_adds
+    else:
+        # Documented assumption: the environment's group database decides
+        # the branch. Without a docker group, the launcher reports the
+        # skipped mapping instead of failing silently.
+        assert "host 'docker' group not found" in result.stderr, result.stderr
