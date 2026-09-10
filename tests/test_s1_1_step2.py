@@ -57,3 +57,43 @@ def test_no_undocumented_top_level_entries():
     assert not undocumented, (
         f"undocumented top-level entries: {undocumented}"
     )
+
+
+ASSISTANT_CONFIG_ARTIFACTS = (
+    "AGENTS.md",
+    "ai-assistant.sh",
+    "ai_assistant.py",
+    ".aider.conf.yml",
+    ".aider.model.settings.yml",
+    ".aiderignore",
+    ".aider.prompt",
+    ".aider.conventions",
+)
+
+OTHER_DOCUMENTED_LAYERS = ("docs", "scripts", "src")
+
+
+def test_agent_dir_is_single_assistant_configuration_home():
+    agent_dir = PROJECT_ROOT / ".agent"
+
+    # every assistant configuration artifact lives in .agent/
+    for artifact in ASSISTANT_CONFIG_ARTIFACTS:
+        assert (agent_dir / artifact).exists(), (
+            f"assistant configuration artifact {artifact!r} is missing from .agent/"
+        )
+
+    # no assistant configuration artifact lives in another documented layer
+    for layer in OTHER_DOCUMENTED_LAYERS:
+        for artifact in ASSISTANT_CONFIG_ARTIFACTS:
+            assert not (PROJECT_ROOT / layer / artifact).exists(), (
+                f"assistant configuration artifact {artifact!r} found in {layer}/; "
+                ".agent/ is the single home for assistant configuration"
+            )
+
+    # the assistant's runtime and prompt home are not duplicated at the top level
+    for artifact in ("AGENTS.md", "ai-assistant.sh", "ai_assistant.py",
+                     ".aider.prompt", ".aider.conventions"):
+        assert not (PROJECT_ROOT / artifact).exists(), (
+            f"assistant configuration artifact {artifact!r} found at the top level; "
+            ".agent/ is the single home for assistant configuration"
+        )
