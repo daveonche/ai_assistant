@@ -2,7 +2,7 @@
 
 ## Core Technology
 
-- Aider (via `paulgauthier/aider-full:v0.86.2@sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4`)
+- Aider v0.86.2 (via `paulgauthier/aider-full:v0.86.2@sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4`)
 
 ## Required Dependencies
 
@@ -32,14 +32,19 @@
 
 ## Compatibility Matrix
 
-| Dependency | Version | Aider (latest) | Docker | Bash | Python | AGENT.md |
-|------------|---------|----------------|--------|------|--------|----------|
-| Docker     | N/A     | ✓              | -      | ✓    | ✓      | ✓        |
-| Bash       | N/A     | ✓              | ✓      | -    | ✓      | ✓        |
-| Python     | >=3.8   | ✓              | ✓      | ✓    | -      | ✓        |
-| AGENT.md   | N/A     | ✓              | ✓      | ✓    | ✓      | -        |
+| Dependency | Version | Aider (v0.86.2) | Docker | Bash | Python | AGENT.md |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Docker     | N/A     | ✓               | -      | ✓    | ✓      | ✓        |
+| Bash       | N/A     | ✓               | ✓      | -    | ✓      | ✓        |
+| Python     | 3.12.12 (host pin); >=3.12 (package floor) | ✓ | ✓ | ✓ | - | ✓ |
+| AGENT.md   | N/A     | ✓               | ✓      | ✓    | ✓      | -        |
 
 ## Version Lock Rationale
+
+All versions are exact (e.g., "1.2.3" not "^1.2.3") to ensure:
+- Consistent behavior across environments
+- Predictable dependency resolution
+- Reproducible builds
 
 The base image is pinned to tag + manifest-list digest: `paulgauthier/aider-full:v0.86.2@sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4`. `v0.86.2` is the newest stable release tag; mutable references (`latest`, `dev`, `main`) are deliberately avoided so all Aider dependencies are correctly configured and builds are reproducible. Docker and Bash versions are provided by the host system and base image respectively. The host system requires Python 3.12.12 to execute the launcher script `.agent/ai_assistant.py`, which uses only the Python standard library. The exact version is the runtime verified on the development host used to build and test this project (`python3 --version` reported `Python 3.12.12`); it is pinned exactly rather than as a range so the documented host requirement is reproducible, consistent with the pin philosophy applied to the base image and GitHub Actions.
 
