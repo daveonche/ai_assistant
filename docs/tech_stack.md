@@ -33,15 +33,18 @@
 ## Compatibility Matrix
 
 | Dependency | Version | Aider (v0.86.2) | Docker | Bash | Python | AGENT.md |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| :---       | :---    | :---            | :---   | :--- | :---   | :---     |
 | Docker     | N/A     | ✓               | -      | ✓    | ✓      | ✓        |
 | Bash       | N/A     | ✓               | ✓      | -    | ✓      | ✓        |
-| Python     | 3.12.12 (host pin); >=3.12 (package floor) | ✓ | ✓ | ✓ | - | ✓ |
+| Python     | 3.12.12 |(host pin);      | ✓      | ✓    | ✓      | -        |
+|            |         |>=3.12           |        |      |        |          |
+|            |         |(package floor)  |        |      |        |          |
 | AGENT.md   | N/A     | ✓               | ✓      | ✓    | ✓      | -        |
 
 ## Version Lock Rationale
 
 All versions are exact (e.g., "1.2.3" not "^1.2.3") to ensure:
+
 - Consistent behavior across environments
 - Predictable dependency resolution
 - Reproducible builds
