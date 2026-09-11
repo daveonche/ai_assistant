@@ -159,3 +159,21 @@ def test_retrieval_uses_pinned_ref_and_external_target(sandbox, git_stub):
     # retrieval happens outside the project: project history stays clean
     target = Path(args[-1])
     assert not target.is_relative_to(sandbox)
+
+
+def test_places_assistant_dir_and_entry_script_in_root(sandbox, git_stub):
+    """After the run, .agent/ and agent.sh exist in the project root.
+
+    The emulated release clone contains .agent/ai-assistant.sh and
+    agent.sh; placement must copy both into the project root.
+    """
+    stub_dir, _log = git_stub
+
+    result = run_installer(sandbox, stub_dir)
+    assert result.returncode == 0, result.stderr
+
+    # the assistant directory and entry script land in the project root
+    assert (sandbox / ".agent").is_dir()
+    assert (sandbox / "agent.sh").is_file()
+    # contents copied through from the emulated release clone
+    assert (sandbox / ".agent" / "ai-assistant.sh").is_file()
