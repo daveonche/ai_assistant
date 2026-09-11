@@ -96,3 +96,23 @@ def test_clean_sandbox_install_proceeds(sandbox, git_stub):
     assert result.returncode == 0, result.stderr
     assert "existing assistant files" not in result.stderr
     assert "installer: install complete" in result.stdout
+
+
+def test_existing_agent_dir_fails_with_clear_error(sandbox, git_stub):
+    """A pre-existing .agent/ is detected and the install is refused.
+
+    The existing files must be left untouched (the update path is Step 3),
+    and no retrieval may run before the detection gate.
+    """
+    stub_dir, log = git_stub
+
+    (sandbox / ".agent").mkdir()
+    marker = sandbox / ".agent" / "keep"
+    marker.write_text("local\n")
+
+    result = run_installer(sandbox, stub_dir)
+    assert result.returncode != 0
+    assert "existing assistant files" in result.stderr
+    assert "updating an existing install is not supported yet" in result.stderr
+    assert marker.read_text() == "local\n"
+    assert "clone" not in log.read_text()
