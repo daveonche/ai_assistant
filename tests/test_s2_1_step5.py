@@ -67,3 +67,27 @@ def test_readme_documents_update_path():
     assert "re-apply" in section, (
         "update section must tell users to re-apply local customizations"
     )
+
+
+def test_readme_documents_pinned_reference_caveat():
+    """README explains the pinned-reference caveat and --ref override."""
+    text = README.read_text(encoding="utf-8")
+    section = _section(text, "Pinned-reference caveat")
+    assert section, "README must have a 'Pinned-reference caveat' section"
+    # The caveat must name the pinned tag and contrast it with main.
+    assert "v1.0.0" in section, (
+        "caveat must name the pinned release tag"
+    )
+    assert "main" in section, (
+        "caveat must state the pinned tag is used instead of main"
+    )
+    assert "reproducible" in section, (
+        "caveat must explain the reproducibility rationale"
+    )
+    # The override path must be shown with the --ref flag.
+    assert "--ref" in section, (
+        "caveat must document the --ref override"
+    )
+    assert "bash -s -- --ref" in section, (
+        "caveat must show the piped --ref invocation form"
+    )
