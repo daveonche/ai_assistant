@@ -192,3 +192,32 @@ def test_temp_clone_removed_after_successful_install(sandbox, git_stub):
 
     # the retrieval location recorded by the stub is gone after completion
     assert not clone_target(log).exists()
+
+
+def test_temp_clone_removed_after_failed_install(sandbox, tmp_path):
+    """The temporary retrieval location is removed after a failed install.
+
+    A release lacking the assistant files makes placement fail; the exit
+    trap must still remove the clone so no temporary artifacts remain.
+    """
+    stub_dir = tmp_path / "no-files-bin"
+    stub_dir.mkdir()
+    log = stub_dir / "git.log"
+    stub = stub_dir / "git"
+    stub.write_text(
+        "#!/usr/bin/env bash\n"
+        f"printf '%s\\n' \"$@\" >> {log}\n"
+        'if [[ "${1:-}" == "rev-parse" ]]; then\n'
+        "  printf 'true\\n'\n"
+        'elif [[ "${1:-}" == "clone" ]]; then\n'
+        '  mkdir -p "${@: -1}"\n'
+        "fi\n"
+    )
+    stub.chmod(0o755)
+
+    result = run_installer(sandbox, stub_dir)
+    assert result.returncode != 0
+    assert "does not contain the assistant files" in result.stderr
+
+    # cleanup ran despite the failure: the recorded clone target is gone
+    assert not clone_target(log).exists()
