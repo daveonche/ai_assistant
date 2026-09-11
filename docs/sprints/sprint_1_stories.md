@@ -43,7 +43,7 @@ Dependencies: S1.1
 Developer Notes:
 
 - Keep `agent.sh` a thin wrapper; all container lifecycle logic lives in the Python launcher
-- Python >=3.8 is a minimum constraint from `.agent/pyproject.toml` — ⚠ FLAGGED: pin the exact host runtime version before release
+- Python >=3.8 is a minimum constraint from `.agent/pyproject.toml` — ✓ RESOLVED: host runtime pinned to Python 3.12.12, package floor raised to `>=3.12` in `.agent/pyproject.toml`, verified per `docs/tech_stack.md` ("Verified Host Runtime Pin")
 - Docker and Bash versions are host-provided; no pin required
 
 Definition of Done:
@@ -85,7 +85,7 @@ Acceptance Criteria:
 
 - `.agent/.aider.conf.yml` defines runtime behavior (on-demand prompt loading, conventions routing)
 - `.agent/.aider.model.settings.yml` defines model settings
-- `.agent/pyproject.toml` declares `requires-python = ">=3.8"` — ⚠ FLAGGED: pin exact minimum version before release
+- `.agent/pyproject.toml` declares `requires-python = ">=3.8"` — ✓ RESOLVED: minimum raised to `>=3.12` in `.agent/pyproject.toml`, justified per `docs/tech_stack.md` ("Verified Host Runtime Pin") and consistent with the 3.12.12 host pin
 - `.agent/.aiderignore` excludes non-essential paths from context (REQ-NFR-PERF-1, REQ-FR-TM-2)
 - All config files are git-tracked and referenced in `docs/tech_stack.md`
 
@@ -107,7 +107,7 @@ As a developer, I want the Dockerfile and container runtime wiring so that aider
 
 Acceptance Criteria:
 
-- `.agent/Dockerfile.aider` builds `FROM paulgauthier/aider-full:latest` — ⚠ FLAGGED: "latest" must be pinned to an exact tag/digest before implementation
+- `.agent/Dockerfile.aider` builds `FROM paulgauthier/aider-full:latest` — ✓ RESOLVED: base image pinned to tag + manifest-list digest `paulgauthier/aider-full:v0.86.2@sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4`, verified per `docs/tech_stack.md` ("Verified Image Pins")
 - Host project root (including `.agent/`) is bind-mounted read-write into the container (REQ-FR-ENV-4)
 - Docker socket GID mapped via `_get_docker_gid()` so the container can run Docker commands
 - Container named from workspace hash + session ID; `cleanup_containers()` removes session containers
