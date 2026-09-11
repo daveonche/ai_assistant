@@ -97,3 +97,17 @@ def test_piped_execution_reaches_main(sandbox, git_stub):
     assert "installer: reference:" in result.stdout
     # main actually ran: the prerequisite probe hit the git stub
     assert log.read_text().splitlines() == ["rev-parse", "--is-inside-work-tree"]
+
+
+def test_installer_completes_with_documented_prerequisites(sandbox, git_stub):
+    """With git available and inside a work tree, the installer completes.
+
+    This is the sandbox proxy for the manual check "no missing-prerequisite
+    error appears on a machine with the documented prerequisites".
+    """
+    stub_dir, _log = git_stub
+
+    result = run_installer(sandbox, stub_dir)
+    assert result.returncode == 0, result.stderr
+    assert "installer: prerequisites met" in result.stdout
+    assert "error" not in result.stderr.lower()
