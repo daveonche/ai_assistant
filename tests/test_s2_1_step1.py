@@ -185,7 +185,7 @@ def test_prerequisite_probing_is_limited_to_git(sandbox, tmp_path):
     log = stub_dir / "git.log"
     stub = stub_dir / "git"
     stub.write_text(
-        "#!/usr/bin/env bash\n"
+        f"#!{shutil.which('bash')}\n"          # absolute shebang: env is not on PATH
         f"printf '%s\\n' \"$@\" >> {log}\n"
         'if [[ "${1:-}" == "rev-parse" ]]; then\n'
         "  printf 'true\\n'\n"
