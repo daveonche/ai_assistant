@@ -120,6 +120,57 @@ ai-assistant
 > an isolated application install, you can also use
 > `pipx install -e .agent`.
 
+#### One-command install
+
+The quickest way to set the assistant up in another project is the
+one-command installer. From inside the target project's repository,
+run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.0/scripts/install.sh | bash
+```
+
+The installer needs only the documented host prerequisites: Bash and
+git. It clones the pinned release reference into a temporary
+directory, copies `.agent/` and `agent.sh` into the project root,
+records both entry scripts as executable in the project's git index
+(`git update-index --chmod=+x`), and removes the temporary directory
+when it finishes, leaving no temporary artifacts behind. Afterwards,
+configure the environment variables as described above and run
+`./agent.sh` from the project root.
+
+#### Updating an existing install
+
+When `.agent/` or `agent.sh` already exist, the same command switches
+to update mode:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.0/scripts/install.sh | bash
+```
+
+The installer first warns that local customizations inside `.agent/`
+(for example the `read:` list in `.agent/.aider.conf.yml`) will be
+overwritten. It then refreshes the files through the project's own
+git: it fetches the pinned reference from the `assistant` remote,
+checks out `.agent` and `agent.sh`, and records the refresh as a
+single commit. The update is therefore a normal, reviewable,
+revertable project change — re-apply your local customizations after
+the update completes.
+
+#### Pinned-reference caveat
+
+Installs and updates always retrieve the pinned release tag `v1.0.0`,
+never `main`, so repeated runs are reproducible. To install from a
+different reference, pass `--ref`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.0/scripts/install.sh | bash -s -- --ref v1.0.0
+```
+
+Two more options help before and during a run: `--dry-run` reports the
+planned action without changing anything, and `--debug` enables shell
+tracing for troubleshooting.
+
 ### Project Structure for Docker Compose Projects
 
 If using with other projects that are built with Docker Compose, all the Docker files and configurations should be placed in the root directory, and the project's main source code should be placed in the `src/` folder.
