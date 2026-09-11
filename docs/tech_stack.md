@@ -20,9 +20,9 @@
 
 ### Launch Runtime
 
-- Python (>=3.8)
+- Python (3.12.12)
   - Purpose: Provide structured language for the ai_assistant.py file used for launching the aider container.
-  - Chosen because: Standard runtime required to execute the Python launcher (.agent/ai_assistant.py); version constraint matches `requires-python = ">=3.8"` declared in .agent/pyproject.toml.
+  - Chosen because: Standard runtime required to execute the Python launcher (.agent/ai_assistant.py); the exact version is the verified host runtime used for development and testing of this project (see Version Lock Rationale).
 
 ### Workflow Orchestration
 
@@ -62,3 +62,13 @@ The base image in `.agent/Dockerfile.aider` is pinned to tag + manifest-list dig
 | `paulgauthier/aider-full` | `v0.86.2` | `sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4` | `.agent/Dockerfile.aider` `FROM` |
 
 Verification record: the Docker Hub tags API for `paulgauthier/aider-full:v0.86.2` reported digest `sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4`, the manifest-list digest covering all architectures, matching the pinned value. (`docker buildx imagetools inspect <ref>` is the equivalent local command when the buildx plugin is installed.)
+
+### Verified Host Runtime Pin
+
+The host runtime that executes the launcher `.agent/ai_assistant.py` is pinned to an exact version.
+
+| Component | Version | Verification command | Used in |
+| :--- | :--- | :--- | :--- |
+| Python (host) | `3.12.12` | `python3 --version` | `.agent/ai_assistant.py` launcher execution |
+
+Verification record: `python3 --version` on the development host used to build and test this project reported `Python 3.12.12`. The launcher uses only the Python standard library, so no additional host runtime packages require pinning.
