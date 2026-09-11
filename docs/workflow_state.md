@@ -4,9 +4,9 @@ Last updated: 2026-09-11
 
 ## Active Workflow
 
-- Command: `$workflows-post-scaffolding-chain` — chain active; Phase 4B (Unit Testing) complete for S2.1 Steps 5–6; S2.1 fully done — next story S2.2 (Phase 4A Implementation)
+- Command: `$workflows-post-scaffolding-chain` — chain active; Phase 4A (Implementation) for S2.2 in progress — Steps 1–3 done, Step 4 next
 - SKILL.md: `.agent/.aider.prompt/workflows/post-scaffolding-chain/SKILL.md` (nested active: `.agent/.aider.prompt/code/implementation/SKILL.md`)
-- Current step: S2.1 complete (Steps 1–6 implemented + unit-tested); Step 5 tests in commits 385d43a, 7f12a39, 6397581; Step 6 tests in commits 22aadf1, f22a0e6
-- Last completed: `$testing-unit-test S2.1 6` — installer conformance tests passing: test_installer_passes_shellcheck + test_installer_follows_shell_conventions (2 passed); Step 5 README doc tests (3 passed).
-- Next action: run `#implement-step S2.2 1` (Sprint 2 Story S2.2: Release Version-Pin Resolution)
-- Files in context: editable: `docs/workflow_state.md`, `docs/implementation_status.md`; read-only: `.agent/AGENTS.md`, `.agent/.aider.prompt/code/implementation/SKILL.md`, `.agent/.aider.prompt/testing/unit-test/SKILL.md` (with references), `.agent/.aider.conventions/references/bash-scripts.md`, `docs/analysis/S2.1-story-steps.md`, `docs/sprints/sprint_2_stories.md`, `tests/test_workflow_state_pointer.py`, `tests/test_s2_1_step5.py`, `tests/test_s2_1_step6.py`, `README.md`, `scripts/install.sh`; summaries only: remaining repo files (S1.1–S1.8 test suites, docs/, .agent/ prompt library)
+- Current step: S2.2 Steps 1–3 implemented + validated (host pin 3.12.12 and package floor >=3.12 recorded; README/matrix/pyproject aligned); tech-stack doc reorganized per skill (commits 02a5d43, 41c79c4, 2a9b608, 7bebb2b, e8340cc, 14391c5)
+- Last completed: `#implement-step S2.2 3` — README/tech_stack/pyproject version alignment complete: matrix rows for host pin 3.12.12 and package floor >=3.12, README host pin added; 166 tests passing (commits e8340cc, 14391c5).
+- Next action: run `#implement-step S2.2 4` (resolved-status annotations for the S1.2/S1.4 flagged items in docs/sprints/sprint_1_stories.md)
+- Files in context: editable: `docs/workflow_state.md`, `docs/implementation_status.md`, `docs/analysis/S2.2-story-steps.md`, `docs/tech_stack.md`, `README.md`, `.agent/pyproject.toml`, `scripts/install.sh`; read-only: `.agent/AGENTS.md`, `.agent/ai_assistant.py`, `.agent/.aider.prompt/` SKILL.md files (post-scaffolding-chain, implementation, unit-test, story-analysis, tech-stack), `.agent/.aider.conventions/references/bash-scripts.md`, `docs/sprints/sprint_2_stories.md`, `tests/test_workflow_state_pointer.py`, `tests/test_s1_2_step1.py`, `tests/test_s1_2_step3.py`; summaries only: remaining repo files (S1.x/S2.1 test suites, docs/, .agent/ prompt library)
