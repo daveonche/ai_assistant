@@ -5,12 +5,12 @@
 When asked to generate initial scaffolding stories:
 
 1. Review provided context:
-   - Project requirements (e.g., `docs/requirements.md`)
+   - Project requirements (e.g., `docs/requirements/core_requirements.md`)
    - Architecture decisions (e.g., `docs/architecture/architecture.md`)
    - Technology stack (e.g., `docs/tech_stack.md`)
    - Component structure (e.g., the component section of `docs/architecture/architecture.md`)
 
-   *If any of these are missing from the context, output the exact command inline (e.g., `/read-only docs/requirements.md`), ask the user to add the missing file, and wait for confirmation. If the user declines, continue with what is available and apply the warning rule in step 2.*
+   *If any of these are missing from the context, output the exact command inline (e.g., `/read-only docs/requirements/core_requirements.md`), ask the user to add the missing file, and wait for confirmation. If the user declines, continue with what is available and apply the warning rule in step 2.*
 
 2. Summarize your understanding of the above context. If context is missing (declined in step 1) or clearly insufficient, warn the user that the scaffolding might be limited or could later require significant changes, and let them choose to proceed anyway or provide more details before continuing.
 
