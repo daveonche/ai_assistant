@@ -2,10 +2,14 @@
 
 Verifies that scripts/install.sh starts as a single command from inside a
 project repository, completes with only the documented host prerequisites
-(git), and probes nothing beyond them.
+(git), and gates on nothing beyond them.
 
 git is stubbed first on PATH to record its invocations, so prerequisite
 gating is exercised hermetically — no real repository or network needed.
+Since Step 2 the installer performs the full clean install, so the stub
+also emulates cloning a release that contains the assistant files, and
+the gate-only probe test runs with --dry-run: the install path's
+base-system tools (mktemp, cp, chmod) are covered by the Step 2 tests.
 """
 
 import os
@@ -27,7 +31,8 @@ def sandbox(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def git_stub(tmp_path: Path):
-    """Stub git that logs its arguments and reports a work tree."""
+    """Stub git that logs its arguments, reports a work tree, and emulates
+    cloning a release that contains the assistant files."""
     stub_dir = tmp_path / "stub-bin"
     stub_dir.mkdir()
     log = stub_dir / "git.log"
@@ -37,6 +42,11 @@ def git_stub(tmp_path: Path):
         f"printf '%s\\n' \"$@\" >> {log}\n"
         'if [[ "${1:-}" == "rev-parse" ]]; then\n'
         "  printf 'true\\n'\n"
+        'elif [[ "${1:-}" == "clone" ]]; then\n'
+        '  target="${@: -1}"\n'
+        '  mkdir -p "${target}/.agent"\n'
+        '  : > "${target}/.agent/ai-assistant.sh"\n'
+        '  : > "${target}/agent.sh"\n'
         "fi\n"
     )
     stub.chmod(0o755)
@@ -95,8 +105,12 @@ def test_piped_execution_reaches_main(sandbox, git_stub):
     assert result.returncode == 0, result.stderr
     assert "installer: repository:" in result.stdout
     assert "installer: reference:" in result.stdout
-    # main actually ran: the prerequisite probe hit the git stub
-    assert log.read_text().splitlines() == ["rev-parse", "--is-inside-work-tree"]
+    # main actually ran: the prerequisite probe hit the git stub first,
+    # then the install path cloned the pinned ref through the same stub
+    lines = log.read_text().splitlines()
+    assert lines[:2] == ["rev-parse", "--is-inside-work-tree"]
+    assert lines[2] == "clone"
+    assert "--branch" in lines and "v1.0.0" in lines
 
 
 def test_installer_completes_with_documented_prerequisites(sandbox, git_stub):
@@ -109,7 +123,7 @@ def test_installer_completes_with_documented_prerequisites(sandbox, git_stub):
 
     result = run_installer(sandbox, stub_dir)
     assert result.returncode == 0, result.stderr
-    assert "installer: prerequisites met" in result.stdout
+    assert "installer: install complete" in result.stdout
     assert "error" not in result.stderr.lower()
 
 
@@ -174,11 +188,12 @@ def test_outside_work_tree_fails_with_clear_error(sandbox, tmp_path):
 
 
 def test_prerequisite_probing_is_limited_to_git(sandbox, tmp_path):
-    """A successful run probes only git — no additional prerequisites.
+    """Prerequisite gating probes only git — no additional gate probes.
 
-    PATH contains nothing but the git stub, so any other required command
-    lookup would fail the run; the log proves git was the sole probe and
-    the run still completes.
+    PATH contains nothing but the git stub, so any other command lookup in
+    the gate would fail the run. --dry-run exercises exactly the gate (the
+    install path's base-system tools — mktemp, cp, chmod — are covered by
+    the Step 2 sandbox tests), so the log proves git was the sole probe.
     """
     stub_dir = tmp_path / "only-git-bin"
     stub_dir.mkdir()
@@ -196,7 +211,7 @@ def test_prerequisite_probing_is_limited_to_git(sandbox, tmp_path):
     env = os.environ.copy()
     env["PATH"] = str(stub_dir)
     result = subprocess.run(
-        [shutil.which("bash"), str(INSTALLER)],
+        [shutil.which("bash"), str(INSTALLER), "--dry-run"],
         cwd=sandbox,
         env=env,
         capture_output=True,
@@ -205,5 +220,5 @@ def test_prerequisite_probing_is_limited_to_git(sandbox, tmp_path):
     )
 
     assert result.returncode == 0, result.stderr
-    assert "installer: prerequisites met" in result.stdout
+    assert "installer: dry run complete" in result.stdout
     assert log.read_text().splitlines() == ["rev-parse", "--is-inside-work-tree"]
