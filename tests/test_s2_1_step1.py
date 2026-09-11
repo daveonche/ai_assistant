@@ -111,3 +111,28 @@ def test_installer_completes_with_documented_prerequisites(sandbox, git_stub):
     assert result.returncode == 0, result.stderr
     assert "installer: prerequisites met" in result.stdout
     assert "error" not in result.stderr.lower()
+
+
+def test_missing_git_fails_with_clear_error(sandbox, tmp_path):
+    """Without git on PATH, the installer fails and names git as required.
+
+    PATH is restricted to an empty stub dir: the script only needs bash
+    builtins before the prerequisite check, so this proves git is the
+    decisive prerequisite rather than an incidental lookup failure.
+    """
+    empty_bin = tmp_path / "empty-bin"
+    empty_bin.mkdir()
+
+    env = os.environ.copy()
+    env["PATH"] = str(empty_bin)
+    result = subprocess.run(
+        [shutil.which("bash"), str(INSTALLER)],
+        cwd=sandbox,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "git is required" in result.stderr
