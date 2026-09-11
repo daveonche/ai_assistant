@@ -73,4 +73,6 @@
 
 ### Story S2.1: Assistant-File Installer (One-Command Install & Update)
 
-- [ ] Step 1. Enable single-command acquisition of the assistant files
+- [x] Step 1. Enable single-command acquisition of the assistant files
+- [x] Step 2. Enable clean-install placement of the assistant files
+- [x] Step 3. Enable repeatable updates through the project's own history
