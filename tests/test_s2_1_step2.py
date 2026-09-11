@@ -136,3 +136,26 @@ def test_existing_agent_sh_fails_with_clear_error(sandbox, git_stub):
     assert "updating an existing install is not supported yet" in result.stderr
     assert (sandbox / "agent.sh").read_text() == local_script
     assert "clone" not in log.read_text()
+
+
+def test_retrieval_uses_pinned_ref_and_external_target(sandbox, git_stub):
+    """Retrieval clones the pinned release ref to a target outside the project.
+
+    The fixed, published reference is the pinned tag (v1.0.0) fetched as a
+    shallow clone, and the clone target lives outside the project so the
+    consumer's history stays clean.
+    """
+    stub_dir, log = git_stub
+
+    result = run_installer(sandbox, stub_dir)
+    assert result.returncode == 0, result.stderr
+
+    args = clone_args(log)
+    # fixed, published release reference: shallow clone of the pinned tag
+    assert args[0] == "clone"
+    assert "--branch" in args and "v1.0.0" in args
+    assert "--depth" in args and "1" in args
+    assert "https://github.com/daveonche/ai_assistant.git" in args
+    # retrieval happens outside the project: project history stays clean
+    target = Path(args[-1])
+    assert not target.is_relative_to(sandbox)
