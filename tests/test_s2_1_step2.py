@@ -177,3 +177,18 @@ def test_places_assistant_dir_and_entry_script_in_root(sandbox, git_stub):
     assert (sandbox / "agent.sh").is_file()
     # contents copied through from the emulated release clone
     assert (sandbox / ".agent" / "ai-assistant.sh").is_file()
+
+
+def test_temp_clone_removed_after_successful_install(sandbox, git_stub):
+    """The temporary retrieval location is removed after a successful install.
+
+    The stub records where the installer cloned the release; after
+    completion that directory must no longer exist.
+    """
+    stub_dir, log = git_stub
+
+    result = run_installer(sandbox, stub_dir)
+    assert result.returncode == 0, result.stderr
+
+    # the retrieval location recorded by the stub is gone after completion
+    assert not clone_target(log).exists()
