@@ -32,14 +32,13 @@
 
 ## Compatibility Matrix
 
-| Dependency | Version | Aider (v0.86.2) | Docker | Bash | Python | AGENT.md |
-| :---       | :---    | :---            | :---   | :--- | :---   | :---     |
-| Docker     | N/A     | ✓               | -      | ✓    | ✓      | ✓        |
-| Bash       | N/A     | ✓               | ✓      | -    | ✓      | ✓        |
-| Python     | 3.12.12 |(host pin);      | ✓      | ✓    | ✓      | -        |
-|            |         |>=3.12           |        |      |        |          |
-|            |         |(package floor)  |        |      |        |          |
-| AGENT.md   | N/A     | ✓               | ✓      | ✓    | ✓      | -        |
+| Dependency             | Version | Aider (v0.86.2) | Docker | Bash | Python | AGENT.md |
+| :---                   | :---    | :---            | :---   | :--- | :---   | :---     |
+| Docker                 | N/A     | ✓               | -      | ✓    | ✓      | ✓        |
+| Bash                   | N/A     | ✓               | ✓      | -    | ✓      | ✓        |
+| Python (host pin)      | 3.12.12 | ✓               | ✓      | ✓    | ✓      | -        |
+| Python (package floor) | >=3.12  | ✓               | ✓      | ✓    | ✓      | -        |
+| AGENT.md               | N/A     | ✓               | ✓      | ✓    | ✓      | -        |
 
 ## Version Lock Rationale
 
