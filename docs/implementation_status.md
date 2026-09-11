@@ -77,3 +77,5 @@
 - [x] Step 2. Enable clean-install placement of the assistant files
 - [x] Step 3. Enable repeatable updates through the project's own history
 - [x] Step 4. Enable executable entry scripts that survive mode-insensitive environments
+- [x] Step 5. Enable documented install and update procedures
+- [x] Step 6. Enable installer conformance with project quality checks
