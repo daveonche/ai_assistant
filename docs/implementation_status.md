@@ -76,3 +76,4 @@
 - [x] Step 1. Enable single-command acquisition of the assistant files
 - [x] Step 2. Enable clean-install placement of the assistant files
 - [x] Step 3. Enable repeatable updates through the project's own history
+- [x] Step 4. Enable executable entry scripts that survive mode-insensitive environments

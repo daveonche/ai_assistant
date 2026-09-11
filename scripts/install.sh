@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AIAssistant installer entry point (story S2.1, steps 1-3).
+# AIAssistant installer entry point (story S2.1, steps 1-4).
 #
 # Retrieves this script with a single command from inside a project
 # repository, validates the documented host prerequisites (Bash and git),
@@ -8,7 +8,10 @@
 # root, and removes the temporary directory on exit. When the assistant
 # files already exist, it refreshes them through the consumer's own git
 # (assistant remote -> fetch -> checkout -> commit) so the change is
-# recorded as a normal, reviewable project change.
+# recorded as a normal, reviewable project change. Both entry scripts
+# are recorded executable in the project's git index
+# (update-index --chmod=+x) so executability survives environments that
+# do not preserve file modes.
 
 set -euo pipefail
 
@@ -122,6 +125,13 @@ place_files() {
   cp -R "${TMP_CLONE}/.agent" .agent
   cp "${TMP_CLONE}/agent.sh" agent.sh
   chmod +x agent.sh .agent/ai-assistant.sh
+  # Record executability explicitly so the consumer's next commit stores
+  # 100755 for both entry scripts even with core.fileMode=false, and the
+  # scripts run immediately after the install.
+  if ! git update-index --add --chmod=+x agent.sh .agent/ai-assistant.sh; then
+    die "failed to record executability in the git index"
+    return 1
+  fi
   printf 'installer: placed .agent/ and agent.sh into the project root\n'
 }
 
@@ -187,6 +197,14 @@ apply_refresh() {
     die "failed to check out .agent and agent.sh from ref ${REF}"
     return 1
   fi
+  # Record executability explicitly before the no-op probe: the index
+  # stores 100755 for both entry scripts even with core.fileMode=false,
+  # and a mode-only difference still yields a reviewable commit.
+  if ! git update-index --chmod=+x agent.sh .agent/ai-assistant.sh; then
+    die "failed to record executability in the git index"
+    return 1
+  fi
+  chmod +x agent.sh .agent/ai-assistant.sh
   if git diff --cached --quiet HEAD -- .agent agent.sh; then
     printf 'installer: already up to date at ref %s\n' "${REF}"
     return 0

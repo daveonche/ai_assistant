@@ -173,7 +173,8 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
 
     The stub log must show the exact sequence: prerequisite probe, staged
     scope gate, assistant remote setup, shallow fetch of the pinned ref,
-    checkout of .agent + agent.sh, no-op probe, scoped commit, and the
+    checkout of .agent + agent.sh, explicit executability recording
+    (update-index --chmod=+x), no-op probe, scoped commit, and the
     short-hash lookup for the progress message.
     """
     stub_dir, log = git_stub
@@ -208,6 +209,10 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "--",
         ".agent",
         "agent.sh",
+        "update-index",
+        "--chmod=+x",
+        "agent.sh",
+        ".agent/ai-assistant.sh",
         "diff",
         "--cached",
         "--quiet",
@@ -291,6 +296,7 @@ def release_repo(tmp_path: Path) -> Path:
     _git(repo, "config", "user.name", "Test User")
     (repo / ".agent").mkdir()
     (repo / ".agent" / "release.txt").write_text("release\n")
+    (repo / ".agent" / "ai-assistant.sh").write_text("release\n")
     (repo / "agent.sh").write_text("release\n")
     _git(repo, "add", ".agent", "agent.sh")
     _git(repo, "commit", "-m", "release v1.0.0")
@@ -338,7 +344,11 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
             consumer_repo, "show", "--name-only", "--format=", "HEAD"
         ).stdout.splitlines()
     )
-    assert files == {".agent/release.txt", "agent.sh"}
+    assert files == {
+        ".agent/release.txt",
+        ".agent/ai-assistant.sh",
+        "agent.sh",
+    }
     assert (
         _git(consumer_repo, "log", "-1", "--format=%s").stdout.strip()
         == "Update assistant files to v1.0.0"

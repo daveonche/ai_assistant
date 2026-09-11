@@ -54,12 +54,17 @@ def git_stub(tmp_path: Path):
 def clone_args(log: Path) -> list[str]:
     """Return the clone invocation's arguments from the git stub log.
 
-    The stub logs one argument per line, and clone is the last git call
-    the installer makes, so everything from the 'clone' token onward is
-    that invocation's argument list.
+    The stub logs one argument per line and every invocation starts with
+    its subcommand token, so the clone's arguments run from the 'clone'
+    token up to the next invocation's subcommand. Since Step 4 the
+    installer also runs update-index after placement, which must not be
+    mistaken for clone arguments.
     """
     lines = log.read_text().splitlines()
-    return lines[lines.index("clone"):]
+    start = lines.index("clone")
+    rest = lines[start + 1:]
+    stop = rest.index("update-index") if "update-index" in rest else len(rest)
+    return [lines[start], *rest[:stop]]
 
 
 def clone_target(log: Path) -> Path:
