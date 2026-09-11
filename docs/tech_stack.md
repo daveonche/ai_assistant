@@ -72,3 +72,5 @@ The host runtime that executes the launcher `.agent/ai_assistant.py` is pinned t
 | Python (host) | `3.12.12` | `python3 --version` | `.agent/ai_assistant.py` launcher execution |
 
 Verification record: `python3 --version` on the development host used to build and test this project reported `Python 3.12.12`. The launcher uses only the Python standard library, so no additional host runtime packages require pinning.
+
+The assistant package declares `requires-python = ">=3.12"` in `.agent/pyproject.toml`. The floor reflects what the project actually verifies: development and testing run exclusively against the pinned host runtime `3.12.12`, and the launcher is standard-library-only, so no dependency forces a lower bound. A lower floor (for example `>=3.8`) would claim compatibility the project does not test. The minimum stays within the host pin: `3.12` is not greater than `3.12.12`.
