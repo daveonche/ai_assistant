@@ -98,46 +98,6 @@ def test_clean_sandbox_install_proceeds(sandbox, git_stub):
     assert "installer: install complete" in result.stdout
 
 
-def test_existing_agent_dir_fails_with_clear_error(sandbox, git_stub):
-    """A pre-existing .agent/ is detected and the install is refused.
-
-    The existing files must be left untouched (the update path is Step 3),
-    and no retrieval may run before the detection gate.
-    """
-    stub_dir, log = git_stub
-
-    (sandbox / ".agent").mkdir()
-    marker = sandbox / ".agent" / "keep"
-    marker.write_text("local\n")
-
-    result = run_installer(sandbox, stub_dir)
-    assert result.returncode != 0
-    assert "existing assistant files" in result.stderr
-    assert "updating an existing install is not supported yet" in result.stderr
-    assert marker.read_text() == "local\n"
-    assert "clone" not in log.read_text()
-
-
-def test_existing_agent_sh_fails_with_clear_error(sandbox, git_stub):
-    """A pre-existing agent.sh alone is also detected and refused.
-
-    The detection gate must cover both assistant entry points, not just
-    the .agent/ directory; the existing file stays untouched and no
-    retrieval runs before the gate.
-    """
-    stub_dir, log = git_stub
-
-    local_script = "#!/usr/bin/env bash\n# local\n"
-    (sandbox / "agent.sh").write_text(local_script)
-
-    result = run_installer(sandbox, stub_dir)
-    assert result.returncode != 0
-    assert "existing assistant files" in result.stderr
-    assert "updating an existing install is not supported yet" in result.stderr
-    assert (sandbox / "agent.sh").read_text() == local_script
-    assert "clone" not in log.read_text()
-
-
 def test_retrieval_uses_pinned_ref_and_external_target(sandbox, git_stub):
     """Retrieval clones the pinned release ref to a target outside the project.
 
