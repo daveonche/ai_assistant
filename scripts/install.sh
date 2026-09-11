@@ -9,7 +9,7 @@
 set -euo pipefail
 
 readonly DEFAULT_REPO_URL="https://github.com/daveonche/ai_assistant.git"
-readonly DEFAULT_REF="1.0.0"
+readonly DEFAULT_REF="v1.0.0"
 
 # Globals: None
 # Arguments: Variable list of message words, joined into one message
@@ -38,10 +38,10 @@ Options:
   --help      Show this help and exit
 
 Examples:
-  curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/1.0.0/scripts/install.sh | bash
-  curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/1.0.0/scripts/install.sh | bash -s -- --ref 1.0.0
+  curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.0/scripts/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.0/scripts/install.sh | bash -s -- --ref v1.0.0
   ./scripts/install.sh --dry-run
-  ./scripts/install.sh --ref 1.0.0 --debug
+  ./scripts/install.sh --ref v1.0.0 --debug
 EOF
 }
 
