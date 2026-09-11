@@ -69,3 +69,31 @@ def test_installer_starts_as_single_command_in_repo(sandbox, git_stub):
     assert result.returncode == 0, result.stderr
     assert "installer: repository:" in result.stdout
     assert "installer: reference:" in result.stdout
+
+
+def test_piped_execution_reaches_main(sandbox, git_stub):
+    """Script fed on stdin (curl | bash form) still runs main.
+
+    When bash reads the script from a pipe, BASH_SOURCE[0] is empty; the
+    entry-point guard must treat that as direct execution.
+    """
+    stub_dir, log = git_stub
+
+    env = os.environ.copy()
+    env["PATH"] = f"{stub_dir}{os.pathsep}{env.get('PATH', '')}"
+    with INSTALLER.open("rb") as script_stdin:
+        result = subprocess.run(
+            [shutil.which("bash")],
+            cwd=sandbox,
+            env=env,
+            stdin=script_stdin,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    assert result.returncode == 0, result.stderr
+    assert "installer: repository:" in result.stdout
+    assert "installer: reference:" in result.stdout
+    # main actually ran: the prerequisite probe hit the git stub
+    assert log.read_text().splitlines() == ["rev-parse", "--is-inside-work-tree"]
