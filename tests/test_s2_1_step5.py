@@ -44,3 +44,26 @@ def test_readme_documents_one_command_install():
         "install instructions must state the command runs from inside "
         "the target project's repository"
     )
+
+
+def test_readme_documents_update_path():
+    """README documents the repeatable, git-based update path."""
+    text = README.read_text(encoding="utf-8")
+    section = _section(text, "Updating an existing install")
+    assert section, (
+        "README must have an 'Updating an existing install' section"
+    )
+    assert INSTALL_COMMAND in section, (
+        "update section must show the same one-command invocation"
+    )
+    # The update path must be described as going through the project's
+    # own git so the change is reviewable and revertable.
+    assert "git" in section, (
+        "update section must describe the git-based refresh"
+    )
+    assert "commit" in section, (
+        "update section must state the refresh is recorded as a commit"
+    )
+    assert "re-apply" in section, (
+        "update section must tell users to re-apply local customizations"
+    )
