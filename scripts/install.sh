@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# AIAssistant installer entry point (story S2.1, step 1).
+# AIAssistant installer entry point (story S2.1, steps 1-2).
 #
 # Retrieves this script with a single command from inside a project
 # repository, validates the documented host prerequisites (Bash and git),
-# and reports the planned installation. Placement of the assistant files
-# is implemented in later story steps.
+# and performs a clean install: it clones the pinned release reference
+# into a temporary directory, copies .agent/ and agent.sh into the project
+# root, and removes the temporary directory on exit. Updating an existing
+# install is handled in a later story step.
 
 set -euo pipefail
 
@@ -64,6 +66,57 @@ check_prerequisites() {
   fi
 }
 
+# Globals: TMP_CLONE (modified)
+# Arguments: None
+# Outputs: None
+# Returns: None
+cleanup() {
+  if [[ -n "${TMP_CLONE:-}" && -d "${TMP_CLONE}" ]]; then
+    rm -rf "${TMP_CLONE}"
+  fi
+}
+
+# Globals: PROJECT_ROOT (set)
+# Arguments: None
+# Outputs: None
+# Returns: 0 when the project has no existing assistant files, 1 otherwise
+check_clean_install() {
+  if [[ -e ".agent" || -e "agent.sh" ]]; then
+    die "existing assistant files found (.agent/ or agent.sh);"
+    die "updating an existing install is not supported yet"
+    return 1
+  fi
+}
+
+# Globals: REPO_URL, REF, TMP_CLONE (read/set)
+# Arguments: None
+# Outputs: Progress to STDOUT; errors to STDERR
+# Returns: 0 on successful clone, 1 otherwise
+retrieve_files() {
+  TMP_CLONE="$(mktemp -d)"
+  if ! git clone --quiet --depth 1 --branch "${REF}" \
+      "${REPO_URL}" "${TMP_CLONE}"; then
+    die "failed to retrieve ${REPO_URL} at ref ${REF}"
+    return 1
+  fi
+  printf 'installer: retrieved ref %s\n' "${REF}"
+}
+
+# Globals: TMP_CLONE (read)
+# Arguments: None
+# Outputs: Progress to STDOUT; errors to STDERR
+# Returns: 0 on successful placement, 1 otherwise
+place_files() {
+  if [[ ! -d "${TMP_CLONE}/.agent" || ! -f "${TMP_CLONE}/agent.sh" ]]; then
+    die "ref ${REF} does not contain the assistant files"
+    return 1
+  fi
+  cp -R "${TMP_CLONE}/.agent" .agent
+  cp "${TMP_CLONE}/agent.sh" agent.sh
+  chmod +x agent.sh .agent/ai-assistant.sh
+  printf 'installer: placed .agent/ and agent.sh into the project root\n'
+}
+
 # Globals: REPO_URL, REF, DRY_RUN, DEBUG (modified)
 # Arguments: Command-line arguments
 # Outputs: Usage to STDOUT for --help; errors to STDERR
@@ -73,6 +126,7 @@ parse_args() {
   REF="${DEFAULT_REF}"
   DRY_RUN=false
   DEBUG=false
+  TMP_CLONE=""
 
   while [[ "$#" -gt 0 ]]; do
     case "${1}" in
@@ -120,12 +174,19 @@ main() {
   printf 'installer: reference: %s\n' "${REF}"
 
   check_prerequisites
+  trap cleanup EXIT
 
   if [[ "${DRY_RUN}" == true ]]; then
+    printf 'installer: dry run: would install .agent/ and agent.sh'
+    printf ' from ref %s\n' "${REF}"
     printf 'installer: dry run complete; no changes were made\n'
-  else
-    printf 'installer: prerequisites met; file placement arrives in a later step\n'
+    return 0
   fi
+
+  check_clean_install
+  retrieve_files
+  place_files
+  printf 'installer: install complete\n'
 }
 
 # Entry point: the empty-BASH_SOURCE branch supports piped execution
