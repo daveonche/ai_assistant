@@ -68,3 +68,9 @@
 - [x] Step 3. Enable credential handling at launch
 - [x] Step 4. Enable empty artifact cleanup
 - [x] Step 5. Enable logging and debug documentation
+
+## Sprint 2
+
+### Story S2.1: Assistant-File Installer (One-Command Install & Update)
+
+- [ ] Step 1. Enable single-command acquisition of the assistant files
