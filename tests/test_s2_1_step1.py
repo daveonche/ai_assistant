@@ -171,3 +171,39 @@ def test_outside_work_tree_fails_with_clear_error(sandbox, tmp_path):
     assert result.returncode != 0
     assert "not a git work tree" in result.stderr
     assert "inside a project repository" in result.stderr
+
+
+def test_prerequisite_probing_is_limited_to_git(sandbox, tmp_path):
+    """A successful run probes only git — no additional prerequisites.
+
+    PATH contains nothing but the git stub, so any other required command
+    lookup would fail the run; the log proves git was the sole probe and
+    the run still completes.
+    """
+    stub_dir = tmp_path / "only-git-bin"
+    stub_dir.mkdir()
+    log = stub_dir / "git.log"
+    stub = stub_dir / "git"
+    stub.write_text(
+        "#!/usr/bin/env bash\n"
+        f"printf '%s\\n' \"$@\" >> {log}\n"
+        'if [[ "${1:-}" == "rev-parse" ]]; then\n'
+        "  printf 'true\\n'\n"
+        "fi\n"
+    )
+    stub.chmod(0o755)
+
+    env = os.environ.copy()
+    env["PATH"] = str(stub_dir)
+    result = subprocess.run(
+        [shutil.which("bash"), str(INSTALLER)],
+        cwd=sandbox,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "installer: prerequisites met" in result.stdout
+    assert log.read_text().splitlines() == ["rev-parse", "--is-inside-work-tree"]
