@@ -136,3 +136,38 @@ def test_missing_git_fails_with_clear_error(sandbox, tmp_path):
 
     assert result.returncode != 0
     assert "git is required" in result.stderr
+
+
+def test_outside_work_tree_fails_with_clear_error(sandbox, tmp_path):
+    """Git present but outside a work tree: installer fails with guidance.
+
+    The stub git answers rev-parse with 'false' (and fails, as real git
+    does outside a repository), so the work-tree branch of the check is
+    exercised rather than the missing-git branch.
+    """
+    stub_dir = tmp_path / "outside-bin"
+    stub_dir.mkdir()
+    stub = stub_dir / "git"
+    stub.write_text(
+        "#!/usr/bin/env bash\n"
+        'if [[ "${1:-}" == "rev-parse" ]]; then\n'
+        "  printf 'false\\n'\n"
+        "  exit 1\n"
+        "fi\n"
+    )
+    stub.chmod(0o755)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{stub_dir}{os.pathsep}{env.get('PATH', '')}"
+    result = subprocess.run(
+        [shutil.which("bash"), str(INSTALLER)],
+        cwd=sandbox,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "not a git work tree" in result.stderr
+    assert "inside a project repository" in result.stderr
