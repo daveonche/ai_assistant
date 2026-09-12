@@ -79,3 +79,20 @@
 - [x] Step 4. Enable executable entry scripts that survive mode-insensitive environments
 - [x] Step 5. Enable documented install and update procedures
 - [x] Step 6. Enable installer conformance with project quality checks
+
+### Story S2.2: Release Version-Pin Resolution
+
+- [x] Step 1. Enable the exact host runtime version pin in the technology-stack documentation
+- [x] Step 2. Enable the resolved minimum runtime version for the assistant package
+- [x] Step 3. Enable consistent prerequisite documentation across the readme and compatibility matrix
+- [x] Step 4. Enable resolved-status annotations for the flagged version items
+
+## Priority Order for Next Implementation Phase
+
+No unimplemented requirements remain: every functional and non-functional
+requirement in `docs/requirements/core_requirements.md` has source evidence in
+`.agent/ai_assistant.py`, `scripts/install.sh`, `.agent/pyproject.toml`,
+`docs/tech_stack.md`, and `README.md`. The backlog is empty; no further
+implementation stories are pending.
+
+Next workflow step: `#generate-sprint-stories`
