@@ -57,11 +57,13 @@
 - Stability: Experimental
 
 ## Purpose
+
 This metadata file describes the architecture design generator skill. Workflow instructions, command behavior, and stop points are defined in SKILL.md.
 
 ## Sync / Validation Checklist
 
 Before considering this metadata file current, verify:
+
 - [ ] `#architecture-status` description matches SKILL.md
 - [ ] Gotchas / Sync Notes reflect the current SKILL.md gotchas
 - [ ] Version and Last Updated are incremented after SKILL.md changes
