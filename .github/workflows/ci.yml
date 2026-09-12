@@ -1,4 +1,5 @@
-# CI pipeline validating the launcher, shell scripts, and Docker image build.
+# CI pipeline validating the launcher, shell scripts, the Docker image
+# build, and release-tag consistency.
 #
 # Local validation: actionlint is the preferred validator (see
 # .agent/.aider.conventions/references/ci-cd-best-practices.md). When it is
@@ -52,3 +53,29 @@ jobs:
         run: docker build --progress=plain -f .agent/Dockerfile.aider -t ai-assistant:ci .agent
         env:
           DOCKER_BUILDKIT: "1"
+
+  release-tag-guard:
+    name: Release tag matches DEFAULT_REF
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Assert the tag equals DEFAULT_REF in scripts/install.sh
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          default_ref="$(sed -n 's/^readonly DEFAULT_REF="\(.*\)"$/\1/p' scripts/install.sh)"
+          if [[ -z "${default_ref}" ]]; then
+            echo "::error::could not read DEFAULT_REF from scripts/install.sh"
+            exit 1
+          fi
+          if [[ "${default_ref}" != "${tag}" ]]; then
+            echo "::error::tag ${tag} does not match DEFAULT_REF ${default_ref}; bump the pinned reference (scripts/install.sh, README.md, tests/test_s2_1_step5.py) and re-tag"
+            exit 1
+          fi
+          echo "release pin OK: tag ${tag} == DEFAULT_REF ${default_ref}"

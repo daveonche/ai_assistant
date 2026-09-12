@@ -127,7 +127,7 @@ one-command installer. From inside the target project's repository,
 run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.1/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.2/scripts/install.sh | bash
 ```
 
 The installer needs only the documented host prerequisites: Bash and
@@ -145,7 +145,7 @@ When `.agent/` or `agent.sh` already exist, the same command switches
 to update mode:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.1/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.2/scripts/install.sh | bash
 ```
 
 The installer first warns that local customizations inside `.agent/`
@@ -161,12 +161,12 @@ the update completes.
 
 #### Pinned-reference caveat
 
-Installs and updates always retrieve the pinned release tag `v1.0.1`,
+Installs and updates always retrieve the pinned release tag `v1.0.2`,
 never `main`, so repeated runs are reproducible. To install from a
 different reference, pass `--ref`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.1/scripts/install.sh | bash -s -- --ref v1.0.0
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.2/scripts/install.sh | bash -s -- --ref v1.0.0
 ```
 
 Three more options help before and during a run: `--dry-run` reports
@@ -217,6 +217,7 @@ This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) tha
 
 1. **Validate launcher and scripts** — Python syntax check of `.agent/ai_assistant.py`, then `shellcheck` over all tracked `*.sh` scripts.
 2. **Docker image build smoke test** — builds the image from `.agent/Dockerfile.aider`.
+3. **Release tag guard** — on `v*` tag pushes, asserts the tag equals `DEFAULT_REF` in `scripts/install.sh`, so a tag cannot ship with a stale installer pin.
 
 > **Important:** GitHub Actions only runs workflows from
 > `.github/workflows/`. A `ci.yml` file inside `.agent/` will not be
