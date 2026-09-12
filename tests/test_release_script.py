@@ -4,9 +4,10 @@ Verifies that scripts/release.sh passes the project's standard static
 checks for scripts (shellcheck), is executable, and follows the
 machine-checkable rules from the project's shell-script conventions
 reference, mirroring the installer checks in test_s2_1_step6.py.
-Behavioural coverage stays manual: a release run mutates tracked files,
-records a commit, tags, and pushes, so it is exercised with --dry-run
-and guarded in CI by the release-tag-guard job.
+The bump_refs function is additionally exercised against a temporary
+repository layout; a full release run still stays manual (it mutates
+tracked files, records a commit, tags, and pushes), guarded in CI by
+the release-tag-guard job.
 """
 
 import os
@@ -123,10 +124,23 @@ def test_bump_refs_rewrites_the_pinned_reference(tmp_path):
     git_stub.write_text("#!/usr/bin/env bash\nexit 1\n")
     git_stub.chmod(0o755)
 
-    pinned = tmp_path / "pinned.txt"
-    pinned.write_text("pin v1.0.2 here\n")
-    unpinned = tmp_path / "unpinned.txt"
-    unpinned.write_text("no pin\n")
+    # The real release-file layout inside the sandbox: bump_refs runs
+    # against the script's own readonly BUMP_FILES list (the driver must
+    # not reassign a readonly constant), so the actual list is exercised
+    # and any drift in it fails this test.
+    release_files = [
+        "scripts/install.sh",
+        "README.md",
+        "tests/test_s2_1_step1.py",
+        "tests/test_s2_1_step2.py",
+        "tests/test_s2_1_step3.py",
+        "tests/test_s2_1_step4.py",
+        "tests/test_s2_1_step5.py",
+    ]
+    for rel in release_files:
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"pin v1.0.2 in {rel}\n")
 
     driver = tmp_path / "driver.sh"
     driver.write_text(
@@ -136,7 +150,6 @@ def test_bump_refs_rewrites_the_pinned_reference(tmp_path):
         "OLD_REF='v1.0.2'\n"
         "NEW_REF='v1.0.3'\n"
         "VERBOSE=false\n"
-        f"BUMP_FILES=('{pinned}' '{unpinned}')\n"
         "bump_refs\n"
     )
 
@@ -151,6 +164,6 @@ def test_bump_refs_rewrites_the_pinned_reference(tmp_path):
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert "bumped the pinned reference in 2 files" in result.stdout
-    assert pinned.read_text() == "pin v1.0.3 here\n"
-    assert unpinned.read_text() == "no pin\n"
+    assert "bumped the pinned reference in 7 files" in result.stdout
+    for rel in release_files:
+        assert (tmp_path / rel).read_text() == f"pin v1.0.3 in {rel}\n"
