@@ -224,6 +224,66 @@ This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) tha
 > executed automatically. Keep the active workflow at
 > `.github/workflows/ci.yml`.
 
+## Releasing
+
+Releases exist for changes that must reach consumers of the one-command
+install: the tag's raw URL serves `scripts/install.sh`, and its
+`DEFAULT_REF` decides which reference gets installed. Everyday pushes
+to `main` need no release. `scripts/release.sh` cuts one in a single
+command: it verifies the repository state, preflights the test suite on
+the clean tree, bumps the pinned reference across the enforced files
+(`scripts/install.sh`, `README.md`, and the S2.1 test suites), re-runs
+the suite, records the bump as one commit, tags it, and pushes `main`
+and the tag. The CI `release-tag-guard` job then asserts the tag equals
+`DEFAULT_REF`, so a stale pin cannot ship.
+
+### Release environment
+
+The release script gates on the project's full test suite, so the host
+needs the tools the suite uses:
+
+- Bash and git (see [Prerequisites](#prerequisites))
+- Python >=3.12 with `pytest` and `pyyaml` installed — the script uses
+  the first pytest-capable interpreter among the `PYTHON_BIN` override,
+  `.venv/bin/python3` (when present), and `python3` from the `PATH`
+- `shellcheck` on the `PATH` (on Debian/Ubuntu:
+  `sudo apt-get install shellcheck`; see
+  [shellcheck.net](https://www.shellcheck.net) for other platforms)
+
+Prepare the virtual environment the suite runs in:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install pytest pyyaml
+```
+
+### Cutting a release
+
+Merge the changes to `main`, push, and run from a clean `main` that is
+in sync with `origin/main` — the script aborts otherwise:
+
+```bash
+./scripts/release.sh --auto
+```
+
+`--auto` increments the current `DEFAULT_REF`'s patch segment
+(`v1.0.3` -> `v1.0.4`). To choose the reference explicitly, pass it as
+the only argument:
+
+```bash
+./scripts/release.sh v1.1.0
+```
+
+`--dry-run` previews the plan without changing anything, `-v/--verbose`
+prints per-file bump detail, and `--debug` enables shell tracing.
+
+After the push, wait for the `release-tag-guard` job to pass, then
+verify the served installer carries the new pin:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.3/scripts/install.sh | grep -E 'DEFAULT_REF=|no commits yet'
+```
+
 ## Project Structure
 
 ```txt
