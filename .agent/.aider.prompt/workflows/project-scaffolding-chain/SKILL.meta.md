@@ -82,7 +82,6 @@ Use this workflow chain when starting a new project or when the initial project 
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 7B: Unit Testing
 - `$code-dependency-management` - Activates conditional dependency management during implementation
 
-
 ## Overview
 
 **Note: This workflow is designed for projects that are in the initial scaffolding phase. It assumes no prior project structure, dependencies, or core technologies are in place.**
