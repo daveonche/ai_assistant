@@ -206,7 +206,7 @@ bump_refs() {
       die "release file not found: ${file}"
       return 1
     fi
-    "${sed_args[@]}" "s/${OLD_REF}/${NEW_REF}/g" "${file}"
+    sed "${sed_args[@]}" "s/${OLD_REF}/${NEW_REF}/g" "${file}"
     if [[ "${VERBOSE}" == true ]]; then
       printf 'release: bumped %s\n' "${file}"
     fi
