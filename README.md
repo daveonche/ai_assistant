@@ -1,6 +1,37 @@
 # AIAssistant
 
+#### Video Demo:  <URL-HERE>
+
 A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It leverages Docker to run Aider in an isolated, containerized environment, integrating seamlessly with cloud-based LLM providers like OpenRouter, OpenAI, Google AI, and Hugging Face.
+
+## Description
+
+**AIAssistant** wraps the [aider](https://aider.chat) AI coding assistant in a
+reproducible, isolated runtime and adds the missing operational layer around
+it: a prompt library and orchestrator that impose a software-development life
+cycle on AI-assisted coding, a launcher that makes the environment identical
+on every machine, and an installer that provisions any project with a single
+command.
+
+Running an AI coding assistant directly on a host creates familiar problems:
+dependencies clash with system packages, every machine ends up with a
+slightly different toolchain, API keys leak into shell histories, and
+sessions drift unstructured from "small fix" to "rewrite the module".
+AIAssistant addresses each part. The assistant and its toolchain (aider,
+Chromium, mermaid-cli, ShellCheck, the Docker CLI) live in a Docker image
+pinned by tag and content digest, so the host needs only Docker, Git, Bash,
+and Python. Credentials are forwarded into the container by variable name
+only, so they never appear in command logs. The project root is bind-mounted
+at the identical path inside the container, which lets aider edit the real
+source tree and lets `docker compose` commands run against the host daemon
+with paths that resolve correctly on both sides.
+
+The differentiating layer is `.agent/`: a prompt library and orchestrator
+(`.agent/AGENTS.md`) that decompose development work into atomic steps —
+requirements, technology stack, architecture, sprint stories, implementation,
+unit tests — each with its own test suite that defines when the step is done.
+This repository was built by driving that system end to end (see
+*Development methodology* below).
 
 ## Features
 
@@ -224,6 +255,47 @@ This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) tha
 > executed automatically. Keep the active workflow at
 > `.github/workflows/ci.yml`.
 
+## File Guide
+
+- `agent.sh` — Root convenience launcher: resolves its own directory and
+  execs `.agent/ai-assistant.sh`, so the assistant starts with one short
+  command from any project root.
+- `.agent/ai-assistant.sh` — Thin Bash launcher that execs the Python
+  implementation, keeping the entry chain two shellcheck-clean hops.
+- `.agent/ai_assistant.py` — The core module: Docker availability check,
+  stale-container cleanup keyed by a workspace-hash label plus host-PID
+  liveness, content-hash build-or-skip image caching, container assembly
+  (same-path bind mount, docker.sock mount, credential forwarding),
+  a `PR_SET_PDEATHSIG` container watchdog, a per-session command log, and
+  spinner progress UX.
+- `.agent/Dockerfile.aider` — The image recipe: base image pinned by tag and
+  manifest digest, layered from most to least stable (system packages and
+  Chromium, pre-baked embedding model, Docker CLI + compose plugin + Node,
+  mermaid-cli, a static ShellCheck binary, pytest), with no `COPY`
+  instructions so the build context stays minimal.
+- `scripts/install.sh` — The one-command installer: validates prerequisites,
+  clones the pinned release reference into a temporary directory, places
+  `.agent/` and `agent.sh` into the project root, records entry-script
+  executability in the git index, and refreshes existing installs through
+  the consumer's own git as one reviewable commit.
+- `scripts/release.sh` — Release automation: bumps the pinned reference
+  across the installer, README, and test fixtures, gates the bump behind
+  the full pytest suite, then commits, tags, and pushes in one run.
+- `.github/workflows/ci.yml` — Three CI jobs: launcher syntax check plus
+  shellcheck over all tracked scripts, a Docker build smoke test, and a
+  release-tag guard that fails any tag disagreeing with the installer pin.
+- `.agent/AGENTS.md` — The workflow orchestrator: manages the context window
+  by loading prompt files on demand and checkpoints session state to
+  `docs/workflow_state.md`.
+- `.agent/.aider.prompt/` — The SDLC prompt library: workflows that break
+  development into atomic, individually tested steps.
+- `.agent/.aider.conventions/` — Coding-convention references (shell,
+  Markdown, CI/CD, Docker, Compose) loaded on demand by file type.
+- `tests/` — Roughly thirty pytest suites (180 tests) that pin the behavior
+  of the entry scripts, installer, release automation, and documentation.
+- `docs/` — Requirements (`core_requirements.md`), the verified technology
+  stack, and workflow session state.
+
 ## Project Structure
 
 ```txt
@@ -248,3 +320,57 @@ This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) tha
 ├── scripts/                 # Utility scripts
 └── src/                     # Source code
 ```
+
+## Design Decisions
+
+- **Same-path bind mount.** The project root is mounted into the container at
+  its exact host path. This single invariant gives aider access to the source
+  tree and makes every host path — compose bind mounts, aider config
+  arguments — resolve identically inside the container, which is what makes
+  Docker-outside-of-Docker safe rather than fragile.
+- **No `COPY`, minimal build context.** The Dockerfile bakes in tooling only;
+  a generated `.dockerignore` shrinks the context to the Dockerfile itself,
+  so launches stay fast on large repositories and project code never enters
+  the image.
+- **Content-hash image cache.** The cache tag is a SHA-256 of the Dockerfile
+  bytes plus the base image's repo digests, so the image rebuilds exactly
+  when the recipe or the upstream base changes — never otherwise.
+- **Secrets by name only.** Credentials cross into the container via
+  `docker run -e VAR`; Docker fills the values from the launcher's own
+  environment, so no secret ever appears in a command, a log line, or a
+  debug trace.
+- **Watchdogged containers.** A forked watchdog uses `PR_SET_PDEATHSIG` with
+  a `getppid()` polling fallback, so a killed launcher cannot leave an
+  orphaned container behind.
+- **Thin shell, tested Python core.** Two minimal entry scripts exec one
+  Python module holding all logic, keeping the shell surface shellcheck-clean
+  and the behavior pinned by tests.
+- **Pinned-reference installs.** The installer always retrieves a fixed
+  release tag; `release.sh` bumps that pin across installer, README, and test
+  fixtures in one commit; and a CI job fails any tag that disagrees with the
+  pin. Reproducibility is enforced, not promised.
+- **Updates through the consumer's git.** Refreshing an existing install is
+  recorded as one scoped, reviewable, revertable commit in the host project
+  instead of silently overwriting files.
+
+## Development methodology
+
+This project is both a tool for structured AI-assisted development and a
+product of it. Work followed the life cycle encoded in
+`.agent/.aider.prompt/`: the requirements in
+`docs/requirements/core_requirements.md` were expanded into numbered sprint
+stories, each story into atomic steps, and each step was paired with a pytest
+suite that defines "done" before implementation begins — 180 tests now pin
+the behavior of the entry scripts, the installer, the release automation, and
+the documentation itself.
+
+Implementation was performed with the aider AI coding assistant
+(https://aider.chat), driven by the workflow prompts in
+`.agent/.aider.prompt/` under the orchestration rules in `.agent/AGENTS.md`,
+as permitted for the CS50x final project. The design — the requirements, the
+atomic decomposition, the invariants listed above, and the review of every
+generated change — is the author's, and each implementation file carries an
+AI-assistance disclosure comment pointing to this section.
+
+The dogfooding is deliberate: the repository's own development is a
+demonstration of the workflow the tool prescribes.
