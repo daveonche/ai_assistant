@@ -42,3 +42,11 @@ def test_resolved_annotations_reference_tech_stack():
         assert "docs/tech_stack.md" in line, (
             f"resolved annotation does not point at docs/tech_stack.md: {line}"
         )
+
+
+def test_no_flagged_version_pin_items_remain():
+    flagged = [line for line in _story_lines() if "⚠ FLAGGED" in line]
+    assert not flagged, (
+        "flagged version-pin items remain in "
+        "docs/sprints/sprint_1_stories.md: " + "; ".join(flagged)
+    )
