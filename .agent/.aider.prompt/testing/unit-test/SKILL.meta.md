@@ -4,7 +4,7 @@
 
 - Tested With:
   - Aider
-  - LLM: Claude 3.5 Sonnet
+  - LLM: GLM 5.3 Flash (August 27, 2026 release)
 - Last Validated Model: Claude 3.5 Sonnet
 - Potential Compatible Assistants:
   - Other Claude models

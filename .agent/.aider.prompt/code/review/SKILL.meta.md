@@ -8,7 +8,7 @@ Provides a staged workflow for reviewing a target file, collecting optional codi
 
 - Tested With:
   - Aider
-  - LLM: Claude 3.5 Sonnet (October 22, 2024 release)
+  - LLM: GLM 5.3 Flash (August 27, 2026 release)
 - Potential Compatible Assistants:
   - Other Claude models
   - GitHub Copilot (with modifications)

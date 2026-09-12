@@ -1,23 +1,29 @@
 # Codebase Health Check Prompt
 
 ## Version
+
 - Current Version: 1.1.0
 - Last Updated: 2026-08-24
 - Stability: Experimental
 
 ## Description
+
 Comprehensive source code analysis tool that identifies critical issues across multiple dimensions of code quality.
 
 ## Purpose
+
 This prompt guides the user through analyzing the codebase for quality, security, and performance issues, providing a categorized report of findings.
 
 ## Usage
+
 Use this prompt when you need to perform a health check on your source code, identify technical debt, or prepare for a code review.
 
 ### Commands
+
 - `#analyze-health`: Starts or resumes the codebase health analysis workflow.
 
 ### Workflow
+
 For the full step-by-step workflow, see `SKILL.md`.
 
 The analysis proceeds through these high-level stages:
@@ -30,6 +36,7 @@ The analysis proceeds through these high-level stages:
 6. **Generate Report**: Output the final health analysis report, using severity classification and a `Critical Issues Summary`, and provide instructions to save it.
 
 ## Best suited for
+
 - Pre-update code review
 - Quality assessment
 - Technical debt identification

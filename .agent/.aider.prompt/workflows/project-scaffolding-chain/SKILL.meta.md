@@ -4,8 +4,8 @@
 
 - Tested With:
   - Aider
-  - Implementation Prompt: Claude 3.5 Sonnet (October 22, 2024 release)
-  - Other Workflow Prompts: Claude 3.5 Haiku (October 22, 2024 release)
+  - Implementation Prompt: GLM 5.3 Flash (August 27, 2026 release)
+  - Other Workflow Prompts: GLM 5.3 Flash (August 27, 2026 release)
 - Potential Compatible Assistants:
   - Other Claude models
   - GitHub Copilot (with modifications)
@@ -401,8 +401,8 @@ Verify each transition before moving to the next phase.
 This workflow chain has been tested with different LLMs:
 
 - AI Assistant: aider
-- Implementation Prompt: Claude 3.5 Sonnet (October 22, 2024 release)
-- Other Workflow Prompts: Claude 3.5 Haiku (October 22, 2024 release)
+- Implementation Prompt: GLM 5.3 Flash (August 27, 2026 release)
+- Other Workflow Prompts: GLM 5.3 Flash (August 27, 2026 release)
 
 The chain assumes:
 

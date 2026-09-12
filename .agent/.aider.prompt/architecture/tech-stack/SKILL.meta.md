@@ -4,7 +4,7 @@
 
 - Tested With:
   - Aider
-  - Claude 3.5 Sonnet (October 22, 2024 release)
+  - GLM 5.3 Flash (August 27, 2026 release)
 - Untested / Not verified:
   - Other Claude models
   - GitHub Copilot

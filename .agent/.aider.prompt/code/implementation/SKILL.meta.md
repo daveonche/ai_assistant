@@ -8,7 +8,7 @@ Guides the implementation of a specific step from a story analysis report, enfor
 
 - Tested With:
   - Aider
-  - Claude 3.5 Sonnet (October 22, 2024 release)
+  - GLM 5.3 Flash (August 27, 2026 release)
 - Potential Compatible Assistants:
   - Should be compatible with most advanced LLMs capable of following complex, multi-step instructions.
 

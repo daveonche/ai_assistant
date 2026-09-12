@@ -4,8 +4,6 @@
 
 - Tested With:
   - Aider
-  - Claude 3.5 Sonnet (October 22, 2024 release)
-  - GPT-4o mini
   - GLM 5.3 Flash (August 27, 2026 release)
 - Potential Compatible Assistants:
   - Claude models
