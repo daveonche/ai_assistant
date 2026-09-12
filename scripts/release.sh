@@ -9,7 +9,8 @@
 # suite, records it as one commit, tags it, and pushes main and the tag.
 # The CI release-tag-guard job re-checks the tag/DEFAULT_REF pin on the
 # tag push, so a stale pin fails the release even when this script is
-# bypassed.
+# bypassed. The new reference is passed explicitly or derived with
+# --auto by incrementing the current pinned reference's patch segment.
 
 set -euo pipefail
 
@@ -40,7 +41,7 @@ die() {
 # Returns: None
 usage() {
   cat <<EOF
-Usage: release.sh [options] NEW_REF
+Usage: release.sh [options] [NEW_REF]
 
 Cut a release of the AIAssistant assistant files from the current main
 checkout. The pinned release reference is bumped across the enforced
@@ -52,6 +53,9 @@ and pushed together with main.
 Options:
   NEW_REF     The release reference to cut (for example v1.0.3); it
               must be a v-prefixed version that has no tag yet
+  --auto      Derive the release reference from the current pinned
+              reference by incrementing its patch segment
+              (v1.0.2 -> v1.0.3); mutually exclusive with NEW_REF
   --dry-run   Report the planned action without changing anything
   --verbose   Print per-file bump detail as it runs
   --debug     Enable shell tracing for troubleshooting
@@ -66,6 +70,8 @@ arguments in the documentation keep their older tag on purpose.
 Examples:
   ./scripts/release.sh --dry-run v1.0.3
   ./scripts/release.sh v1.0.3
+  ./scripts/release.sh --auto --dry-run
+  ./scripts/release.sh --auto
   ./scripts/release.sh v1.0.3 --verbose
   ./scripts/release.sh v1.0.3 --debug
 EOF
@@ -105,6 +111,29 @@ read_current_ref() {
     return 1
   fi
   OLD_REF="${ref}"
+}
+
+# Globals: OLD_REF, AUTO (read); NEW_REF (set)
+# Arguments: None
+# Outputs: Progress to STDOUT; error messages to STDERR
+# Returns: 0 when NEW_REF is resolved, 1 otherwise
+resolve_new_ref() {
+  # With --auto, derive the release reference from the current pinned
+  # reference by incrementing its patch segment (v1.0.2 -> v1.0.3).
+  if [[ "${AUTO}" != true ]]; then
+    return 0
+  fi
+  local version_re='^v([0-9]+)\.([0-9]+)\.([0-9]+)$'
+  if [[ ! "${OLD_REF}" =~ ${version_re} ]]; then
+    die "cannot auto-increment ${OLD_REF};"
+    die "the current DEFAULT_REF must be vMAJOR.MINOR.PATCH"
+    return 1
+  fi
+  local major="${BASH_REMATCH[1]}"
+  local minor="${BASH_REMATCH[2]}"
+  local patch="${BASH_REMATCH[3]}"
+  NEW_REF="v${major}.${minor}.$((patch + 1))"
+  printf 'release: auto: derived %s from %s\n' "${NEW_REF}" "${OLD_REF}"
 }
 
 # Globals: OLD_REF, NEW_REF (read)
@@ -264,7 +293,7 @@ report_plan() {
   printf 'release: dry run complete; no changes were made\n'
 }
 
-# Globals: NEW_REF, DRY_RUN, DEBUG, VERBOSE (modified)
+# Globals: NEW_REF, DRY_RUN, DEBUG, VERBOSE, AUTO (modified)
 # Arguments: Command-line arguments
 # Outputs: Usage to STDOUT for --help; errors to STDERR
 # Returns: 0 on success, 1 on invalid usage
@@ -273,9 +302,14 @@ parse_args() {
   DRY_RUN=false
   DEBUG=false
   VERBOSE=false
+  AUTO=false
 
   while [[ "$#" -gt 0 ]]; do
     case "${1}" in
+      --auto)
+        AUTO=true
+        shift
+        ;;
       --dry-run)
         DRY_RUN=true
         shift
@@ -303,20 +337,26 @@ parse_args() {
           usage >&2
           return 1
         fi
+        if [[ "${AUTO}" == true ]]; then
+          die "NEW_REF and --auto are mutually exclusive"
+          usage >&2
+          return 1
+        fi
         NEW_REF="${1}"
         shift
         ;;
     esac
   done
 
-  if [[ -z "${NEW_REF}" ]]; then
-    die "a release reference is required (for example v1.0.3)"
+  if [[ -z "${NEW_REF}" && "${AUTO}" != true ]]; then
+    die "a release reference is required (for example v1.0.3),"
+    die "or pass --auto to increment the current patch segment"
     usage >&2
     return 1
   fi
 }
 
-# Globals: NEW_REF, DRY_RUN, DEBUG, VERBOSE, OLD_REF (read/set)
+# Globals: NEW_REF, DRY_RUN, DEBUG, VERBOSE, AUTO, OLD_REF (read/set)
 # Arguments: Command-line arguments passed through to parse_args
 # Outputs: Progress and planned action to STDOUT; errors to STDERR
 # Returns: 0 on success, 1 otherwise
@@ -328,14 +368,15 @@ main() {
   fi
 
   printf 'release: repository: %s\n' "${DEFAULT_REPO_URL}"
-  printf 'release: cutting %s\n' "${NEW_REF}"
 
   check_prerequisites
   # Anchor to the repository root so the release file lists resolve
   # regardless of the invocation directory inside the work tree.
   cd "$(git rev-parse --show-toplevel)" || exit 1
   read_current_ref
+  resolve_new_ref
   validate_refs
+  printf 'release: cutting %s\n' "${NEW_REF}"
   printf 'release: pinned reference: %s -> %s\n' "${OLD_REF}" "${NEW_REF}"
 
   if [[ "${DRY_RUN}" == true ]]; then
