@@ -9,7 +9,7 @@
 - REQ-3: The system shall support use within other projects to provide SDLC workflows by installing the core configuration files and root launcher into the project root via any documented method (manual copy or one-command installer), as defined in the README.md setup guide.
 - REQ-4: The system shall mount the project root, including all files and subdirectories, into the Docker container to give the AI full access to that specific project.
 - REQ-5: The system shall support standalone use by cloning the repository, changing into the cloned directory, and executing the agent.sh script to start the assistant.
-- REQ-6: The system shall support refreshing an existing install in a consumer project from the pinned release reference through the project's own git, recording the refresh as a single reviewable, revertable project commit scoped to the assistant files, as defined in the README.md setup guide.
+- REQ-6: The system shall support refreshing an existing install in a consumer project from the pinned release reference through the project's own git, recording the refresh as a single reviewable, revertable project commit scoped to the assistant files. The refresh shall succeed in any valid consumer repository state, including a repository with no commits yet (unborn HEAD), where the refresh is recorded as the repository's first commit, as defined in the README.md setup guide.
 
 ### Workflow Orchestration
 
@@ -21,6 +21,10 @@
 
 - REQ-10: The system shall break down complex development tasks into atomic, manageable steps.
 - REQ-11: The system shall isolate context for each atomic step to minimize token usage.
+
+### Release Management
+
+- REQ-15: The system shall keep the pinned release reference consistent across the installer's DEFAULT_REF, every documented install URL, and the tested install command, enforced by automated checks and a CI guard on version-tag pushes.
 
 ## Non-Functional Requirements
 
