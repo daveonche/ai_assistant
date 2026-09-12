@@ -65,7 +65,7 @@
 ## Challenges and Mitigations
 
 | Challenge | Mitigation |
-|---|---:|
+| --- | ---: |
 | Technical dependency ordering | Clear dependency graphing |
 | Environment setup completeness | Story MUST-rule for environment setup inclusion |
 | Version compatibility | Exact-version pinning with "latest stable" flagging |
