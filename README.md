@@ -127,7 +127,7 @@ one-command installer. From inside the target project's repository,
 run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.2/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.3/scripts/install.sh | bash
 ```
 
 The installer needs only the documented host prerequisites: Bash and
@@ -145,7 +145,7 @@ When `.agent/` or `agent.sh` already exist, the same command switches
 to update mode:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.2/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.3/scripts/install.sh | bash
 ```
 
 The installer first warns that local customizations inside `.agent/`
@@ -161,12 +161,12 @@ the update completes.
 
 #### Pinned-reference caveat
 
-Installs and updates always retrieve the pinned release tag `v1.0.2`,
+Installs and updates always retrieve the pinned release tag `v1.0.3`,
 never `main`, so repeated runs are reproducible. To install from a
 different reference, pass `--ref`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.2/scripts/install.sh | bash -s -- --ref v1.0.0
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.3/scripts/install.sh | bash -s -- --ref v1.0.0
 ```
 
 Three more options help before and during a run: `--dry-run` reports
