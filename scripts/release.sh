@@ -2,11 +2,12 @@
 # Release automation for the AIAssistant assistant files.
 #
 # Cuts a release in one command from a main checkout: verifies the
-# repository state, bumps the pinned release reference across the
-# enforced trio (scripts/install.sh DEFAULT_REF, README.md curl URLs,
+# repository state, runs a clean-tree preflight of the project's test
+# suite, bumps the pinned release reference across the enforced trio
+# (scripts/install.sh DEFAULT_REF, README.md curl URLs,
 # tests/test_s2_1_step5.py INSTALL_COMMAND) plus the fixture references
-# in the S2.1 test suites, validates the bump with the project's test
-# suite, records it as one commit, tags it, and pushes main and the tag.
+# in the S2.1 test suites, re-validates with the test suite, records the
+# bump as one commit, tags it, and pushes main and the tag.
 # The CI release-tag-guard job re-checks the tag/DEFAULT_REF pin on the
 # tag push, so a stale pin fails the release even when this script is
 # bypassed. The new reference is passed explicitly or derived with
@@ -65,7 +66,10 @@ The repository must be on main, clean, and in sync with origin/main
 before the bump starts; --dry-run previews the plan without the
 repository-state checks. The test gate runs with the first
 pytest-capable interpreter among the PYTHON_BIN override,
-.venv/bin/python3, and python3 from the PATH. The bump replaces every
+.venv/bin/python3, and python3 from the PATH. The suite runs twice: a
+clean-tree preflight before the bump proves the environment can pass
+it (a missing module or tool aborts with a clean tree), then the
+post-bump run validates the bump itself. The bump replaces every
 occurrence of the current pinned reference in the release files; the
 --ref example arguments in the documentation keep their older tag on
 purpose.
@@ -254,6 +258,23 @@ bump_refs() {
   fi
 }
 
+# Globals: PYTHON_BIN (read)
+# Arguments: None
+# Outputs: Test output passthrough; error messages to STDERR
+# Returns: 0 when the clean-tree suite passes, 1 otherwise
+preflight_tests() {
+  # Prove the environment can pass the full suite before any file is
+  # modified: a missing module or tool (pytest, PyYAML, shellcheck)
+  # aborts the release with a clean tree instead of after the bump.
+  printf 'release: preflight: validating the clean tree with the'
+  printf ' project test suite\n'
+  if ! "${PYTHON_BIN}" -m pytest -q; then
+    die "the preflight suite failed; the environment cannot validate"
+    die "the release; fix it and re-run; no files were modified"
+    return 1
+  fi
+}
+
 # Globals: BUMP_FILES, PYTHON_BIN (read)
 # Arguments: None
 # Outputs: Test output passthrough; error messages to STDERR
@@ -318,9 +339,9 @@ report_plan() {
   printf 'release: dry run: would bump the pinned reference from'
   printf ' %s to %s in %s files\n' "${OLD_REF}" "${NEW_REF}" \
     "${#BUMP_FILES[@]}"
-  printf 'release: dry run: would check the repository state, then'
-  printf ' validate, commit, tag %s, and push main and the tag\n' \
-    "${NEW_REF}"
+  printf 'release: dry run: would check the repository state, run the'
+  printf ' clean-tree preflight, then bump, validate, commit, tag %s,'
+  printf ' and push main and the tag\n' "${NEW_REF}"
   printf 'release: dry run complete; no changes were made\n'
 }
 
@@ -418,6 +439,7 @@ main() {
 
   resolve_python
   check_repo_state
+  preflight_tests
   bump_refs
   run_tests
   record_bump

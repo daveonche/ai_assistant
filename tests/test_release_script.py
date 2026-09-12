@@ -4,10 +4,10 @@ Verifies that scripts/release.sh passes the project's standard static
 checks for scripts (shellcheck), is executable, and follows the
 machine-checkable rules from the project's shell-script conventions
 reference, mirroring the installer checks in test_s2_1_step6.py.
-The bump_refs and resolve_python functions are additionally exercised
-against temporary layouts; a full release run still stays manual (it
-mutates tracked files, records a commit, tags, and pushes), guarded in
-CI by the release-tag-guard job.
+The bump_refs, resolve_python, and preflight_tests functions are
+additionally exercised against temporary layouts; a full release run
+still stays manual (it mutates tracked files, records a commit, tags,
+and pushes), guarded in CI by the release-tag-guard job.
 """
 
 import os
@@ -242,3 +242,69 @@ def test_resolve_python_falls_back_to_path_python3(tmp_path):
     )
     assert result.returncode == 0, result.stderr
     assert "test interpreter: python3" in result.stdout
+
+
+def test_preflight_tests_validates_the_clean_tree(tmp_path):
+    """preflight_tests runs the suite through the resolved interpreter.
+
+    The preflight gate proves the environment can pass the full suite
+    before bump_refs touches any file, so an environment gap (a missing
+    module or tool such as shellcheck) aborts the release with a clean
+    tree instead of after the bump.
+    """
+    stub_dir = tmp_path / "bin"
+    stub_dir.mkdir()
+    python_stub = stub_dir / "pytest-python"
+    python_stub.write_text("#!/usr/bin/env bash\nexit 0\n")
+    python_stub.chmod(0o755)
+
+    driver = tmp_path / "driver.sh"
+    driver.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -euo pipefail\n"
+        f"source '{RELEASE}'\n"
+        f"PYTHON_BIN='{python_stub}'\n"
+        "preflight_tests\n"
+    )
+
+    env = os.environ.copy()
+    result = subprocess.run(
+        ["bash", str(driver)],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "preflight: validating the clean tree" in result.stdout
+
+
+def test_preflight_tests_failure_reports_a_clean_tree(tmp_path):
+    """preflight_tests failure says no files were modified."""
+    stub_dir = tmp_path / "bin"
+    stub_dir.mkdir()
+    python_stub = stub_dir / "pytest-python"
+    python_stub.write_text("#!/usr/bin/env bash\nexit 1\n")
+    python_stub.chmod(0o755)
+
+    driver = tmp_path / "driver.sh"
+    driver.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -euo pipefail\n"
+        f"source '{RELEASE}'\n"
+        f"PYTHON_BIN='{python_stub}'\n"
+        "preflight_tests\n"
+    )
+
+    env = os.environ.copy()
+    result = subprocess.run(
+        ["bash", str(driver)],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "no files were modified" in result.stderr
