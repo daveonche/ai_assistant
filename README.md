@@ -1,8 +1,8 @@
 # AIAssistant
 
-#### Video Demo:  <URL-HERE>
-
 A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It leverages Docker to run Aider in an isolated, containerized environment, integrating seamlessly with cloud-based LLM providers like OpenRouter, OpenAI, Google AI, and Hugging Face.
+
+#### Video Demo:  <URL-HERE>
 
 ## Description
 
