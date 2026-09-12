@@ -1,6 +1,11 @@
 # CI pipeline validating the launcher, shell scripts, the Docker image
 # build, and release-tag consistency.
 #
+# AI-assistance disclosure: this file was written with the aider AI coding
+# assistant (https://aider.chat), driven by the prompt workflows in
+# .agent/.aider.prompt/, as permitted for the CS50x final project.
+# See README.md, section "Development methodology".
+#
 # Local validation: actionlint is the preferred validator (see
 # .agent/.aider.conventions/references/ci-cd-best-practices.md). When it is
 # not installed, validate YAML syntax with PyYAML:

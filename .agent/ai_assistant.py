@@ -21,6 +21,11 @@ from this design:
    root path is identical inside and outside the container.
 """
 
+# AI-assistance disclosure: this file was written with the aider AI coding
+# assistant (https://aider.chat), driven by the prompt workflows in
+# .agent/.aider.prompt/, as permitted for the CS50x final project.
+# See README.md, section "Development methodology".
+
 from __future__ import annotations
 
 import hashlib

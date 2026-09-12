@@ -13,6 +13,11 @@
 # are recorded executable in the project's git index
 # (update-index --chmod=+x) so executability survives environments that
 # do not preserve file modes.
+#
+# AI-assistance disclosure: this file was written with the aider AI coding
+# assistant (https://aider.chat), driven by the prompt workflows in
+# .agent/.aider.prompt/, as permitted for the CS50x final project.
+# See README.md, section "Development methodology".
 
 set -euo pipefail
 

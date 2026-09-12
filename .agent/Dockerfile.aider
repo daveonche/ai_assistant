@@ -1,5 +1,10 @@
 # syntax=docker/dockerfile:1
 #
+# AI-assistance disclosure: this file was written with the aider AI coding
+# assistant (https://aider.chat), driven by the prompt workflows in
+# .agent/.aider.prompt/, as permitted for the CS50x final project.
+# See README.md, section "Development methodology".
+#
 # Build context for this file is the .agent directory itself (managed by
 # ai_assistant.py, which auto-creates a minimal .dockerignore). This file
 # intentionally contains NO COPY instructions:

@@ -11,6 +11,11 @@
 # tag push, so a stale pin fails the release even when this script is
 # bypassed. The new reference is passed explicitly or derived with
 # --auto by incrementing the current pinned reference's patch segment.
+#
+# AI-assistance disclosure: this file was written with the aider AI coding
+# assistant (https://aider.chat), driven by the prompt workflows in
+# .agent/.aider.prompt/, as permitted for the CS50x final project.
+# See README.md, section "Development methodology".
 
 set -euo pipefail
 
