@@ -1,17 +1,19 @@
 """Story S2.1, Step 3: repeatable updates through the project's own history.
 
 Verifies that scripts/install.sh detects existing assistant files, refreshes
-them through the consumer's own git (assistant remote -> fetch -> checkout ->
-commit) so the change is recorded as one normal, reviewable, revertable
-project commit, and warns before replacing local customizations.
+them through the consumer's own git (ai-assistant remote -> fetch -> preview
+-> confirm -> checkout -> commit) so the change is recorded as one normal,
+reviewable, revertable project commit, and warns before replacing local
+customizations.
 
 Two layers keep the suite hermetic:
 - stub-git tests log the exact command sequence and emulate the update-path
   git operations (with DIFF_RC / FAIL_FETCH knobs), so routing, ordering,
   the no-op path, and the failure ordering run without network;
 - one real-git test runs fully offline against a local release repository
-  (the `assistant` remote is pre-added, so no network is touched) and proves
-  the recorded commit is scoped to .agent/ + agent.sh and reverts cleanly.
+  (git's insteadOf rewrite redirects the canonical assistant URL there, so
+  no network is touched) and proves the recorded commit is scoped to
+  .agent/ + agent.sh and reverts cleanly.
 """
 
 import os
@@ -64,7 +66,7 @@ def git_stub(tmp_path: Path):
         "    ;;\n"
         "  remote)\n"
         '    if [[ "${2:-}" == "get-url" ]]; then\n'
-        "      # no assistant remote yet: the installer adds it\n"
+        "      # no ai-assistant remote yet: the installer adds it\n"
         "      exit 1\n"
         "    fi\n"
         "    ;;\n"
@@ -158,7 +160,7 @@ def test_existing_assistant_files_route_to_update_without_clone(
     else:
         (sandbox / ".agent").mkdir()
 
-    result = run_installer(sandbox, stub_dir)
+    result = run_installer(sandbox, stub_dir, "--yes")
     assert result.returncode == 0, result.stderr
     assert "updating an existing install" in result.stdout
     assert "update complete" in result.stdout
@@ -173,16 +175,18 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
 
     The stub log must show the exact sequence: prerequisite probe, staged
     scope gate, assistant remote setup, shallow fetch of the pinned ref,
-    checkout of .agent + agent.sh, explicit executability recording
-    (update-index --chmod=+x), no-op probe, scoped commit, and the
-    short-hash lookup for the progress message.
+    the incoming-change preview (stat against HEAD..FETCH_HEAD, then the
+    uncommitted-local-changes probe and its stat), checkout of .agent +
+    agent.sh, explicit executability recording (update-index --chmod=+x),
+    no-op probe, scoped commit, and the short-hash lookup for the progress
+    message. --yes skips the confirmation prompt, which needs a terminal.
     """
     stub_dir, log = git_stub
 
     (sandbox / ".agent").mkdir()
     (sandbox / ".agent" / "custom.txt").write_text("keep\n")
 
-    result = run_installer(sandbox, stub_dir)
+    result = run_installer(sandbox, stub_dir, "--yes")
     assert result.returncode == 0, result.stderr
 
     assert log.read_text().splitlines() == [
@@ -193,17 +197,36 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "--name-only",
         "remote",
         "get-url",
-        "assistant",
+        "ai-assistant",
         "remote",
         "add",
-        "assistant",
+        "ai-assistant",
         "https://github.com/daveonche/ai_assistant.git",
         "fetch",
         "--quiet",
         "--depth",
         "1",
-        "assistant",
+        "ai-assistant",
         "v1.0.0",
+        "--no-pager",
+        "diff",
+        "--stat",
+        "HEAD",
+        "FETCH_HEAD",
+        "--",
+        ".agent",
+        "agent.sh",
+        "diff",
+        "--quiet",
+        "--",
+        ".agent",
+        "agent.sh",
+        "--no-pager",
+        "diff",
+        "--stat",
+        "--",
+        ".agent",
+        "agent.sh",
         "checkout",
         "FETCH_HEAD",
         "--",
@@ -242,7 +265,9 @@ def test_update_noop_reports_already_up_to_date(sandbox, git_stub):
     stub_dir, log = git_stub
 
     (sandbox / ".agent").mkdir()
-    result = run_installer(sandbox, stub_dir, extra_env={"DIFF_RC": "0"})
+    result = run_installer(
+        sandbox, stub_dir, "--yes", extra_env={"DIFF_RC": "0"}
+    )
     assert result.returncode == 0, result.stderr
     assert "already up to date at ref v1.0.0" in result.stdout
     assert "update complete" in result.stdout
@@ -305,9 +330,11 @@ def release_repo(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def consumer_repo(tmp_path: Path, release_repo: Path) -> Path:
-    """Consumer project with an existing install whose `assistant` remote
-    points at the local release repo, keeping the update fully offline."""
+def consumer_repo(tmp_path: Path, release_repo: Path, monkeypatch) -> Path:
+    """Consumer project with an existing install and no assistant remote
+    yet; GIT_CONFIG_GLOBAL rewrites the canonical assistant URL to the
+    local release repo, keeping the update fully offline while the
+    installer records the canonical remote URL."""
     repo = tmp_path / "project"
     repo.mkdir()
     _git(repo, "init")
@@ -318,21 +345,29 @@ def consumer_repo(tmp_path: Path, release_repo: Path) -> Path:
     (repo / ".agent" / "custom.txt").write_text("keep\n")
     _git(repo, "add", ".agent", "agent.sh")
     _git(repo, "commit", "-m", "base")
-    _git(repo, "remote", "add", "assistant", str(release_repo))
+    # redirect the canonical assistant URL to the local release repo so
+    # the installer's fetch never touches the network
+    git_config = tmp_path / "gitconfig"
+    git_config.write_text(
+        f'[url "{release_repo}"]\n'
+        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+    )
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
     return repo
 
 
 def test_update_records_one_scoped_revertable_commit(consumer_repo):
     """The refresh lands as one scoped, revertable commit in consumer git.
 
-    Real git, fully offline: ensure_assistant_remote reuses the pre-added
-    local `assistant` remote. The update must produce exactly one commit
+    Real git, fully offline: ensure_assistant_remote adds the canonical
+    assistant remote, and git's insteadOf rewrite redirects its fetch to
+    the local release repo. The update must produce exactly one commit
     touching only .agent/ and agent.sh, and reverting it must restore the
     prior state.
     """
     base = _git(consumer_repo, "rev-parse", "HEAD").stdout.strip()
 
-    result = run_installer(consumer_repo, None)
+    result = run_installer(consumer_repo, None, "--yes")
     assert result.returncode == 0, result.stderr
     assert "recorded the refresh as commit" in result.stdout
 

@@ -13,10 +13,10 @@ Two layers keep the suite hermetic:
   passes every other git call through to the real binary, so the
   update-index recording is exercised against a real index without
   network;
-- the update path uses real git end to end, fully offline (the
-  `assistant` remote points at a local release repository whose entry
-  scripts were committed as 100644 with core.fileMode=false, simulating
-  a mode-insensitive source environment).
+- the update path uses real git end to end, fully offline (git's
+  insteadOf rewrite redirects the canonical assistant URL to a local
+  release repository whose entry scripts were committed as 100644 with
+  core.fileMode=false, simulating a mode-insensitive source environment).
 
 "Runnable immediately" is verified as the exec bit on disk (the sandbox
 proxy for actually executing the entry script, which stays a manual step).
@@ -201,9 +201,11 @@ def release_repo(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def consumer_repo(tmp_path: Path, release_repo: Path) -> Path:
-    """Consumer project with an existing install whose `assistant` remote
-    points at the local release repo, keeping the update fully offline."""
+def consumer_repo(tmp_path: Path, release_repo: Path, monkeypatch) -> Path:
+    """Consumer project with an existing install and no assistant remote
+    yet; GIT_CONFIG_GLOBAL rewrites the canonical assistant URL to the
+    local release repo, keeping the update fully offline while the
+    installer records the canonical remote URL."""
     repo = tmp_path / "project"
     repo.mkdir()
     _git(repo, "init")
@@ -214,7 +216,14 @@ def consumer_repo(tmp_path: Path, release_repo: Path) -> Path:
     (repo / ".agent" / "custom.txt").write_text("keep\n")
     _git(repo, "add", ".agent", "agent.sh")
     _git(repo, "commit", "-m", "base")
-    _git(repo, "remote", "add", "assistant", str(release_repo))
+    # redirect the canonical assistant URL to the local release repo so
+    # the installer's fetch never touches the network
+    git_config = tmp_path / "gitconfig"
+    git_config.write_text(
+        f'[url "{release_repo}"]\n'
+        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+    )
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
     return repo
 
 
@@ -226,7 +235,7 @@ def test_update_records_executable_surviving_mode_insensitive_source(
     scripts executable on disk immediately and records 100755 for them in
     the consumer's index and in the update commit's tree, so
     executability survives any future filemode-blind checkout."""
-    result = run_installer(consumer_repo, None)
+    result = run_installer(consumer_repo, None, "--yes")
     assert result.returncode == 0, result.stderr
     assert "recorded the refresh as commit" in result.stdout
 

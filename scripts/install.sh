@@ -7,8 +7,9 @@
 # into a temporary directory, copies .agent/ and agent.sh into the project
 # root, and removes the temporary directory on exit. When the assistant
 # files already exist, it refreshes them through the consumer's own git
-# (assistant remote -> fetch -> checkout -> commit) so the change is
-# recorded as a normal, reviewable project change. Both entry scripts
+# (ai-assistant remote -> fetch -> diff preview -> confirmation ->
+# checkout -> commit) so the change is recorded as a normal, reviewable
+# project change. Both entry scripts
 # are recorded executable in the project's git index
 # (update-index --chmod=+x) so executability survives environments that
 # do not preserve file modes.
@@ -43,12 +44,15 @@ Options:
   --ref REF   Install from REF instead of the pinned default
               (${DEFAULT_REF})
   --dry-run   Report the planned action without changing anything
+  --yes       Skip the update confirmation prompt (non-interactive use)
   --debug     Enable shell tracing for troubleshooting
   --help      Show this help and exit
 
 Update mode replaces .agent/ and agent.sh with the pinned release, so
 local customizations inside .agent/ (for example the read: list in
 .aider.conf.yml) are overwritten after a warning; re-apply them.
+Before applying, the incoming changes are shown and the update must be
+confirmed on the terminal; pass --yes to skip that prompt.
 
 Examples:
   curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.0/scripts/install.sh | bash
@@ -167,13 +171,20 @@ check_staged_scope() {
 # Globals: REPO_URL (read)
 # Arguments: None
 # Outputs: Error messages to STDERR
-# Returns: 0 when the assistant remote is available, 1 otherwise
+# Returns: 0 when the ai-assistant remote is available, 1 otherwise
 ensure_assistant_remote() {
-  if ! git remote get-url assistant >/dev/null 2>&1; then
-    if ! git remote add assistant "${REPO_URL}"; then
-      die "failed to configure the assistant remote (${REPO_URL})"
+  local existing_url
+  if existing_url="$(git remote get-url ai-assistant 2>/dev/null)"; then
+    if [[ "${existing_url}" != "${REPO_URL}" ]]; then
+      die "remote 'ai-assistant' exists but points to ${existing_url};"
+      die "expected ${REPO_URL}"
       return 1
     fi
+    return 0
+  fi
+  if ! git remote add ai-assistant "${REPO_URL}"; then
+    die "failed to configure the ai-assistant remote (${REPO_URL})"
+    return 1
   fi
 }
 
@@ -182,10 +193,48 @@ ensure_assistant_remote() {
 # Outputs: Error messages to STDERR
 # Returns: 0 on successful fetch, 1 otherwise
 fetch_assistant_ref() {
-  if ! git fetch --quiet --depth 1 assistant "${REF}"; then
+  if ! git fetch --quiet --depth 1 ai-assistant "${REF}"; then
     die "failed to retrieve the assistant ref ${REF}"
     return 1
   fi
+}
+
+# Globals: REF (read)
+# Arguments: None
+# Outputs: Change preview to STDOUT; warnings to STDERR
+# Returns: None
+preview_refresh() {
+  printf 'installer: incoming changes from ref %s:\n' "${REF}"
+  git --no-pager diff --stat HEAD FETCH_HEAD -- .agent agent.sh
+  if ! git diff --quiet -- .agent agent.sh; then
+    printf 'installer: WARNING: uncommitted local changes will be' >&2
+    printf ' overwritten:\n' >&2
+    git --no-pager diff --stat -- .agent agent.sh
+  fi
+}
+
+# Globals: ASSUME_YES (read)
+# Arguments: None
+# Outputs: Confirmation prompt to STDERR; error messages to STDERR
+# Returns: 0 when the update is confirmed, 1 otherwise
+confirm_refresh() {
+  if [[ "${ASSUME_YES}" == true ]]; then
+    return 0
+  fi
+  local reply
+  printf 'installer: apply the update? [y/N] ' >&2
+  if ! IFS= read -r reply < /dev/tty 2>/dev/null; then
+    die "no terminal available for confirmation;"
+    die "re-run with --yes to update non-interactively"
+    return 1
+  fi
+  case "${reply}" in
+    y | Y | yes | YES) ;;
+    *)
+      die "update aborted; no changes were made"
+      return 1
+      ;;
+  esac
 }
 
 # Globals: REF (read)
@@ -218,7 +267,7 @@ apply_refresh() {
     "$(git rev-parse --short HEAD)"
 }
 
-# Globals: REPO_URL, REF (read)
+# Globals: REPO_URL, REF, ASSUME_YES (read)
 # Arguments: None
 # Outputs: Progress to STDOUT; warning and errors to STDERR
 # Returns: 0 when the update completed, 1 otherwise
@@ -228,11 +277,13 @@ update_files() {
   check_staged_scope
   ensure_assistant_remote
   fetch_assistant_ref
+  preview_refresh
+  confirm_refresh
   apply_refresh
   printf 'installer: update complete\n'
 }
 
-# Globals: REPO_URL, REF, DRY_RUN, DEBUG (modified)
+# Globals: REPO_URL, REF, DRY_RUN, DEBUG, ASSUME_YES (modified)
 # Arguments: Command-line arguments
 # Outputs: Usage to STDOUT for --help; errors to STDERR
 # Returns: 0 on success, 1 on invalid usage
@@ -241,6 +292,7 @@ parse_args() {
   REF="${DEFAULT_REF}"
   DRY_RUN=false
   DEBUG=false
+  ASSUME_YES=false
   INSTALL_MODE="install"
   TMP_CLONE=""
 
@@ -256,6 +308,10 @@ parse_args() {
         ;;
       --dry-run)
         DRY_RUN=true
+        shift
+        ;;
+      --yes | -y)
+        ASSUME_YES=true
         shift
         ;;
       --debug)
@@ -275,7 +331,7 @@ parse_args() {
   done
 }
 
-# Globals: REPO_URL, REF, DRY_RUN, DEBUG, INSTALL_MODE
+# Globals: REPO_URL, REF, DRY_RUN, DEBUG, ASSUME_YES, INSTALL_MODE
 # Arguments: Command-line arguments passed through to parse_args
 # Outputs: Progress and planned action to STDOUT; errors to STDERR
 # Returns: 0 on success, 1 otherwise

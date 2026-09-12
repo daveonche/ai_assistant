@@ -150,8 +150,10 @@ curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.0/scrip
 
 The installer first warns that local customizations inside `.agent/`
 (for example the `read:` list in `.agent/.aider.conf.yml`) will be
-overwritten. It then refreshes the files through the project's own
-git: it fetches the pinned reference from the `assistant` remote,
+overwritten. It then shows the incoming changes and asks for
+confirmation before touching anything; pass `--yes` to skip the prompt
+in non-interactive runs. The refresh goes through the project's own
+git: it fetches the pinned reference from the `ai-assistant` remote,
 checks out `.agent` and `agent.sh`, and records the refresh as a
 single commit. The update is therefore a normal, reviewable,
 revertable project change — re-apply your local customizations after
@@ -167,9 +169,10 @@ different reference, pass `--ref`:
 curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.0/scripts/install.sh | bash -s -- --ref v1.0.0
 ```
 
-Two more options help before and during a run: `--dry-run` reports the
-planned action without changing anything, and `--debug` enables shell
-tracing for troubleshooting.
+Three more options help before and during a run: `--dry-run` reports
+the planned action without changing anything, `--yes` skips the update
+confirmation prompt for non-interactive runs, and `--debug` enables
+shell tracing for troubleshooting.
 
 ### Project Structure for Docker Compose Projects
 
