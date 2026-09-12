@@ -340,8 +340,8 @@ report_plan() {
   printf ' %s to %s in %s files\n' "${OLD_REF}" "${NEW_REF}" \
     "${#BUMP_FILES[@]}"
   printf 'release: dry run: would check the repository state, run the'
-  printf ' clean-tree preflight, then bump, validate, commit, tag %s,'
-  printf ' and push main and the tag\n' "${NEW_REF}"
+  printf ' clean-tree preflight, then bump, validate, commit, tag'
+  printf ' %s, and push main and the tag\n' "${NEW_REF}"
   printf 'release: dry run complete; no changes were made\n'
 }
 
