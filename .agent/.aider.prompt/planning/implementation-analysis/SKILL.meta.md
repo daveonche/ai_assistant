@@ -1,6 +1,7 @@
 # Metadata: Implementation Status Analysis Prompt
 
 ## Description
+
 Analyzes the current codebase to determine the implementation status of features, comparing what has been built against project requirements and user stories. It generates a prioritized list of remaining features for the next implementation phase.
 
 ## Prompt File
@@ -8,6 +9,7 @@ Analyzes the current codebase to determine the implementation status of features
 - Path: `.agent/.aider.prompt/planning/implementation-analysis/SKILL.md`
 
 ## Trigger Commands
+
 - `$planning-implementation-analysis`: Starts or resumes the implementation analysis.
 - `$planning-implementation-analysis status`: Shows the current progress in the analysis workflow.
 
@@ -34,7 +36,7 @@ Analyzes the current codebase to determine the implementation status of features
 - Prerequisite: Project requirements and current user stories available in context
 - Previous implementation status report may be used for comparison
 - Requires:
-  - Project requirements list (e.g., `docs/requirements.md`)
+  - Project requirements list (e.g., `docs/requirements/core_requirements.md`)
   - Current set of user stories (e.g., `docs/user_stories.md`)
   - Technology stack documentation (e.g., `docs/tech_stack.md`)
   - Previous implementation artifacts
@@ -76,7 +78,7 @@ Analyzes the current codebase to determine the implementation status of features
 ## Gotchas
 
 - Never classify a feature as Complete or Partially Implemented without at least one source-file citation; features with no source evidence must be classified Not Yet Implemented.
-- Documentation can drift: `docs/requirements.md` and `docs/user_stories.md` may describe features that no longer match the code. Verify claims against source files, not documentation alone.
+- Documentation can drift: `docs/requirements/core_requirements.md` and `docs/user_stories.md` may describe features that no longer match the code. Verify claims against source files, not documentation alone.
 - Features are often split across multiple files (models, handlers/views, templates). Search broadly before marking something Partially Implemented.
 - Re-running the analysis must preserve historical records in `docs/implementation_status.md` unless the user explicitly asks to overwrite them.
 

@@ -40,7 +40,7 @@ First, ensure correct mode by saying EXACTLY:
 3. Core technology stack
 
 Example response: "I have found in the context:
-✓ Requirements list in docs/requirements.md
+✓ Requirements list in docs/requirements/core_requirements.md
 ✓ User stories in docs/user_stories.md
 ✓ Tech stack: Vue.js 3.3.4, Vuetify 3.3.15, Pinia 2.1.6"
 

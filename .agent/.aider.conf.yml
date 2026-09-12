@@ -105,7 +105,7 @@ commit-prompt: Write a concise commit message using the Conventional Commits spe
 # Fixing and committing:
 
 ## Specify command to run tests
-# test-cmd: xxx
+test-cmd: python3 -m pytest
 
 ## Specify multiple values like this:
 # lint-cmd:
@@ -126,7 +126,6 @@ show-release-notes: false
 read:
 - .agent/AGENTS.md
 - docs/workflow_state.md
-- tests/test_workflow_state_pointer.py
 # If your project uses one of the supported frameworks, uncomment the matching
 # line below so its conventions are read from .agent/.aider.conventions/ on
 # launch. Convention files stay in .agent/.aider.conventions/; never copy
