@@ -19,3 +19,15 @@ def test_s1_2_flag_resolved():
     line = matches[0]
     assert "⚠ FLAGGED" not in line
     assert "✓ RESOLVED" in line
+
+
+def test_s1_4_flag_resolved():
+    matches = [
+        line
+        for line in _story_lines()
+        if 'requires-python = ">=3.8"' in line
+    ]
+    assert matches, "S1.4 acceptance-criterion line not found"
+    line = matches[0]
+    assert "⚠ FLAGGED" not in line
+    assert "✓ RESOLVED" in line
