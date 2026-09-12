@@ -365,7 +365,7 @@ the behavior of the entry scripts, the installer, the release automation, and
 the documentation itself.
 
 Implementation was performed with the aider AI coding assistant
-(https://aider.chat), driven by the workflow prompts in
+[Aider](https://aider.chat), driven by the workflow prompts in
 `.agent/.aider.prompt/` under the orchestration rules in `.agent/AGENTS.md`,
 as permitted for the CS50x final project. The design — the requirements, the
 atomic decomposition, the invariants listed above, and the review of every
