@@ -205,7 +205,17 @@ fetch_assistant_ref() {
 # Returns: None
 preview_refresh() {
   printf 'installer: incoming changes from ref %s:\n' "${REF}"
-  git --no-pager diff --stat HEAD FETCH_HEAD -- .agent agent.sh
+  local base
+  if git rev-parse --verify --quiet HEAD >/dev/null 2>&1; then
+    base="HEAD"
+  else
+    # Unborn HEAD (no commits yet): diff against the empty tree so the
+    # preview lists every assistant file as new instead of failing with
+    # "bad revision 'HEAD'".
+    base="$(git hash-object -t tree /dev/null)"
+    printf 'installer: no commits yet; all assistant files are new\n'
+  fi
+  git --no-pager diff --stat "${base}" FETCH_HEAD -- .agent agent.sh
   if ! git diff --quiet -- .agent agent.sh; then
     printf 'installer: WARNING: uncommitted local changes will be' >&2
     printf ' overwritten:\n' >&2
@@ -254,7 +264,11 @@ apply_refresh() {
     return 1
   fi
   chmod +x agent.sh .agent/ai-assistant.sh
-  if git diff --cached --quiet HEAD -- .agent agent.sh; then
+  # No explicit HEAD in the probe: git compares the index against HEAD
+  # implicitly and treats an unborn HEAD as the empty tree, so a
+  # repository with no commits reaches the commit below instead of
+  # dying with "bad revision 'HEAD'".
+  if git diff --cached --quiet -- .agent agent.sh; then
     printf 'installer: already up to date at ref %s\n' "${REF}"
     return 0
   fi

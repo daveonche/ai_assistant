@@ -10,10 +10,11 @@ Two layers keep the suite hermetic:
 - stub-git tests log the exact command sequence and emulate the update-path
   git operations (with DIFF_RC / FAIL_FETCH knobs), so routing, ordering,
   the no-op path, and the failure ordering run without network;
-- one real-git test runs fully offline against a local release repository
+- real-git tests run fully offline against a local release repository
   (git's insteadOf rewrite redirects the canonical assistant URL there, so
-  no network is touched) and proves the recorded commit is scoped to
-  .agent/ + agent.sh and reverts cleanly.
+  no network is touched) and prove the recorded commit is scoped to
+  .agent/ + agent.sh and reverts cleanly, including on a repository with
+  no commits yet (unborn HEAD).
 """
 
 import os
@@ -175,11 +176,12 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
 
     The stub log must show the exact sequence: prerequisite probe, staged
     scope gate, assistant remote setup, shallow fetch of the pinned ref,
-    the incoming-change preview (stat against HEAD..FETCH_HEAD, then the
-    uncommitted-local-changes probe and its stat), checkout of .agent +
-    agent.sh, explicit executability recording (update-index --chmod=+x),
-    no-op probe, scoped commit, and the short-hash lookup for the progress
-    message. --yes skips the confirmation prompt, which needs a terminal.
+    the incoming-change preview (HEAD resolution probe, stat against
+    HEAD..FETCH_HEAD, then the uncommitted-local-changes probe and its
+    stat), checkout of .agent + agent.sh, explicit executability recording
+    (update-index --chmod=+x), no-op probe, scoped commit, and the
+    short-hash lookup for the progress message. --yes skips the
+    confirmation prompt, which needs a terminal.
     """
     stub_dir, log = git_stub
 
@@ -208,6 +210,10 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "1",
         "ai-assistant",
         "v1.0.1",
+        "rev-parse",
+        "--verify",
+        "--quiet",
+        "HEAD",
         "--no-pager",
         "diff",
         "--stat",
@@ -239,7 +245,6 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "diff",
         "--cached",
         "--quiet",
-        "HEAD",
         "--",
         ".agent",
         "agent.sh",
@@ -397,3 +402,67 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     _git(consumer_repo, "revert", "--no-edit", "HEAD")
     assert (consumer_repo / "agent.sh").read_text() == "local\n"
     assert not (consumer_repo / ".agent" / "release.txt").exists()
+
+
+@pytest.fixture
+def unborn_consumer_repo(tmp_path: Path, release_repo: Path, monkeypatch) -> Path:
+    """Consumer repository with the assistant files staged but no commits
+    yet (unborn HEAD) — the state a clean install leaves in a fresh
+    `git init`; GIT_CONFIG_GLOBAL rewrites the canonical assistant URL to
+    the local release repo as in consumer_repo."""
+    repo = tmp_path / "unborn-project"
+    repo.mkdir()
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "test@example.com")
+    _git(repo, "config", "user.name", "Test User")
+    (repo / "agent.sh").write_text("local\n")
+    (repo / ".agent").mkdir()
+    (repo / ".agent" / "ai-assistant.sh").write_text("local\n")
+    (repo / ".agent" / "custom.txt").write_text("keep\n")
+    # the clean install staged the entry scripts but recorded no commit
+    _git(repo, "add", "agent.sh", ".agent/ai-assistant.sh")
+    git_config = tmp_path / "gitconfig-unborn"
+    git_config.write_text(
+        f'[url "{release_repo}"]\n'
+        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+    )
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
+    return repo
+
+
+def test_update_on_unborn_head_records_initial_commit(unborn_consumer_repo):
+    """A refresh in a repository with no commits yet completes instead of
+    dying with "fatal: bad revision 'HEAD'".
+
+    Regression test for the update path crashing when the consumer
+    repository had no commits — the state right after a clean install
+    into a fresh `git init` (place_files stages the entry scripts but
+    records no commit). The preview diffs against the empty tree and the
+    refresh is recorded as the repository's first commit.
+    """
+    result = run_installer(unborn_consumer_repo, None, "--yes")
+    assert result.returncode == 0, result.stderr
+    assert "no commits yet; all assistant files are new" in result.stdout
+    assert "recorded the refresh as commit" in result.stdout
+
+    # the refresh landed as the repository's first commit, scoped to the
+    # assistant files
+    count = _git(unborn_consumer_repo, "rev-list", "--count", "HEAD")
+    assert count.stdout.strip() == "1"
+    files = set(
+        _git(
+            unborn_consumer_repo, "show", "--name-only", "--format=", "HEAD"
+        ).stdout.splitlines()
+    )
+    assert files == {
+        ".agent/release.txt",
+        ".agent/ai-assistant.sh",
+        "agent.sh",
+    }
+    assert (
+        _git(unborn_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
+        == "Update assistant files to v1.0.1"
+    )
+    # the untracked local customization survives the refresh untracked
+    custom = unborn_consumer_repo / ".agent" / "custom.txt"
+    assert custom.read_text() == "keep\n"
