@@ -251,7 +251,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "commit",
         "--quiet",
         "-m",
-        "Update assistant files to v1.0.1",
+        "Update assistant files to v1.0.2",
         "--",
         ".agent",
         "agent.sh",
