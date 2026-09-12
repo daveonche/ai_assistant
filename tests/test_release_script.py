@@ -4,10 +4,10 @@ Verifies that scripts/release.sh passes the project's standard static
 checks for scripts (shellcheck), is executable, and follows the
 machine-checkable rules from the project's shell-script conventions
 reference, mirroring the installer checks in test_s2_1_step6.py.
-The bump_refs function is additionally exercised against a temporary
-repository layout; a full release run still stays manual (it mutates
-tracked files, records a commit, tags, and pushes), guarded in CI by
-the release-tag-guard job.
+The bump_refs and resolve_python functions are additionally exercised
+against temporary layouts; a full release run still stays manual (it
+mutates tracked files, records a commit, tags, and pushes), guarded in
+CI by the release-tag-guard job.
 """
 
 import os
@@ -167,3 +167,78 @@ def test_bump_refs_rewrites_the_pinned_reference(tmp_path):
     assert "bumped the pinned reference in 7 files" in result.stdout
     for rel in release_files:
         assert (tmp_path / rel).read_text() == f"pin v1.0.3 in {rel}\n"
+
+
+def test_resolve_python_fails_before_any_mutation(tmp_path):
+    """resolve_python fails before the bump when pytest is unavailable.
+
+    Regression test: the release run previously reached the pytest gate
+    only after bump_refs had rewritten all seven release files, so a
+    missing pytest module aborted mid-run with a dirty work tree. The
+    interpreter probe now runs before any file is modified.
+    """
+    stub_dir = tmp_path / "bin"
+    stub_dir.mkdir()
+    python_stub = stub_dir / "python3"
+    # A python3 whose pytest probe fails, like a bare system interpreter.
+    python_stub.write_text("#!/usr/bin/env bash\nexit 1\n")
+    python_stub.chmod(0o755)
+
+    driver = tmp_path / "driver.sh"
+    driver.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -euo pipefail\n"
+        f"source '{RELEASE}'\n"
+        "resolve_python\n"
+    )
+
+    env = os.environ.copy()
+    env["PATH"] = f"{stub_dir}{os.pathsep}{env.get('PATH', '')}"
+    env.pop("PYTHON_BIN", None)
+    result = subprocess.run(
+        ["bash", str(driver)],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "no pytest-capable python interpreter found" in result.stderr
+
+
+def test_resolve_python_falls_back_to_path_python3(tmp_path):
+    """resolve_python skips a pytest-less .venv and uses PATH python3."""
+    stub_dir = tmp_path / "bin"
+    stub_dir.mkdir()
+    python_stub = stub_dir / "python3"
+    python_stub.write_text("#!/usr/bin/env bash\nexit 0\n")
+    python_stub.chmod(0o755)
+    # A project virtual environment without pytest: the probe fails and
+    # the PATH interpreter is used instead.
+    venv_python = tmp_path / ".venv" / "bin" / "python3"
+    venv_python.parent.mkdir(parents=True)
+    venv_python.write_text("#!/usr/bin/env bash\nexit 1\n")
+    venv_python.chmod(0o755)
+
+    driver = tmp_path / "driver.sh"
+    driver.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -euo pipefail\n"
+        f"source '{RELEASE}'\n"
+        "resolve_python\n"
+    )
+
+    env = os.environ.copy()
+    env["PATH"] = f"{stub_dir}{os.pathsep}{env.get('PATH', '')}"
+    env.pop("PYTHON_BIN", None)
+    result = subprocess.run(
+        ["bash", str(driver)],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "test interpreter: python3" in result.stdout

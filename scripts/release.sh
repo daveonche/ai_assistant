@@ -63,9 +63,12 @@ Options:
 
 The repository must be on main, clean, and in sync with origin/main
 before the bump starts; --dry-run previews the plan without the
-repository-state checks. The bump replaces every occurrence of the
-current pinned reference in the release files; the --ref example
-arguments in the documentation keep their older tag on purpose.
+repository-state checks. The test gate runs with the first
+pytest-capable interpreter among the PYTHON_BIN override,
+.venv/bin/python3, and python3 from the PATH. The bump replaces every
+occurrence of the current pinned reference in the release files; the
+--ref example arguments in the documentation keep their older tag on
+purpose.
 
 Examples:
   ./scripts/release.sh --dry-run v1.0.3
@@ -84,10 +87,6 @@ EOF
 check_prerequisites() {
   if ! command -v git >/dev/null 2>&1; then
     die "git is required but was not found on the PATH"
-    return 1
-  fi
-  if ! command -v python3 >/dev/null 2>&1; then
-    die "python3 is required to run the release test suite"
     return 1
   fi
   local inside_work_tree
@@ -111,6 +110,38 @@ read_current_ref() {
     return 1
   fi
   OLD_REF="${ref}"
+}
+
+# Globals: PYTHON_BIN (set); optional PYTHON_BIN env override (read)
+# Arguments: None
+# Outputs: Progress to STDOUT; error messages to STDERR
+# Returns: 0 when a pytest-capable interpreter was selected, 1 otherwise
+resolve_python() {
+  # The test gate needs a pytest-capable interpreter. Precedence: the
+  # PYTHON_BIN override, then the project virtual environment (.venv),
+  # then python3 from the PATH. The probe runs here, before any file is
+  # modified, so a missing pytest aborts the release with a clean tree.
+  local candidate
+  local -a candidates
+  if [[ -n "${PYTHON_BIN:-}" ]]; then
+    candidates=("${PYTHON_BIN}")
+  elif [[ -x ".venv/bin/python3" ]]; then
+    candidates=(".venv/bin/python3" "python3")
+  else
+    candidates=("python3")
+  fi
+  for candidate in "${candidates[@]}"; do
+    if "${candidate}" -m pytest --version >/dev/null 2>&1; then
+      PYTHON_BIN="${candidate}"
+      printf 'release: test interpreter: %s\n' "${PYTHON_BIN}"
+      return 0
+    fi
+  done
+  die "no pytest-capable python interpreter found; tried:"
+  die "${candidates[*]}"
+  die "install pytest or set PYTHON_BIN to an interpreter that"
+  die "has it"
+  return 1
 }
 
 # Globals: OLD_REF, AUTO (read); NEW_REF (set)
@@ -223,13 +254,13 @@ bump_refs() {
   fi
 }
 
-# Globals: BUMP_FILES (read)
+# Globals: BUMP_FILES, PYTHON_BIN (read)
 # Arguments: None
 # Outputs: Test output passthrough; error messages to STDERR
 # Returns: 0 when the test suite passes, 1 otherwise
 run_tests() {
   printf 'release: validating the bump with the project test suite\n'
-  if ! python3 -m pytest -q; then
+  if ! "${PYTHON_BIN}" -m pytest -q; then
     die "the test suite failed; inspect the output above and restore"
     die "the bump with: git restore ${BUMP_FILES[*]}"
     return 1
@@ -356,7 +387,8 @@ parse_args() {
   fi
 }
 
-# Globals: NEW_REF, DRY_RUN, DEBUG, VERBOSE, AUTO, OLD_REF (read/set)
+# Globals: NEW_REF, DRY_RUN, DEBUG, VERBOSE, AUTO, OLD_REF, PYTHON_BIN
+# (read/set)
 # Arguments: Command-line arguments passed through to parse_args
 # Outputs: Progress and planned action to STDOUT; errors to STDERR
 # Returns: 0 on success, 1 otherwise
@@ -384,6 +416,7 @@ main() {
     return 0
   fi
 
+  resolve_python
   check_repo_state
   bump_refs
   run_tests
