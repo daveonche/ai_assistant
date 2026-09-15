@@ -87,12 +87,32 @@
 - [x] Step 3. Enable consistent prerequisite documentation across the readme and compatibility matrix
 - [x] Step 4. Enable resolved-status annotations for the flagged version items
 
+## Sprint 3
+
+### Story S3.1: Release Reference Consistency Verification
+
+- [x] Step 1. Enable confirmation that the pinned release reference agrees across the installer, the documented install instructions, and the tested install command
+- [x] Step 2. Enable resolution of any detected reference inconsistency within a single change
+- [x] Step 3. Enable recorded evidence of the passing verification
+
+### Story S3.2: Release Tag Guard Verification
+
+- [x] Step 1. Enable confirmation that the release tag guard job triggers on version-tag pushes and enforces the pinned reference
+- [x] Step 2. Enable confirmation that all pipeline action references remain pinned to verified full-length commit SHAs
+- [x] Step 3. Enable recorded evidence of a green pipeline run on the current main branch
+
+### Release Script Work
+
+- [x] Enable the release script and its verification suites
+
 ## Priority Order for Next Implementation Phase
 
 No unimplemented requirements remain: every functional and non-functional
 requirement in `docs/requirements/core_requirements.md` has source evidence in
 `.agent/ai_assistant.py`, `scripts/install.sh`, `.agent/pyproject.toml`,
-`docs/tech_stack.md`, and `README.md`. The backlog is empty; no further
-implementation stories are pending.
+`docs/tech_stack.md`, and `README.md`. The Sprint 3 release-management work
+(REQ-15) is verified and recorded: release-reference consistency, the release
+tag guard, and the release script all pass their verification suites. The
+backlog is empty; no further implementation stories are pending.
 
 Next workflow step: `#generate-sprint-stories`
