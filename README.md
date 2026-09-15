@@ -6,32 +6,19 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 
 ## Description
 
-**AIAssistant** wraps the [aider](https://aider.chat) AI coding assistant in a
-reproducible, isolated runtime and adds the missing operational layer around
-it: a prompt library and orchestrator that impose a software-development life
-cycle on AI-assisted coding, a launcher that makes the environment identical
-on every machine, and an installer that provisions any project with a single
-command.
+**AIAssistant** is a coding agent built with [Aider](https://aider.chat) running in a Docker container. It uses standard Software Engineering practices from the [Software Development Prompt Library](https://github.com/codingthefuturewithai/software-dev-prompt-library/tree/main) repo as a base for the refined prompt skills that are broken into atomic steps to guide solo Software Developers who want to integrate AI into their workflow following tested Software Development Life Cycle (SDLC) principles.
 
-Running an AI coding assistant directly on a host creates familiar problems:
-dependencies clash with system packages, every machine ends up with a
-slightly different toolchain, API keys leak into shell histories, and
-sessions drift unstructured from "small fix" to "rewrite the module".
-AIAssistant addresses each part. The assistant and its toolchain (aider,
-Chromium, mermaid-cli, ShellCheck, the Docker CLI) live in a Docker image
-pinned by tag and content digest, so the host needs only Docker, Git, Bash,
-and Python. Credentials are forwarded into the container by variable name
-only, so they never appear in command logs. The project root is bind-mounted
-at the identical path inside the container, which lets aider edit the real
-source tree and lets `docker compose` commands run against the host daemon
-with paths that resolve correctly on both sides.
+It can run isolated from a project root once the core files are available. LLM models can be easily swapped and aliased for each of your projects. Multiple instances can run at once and are cleaned up automatically if the terminal is closed. The chat context is efficiently managed by an AGENTS.md with shorthand commands for each defined prompt in the workflow.
 
-The differentiating layer is `.agent/`: a prompt library and orchestrator
-(`.agent/AGENTS.md`) that decompose development work into atomic steps —
-requirements, technology stack, architecture, sprint stories, implementation,
-unit tests — each with its own test suite that defines when the step is done.
-This repository was built by driving that system end to end (see
-*Development methodology* below).
+The container is destroyed once the terminal or chat session is exited. A workflow state checkpoint is used to save a short summary of what is done and what is next before exiting the chat or at any point in a session instead of depending on the Aider chat history file that gets large overtime and waste tokens if added to the context window.
+
+Orphaned ontainers are cleaned up automatically and multiple containers can be started inside a project without conflict. Multiple isolated containers can also be started at the same time for diferent projects using the project root as the current working directory mounted inside the container.
+
+Docker plugins are also built into the container for working with docker and docker compose projects along with other tools like mermaid CLI for generating images during the architectural workflow.
+
+Installation and updates for the assistant are easily managed by running a single command that installs or updates the core files in a project. Releases are automated and tested with a release script before pushing to github. I will consider using a more structural language like Python for the release script to keep the design consistent with the bash scripts conventions best practices used for the project.
+
+It has been fully tested in VSCode terminal running bash on windows WSL Ubuntu 24.04 and Docker Desktop.
 
 ## Features
 
