@@ -10,7 +10,7 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 
 It can run isolated from a project root once the core files are available. LLM models can be easily swapped and aliased for each of your projects. Multiple instances can run at once and are cleaned up automatically if the terminal is closed. The chat context is efficiently managed by an AGENTS.md with shorthand commands for each defined prompt in the workflow.
 
-The container is destroyed once the terminal or chat session is exited. A workflow state checkpoint is used to save a short summary of what is done and what is next before exiting the chat or at any point in a session instead of depending on the Aider chat history file that gets large overtime and waste tokens if added to the context window.
+The container is destroyed once the terminal or chat session is exited. A workflow state checkpoint is used to save a short summary of what is done and what is next before exiting the chat or at any point in a session instead of depending on the Aider chat history file that gets large over time and wastes tokens if added to the context window.
 
 Orphaned containers are cleaned up automatically and multiple containers can be started inside a project without conflict. Multiple isolated containers can also be started at the same time for different projects using the project root as the current working directory mounted inside the container.
 
