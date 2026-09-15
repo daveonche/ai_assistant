@@ -241,3 +241,19 @@ def test_both_documents_blank_line_and_indentation_rules_hold():
                         f"{doc}: table row cell count differs from header: {row[:40]!r}"
                     )
     _assert_clean(violations)
+
+
+def test_both_documents_end_cleanly():
+    """Must Support 3: each file ends with a single newline and no
+    line carries trailing whitespace."""
+    violations: list[str] = []
+    for doc in DOCUMENTS:
+        text = doc.read_text(encoding="utf-8")
+        if not text.endswith("\n"):
+            violations.append(f"{doc}: missing final newline")
+        elif text.endswith("\n\n"):
+            violations.append(f"{doc}: more than one final newline")
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            if line != line.rstrip(" \t"):
+                violations.append(f"{doc}:{lineno}: trailing whitespace")
+    _assert_clean(violations)
