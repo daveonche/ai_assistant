@@ -22,6 +22,44 @@ def _section(text: str, heading: str) -> str:
     return text[start:nxt if nxt != -1 else len(text)]
 
 
+S3_1_HEADING = "### Story S3.1: Release Reference Consistency Verification"
+
+
+def _subsection(text: str, heading: str) -> str:
+    """Return text from `heading` up to the next heading of the same level."""
+    level = heading.split(" ")[0] + " "  # e.g. "### "
+    start = text.index(heading)
+    nxt = text.find("\n" + level, start + len(heading))
+    return text[start:nxt if nxt != -1 else len(text)]
+
+
+def _sprint3_section() -> str:
+    return _section(_doc_text(), "## Sprint 3")
+
+
+def _checkbox_lines(story_text: str) -> list[str]:
+    return [
+        line
+        for line in story_text.splitlines()
+        if line.lstrip().startswith("- [")
+    ]
+
+
 def test_sprint3_section_exists():
     """Must Support 1: a Sprint 3 section is present."""
     assert "## Sprint 3" in _doc_text()
+
+
+def test_release_reference_consistency_steps_completed():
+    """Must Support 2: the S3.1 release-reference consistency work is
+    listed as completed steps in the Sprint 3 section."""
+    sprint3 = _sprint3_section()
+    assert S3_1_HEADING in sprint3, (
+        "Sprint 3 section does not record the release-reference "
+        "consistency verification story (S3.1)"
+    )
+    story = _subsection(sprint3, S3_1_HEADING)
+    boxes = _checkbox_lines(story)
+    assert boxes, "S3.1 story records no steps"
+    unchecked = [line for line in boxes if "- [ ]" in line]
+    assert not unchecked, f"S3.1 has unchecked steps: {unchecked}"
