@@ -30,7 +30,7 @@ alias:
  - "Specialist:openrouter/z-ai/glm-5.3"
  - "Architect:openrouter/z-ai/glm-5.3-flash"
  - "Editor:openrouter/deepseek/deepseek-v4-flash-0731"
- - "Helper:gemini/gemini-3.1-flash-lite"
+ - "Helper:openrouter/openai/gpt-oss-120b"
 
 ## Specify a file with context window and costs for unknown models
 #model-metadata-file: .aider.model.metadata.json
@@ -45,7 +45,7 @@ architect: false
 auto-accept-architect: false
 
 ## Specify the model to use for commit messages and chat history summarization (default depends on --model)
-weak-model: gemini/gemini-3.1-flash-lite
+weak-model: openrouter/openai/gpt-oss-120b
 
 ## Specify the model to use for editor tasks (default depends on --model)
 editor-model: openrouter/deepseek/deepseek-v4-flash-0731
