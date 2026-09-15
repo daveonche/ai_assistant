@@ -46,7 +46,7 @@ def _workflow_tag_patterns(triggers: dict) -> list[str]:
 def _default_ref() -> str:
     for line in INSTALLER_PATH.read_text(encoding="utf-8").splitlines():
         stripped = line.strip()
-        # The declaration is `readonly DEFAULT_REF="v1.0.3"`; match the
+        # The declaration is `readonly DEFAULT_REF="v1.0.4"`; match the
         # assignment wherever it appears on the line.
         if "DEFAULT_REF=" in stripped and not stripped.startswith("#"):
             value = stripped.split("DEFAULT_REF=", 1)[1]
@@ -102,4 +102,4 @@ def test_guard_job_compares_pushed_tag_to_pinned_reference():
 def test_pinned_reference_matches_sprint_3_pin():
     # S3.1 verified every location pins the same ref; the guard must
     # enforce this exact value, so a silent pin change breaks this check.
-    assert _default_ref() == "v1.0.3"
+    assert _default_ref() == "v1.0.4"
