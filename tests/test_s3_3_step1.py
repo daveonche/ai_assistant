@@ -49,6 +49,11 @@ def _closing_narrative() -> str:
     return _section(_doc_text(), NARRATIVE_HEADING)
 
 
+def _normalized(text: str) -> str:
+    """Collapse whitespace so markdown line wraps don't split phrases."""
+    return " ".join(text.split())
+
+
 def _checkbox_lines(story_text: str) -> list[str]:
     return [
         line
@@ -113,7 +118,7 @@ def test_closing_narrative_records_release_verification():
     assert NARRATIVE_HEADING in _doc_text(), (
         "closing status narrative section is missing"
     )
-    narrative = _closing_narrative()
+    narrative = _normalized(_closing_narrative())
     assert "verified and recorded" in narrative, (
         "closing narrative does not state the release work is "
         "verified and recorded"
