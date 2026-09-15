@@ -136,6 +136,7 @@ def test_bump_refs_rewrites_the_pinned_reference(tmp_path):
         "tests/test_s2_1_step3.py",
         "tests/test_s2_1_step4.py",
         "tests/test_s2_1_step5.py",
+        "tests/test_s3_2_step1.py",
     ]
     for rel in release_files:
         path = tmp_path / rel
@@ -164,7 +165,7 @@ def test_bump_refs_rewrites_the_pinned_reference(tmp_path):
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert "bumped the pinned reference in 7 files" in result.stdout
+    assert "bumped the pinned reference in 8 files" in result.stdout
     for rel in release_files:
         assert (tmp_path / rel).read_text() == f"pin v1.0.3 in {rel}\n"
 

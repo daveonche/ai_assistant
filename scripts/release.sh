@@ -5,9 +5,10 @@
 # repository state, runs a clean-tree preflight of the project's test
 # suite, bumps the pinned release reference across the enforced trio
 # (scripts/install.sh DEFAULT_REF, README.md curl URLs,
-# tests/test_s2_1_step5.py INSTALL_COMMAND) plus the fixture references
-# in the S2.1 test suites, re-validates with the test suite, records the
-# bump as one commit, tags it, and pushes main and the tag.
+# tests/test_s2_1_step5.py INSTALL_COMMAND), the fixture references
+# in the S2.1 test suites, and the S3.2 pin canary
+# (tests/test_s3_2_step1.py), re-validates with the test suite, records
+# the bump as one commit, tags it, and pushes main and the tag.
 # The CI release-tag-guard job re-checks the tag/DEFAULT_REF pin on the
 # tag push, so a stale pin fails the release even when this script is
 # bypassed. The new reference is passed explicitly or derived with
@@ -26,6 +27,7 @@ readonly BUMP_FILES=(
   "tests/test_s2_1_step3.py"
   "tests/test_s2_1_step4.py"
   "tests/test_s2_1_step5.py"
+  "tests/test_s3_2_step1.py"
 )
 
 # Globals: None
@@ -47,9 +49,10 @@ Usage: release.sh [options] [NEW_REF]
 Cut a release of the AIAssistant assistant files from the current main
 checkout. The pinned release reference is bumped across the enforced
 trio (scripts/install.sh DEFAULT_REF, README.md curl URLs,
-tests/test_s2_1_step5.py INSTALL_COMMAND) and the S2.1 fixture suites,
-validated with the project's test suite, recorded as one commit, tagged,
-and pushed together with main.
+tests/test_s2_1_step5.py INSTALL_COMMAND), the S2.1 fixture suites,
+and the S3.2 pin canary (tests/test_s3_2_step1.py), validated with the
+project's test suite, recorded as one commit, tagged, and pushed
+together with main.
 
 Options:
   NEW_REF     The release reference to cut (for example v1.0.3); it
