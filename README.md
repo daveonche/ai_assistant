@@ -12,7 +12,7 @@ It can run isolated from a project root once the core files are available. LLM m
 
 The container is destroyed once the terminal or chat session is exited. A workflow state checkpoint is used to save a short summary of what is done and what is next before exiting the chat or at any point in a session instead of depending on the Aider chat history file that gets large overtime and waste tokens if added to the context window.
 
-Orphaned ontainers are cleaned up automatically and multiple containers can be started inside a project without conflict. Multiple isolated containers can also be started at the same time for diferent projects using the project root as the current working directory mounted inside the container.
+Orphaned containers are cleaned up automatically and multiple containers can be started inside a project without conflict. Multiple isolated containers can also be started at the same time for different projects using the project root as the current working directory mounted inside the container.
 
 Docker plugins are also built into the container for working with docker and docker compose projects along with other tools like mermaid CLI for generating images during the architectural workflow.
 
