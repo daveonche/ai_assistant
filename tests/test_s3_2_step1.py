@@ -46,8 +46,11 @@ def _workflow_tag_patterns(triggers: dict) -> list[str]:
 def _default_ref() -> str:
     for line in INSTALLER_PATH.read_text(encoding="utf-8").splitlines():
         stripped = line.strip()
-        if stripped.startswith("DEFAULT_REF="):
-            return stripped.split("=", 1)[1].strip().strip("\"'")
+        # The declaration is `readonly DEFAULT_REF="v1.0.3"`; match the
+        # assignment wherever it appears on the line.
+        if "DEFAULT_REF=" in stripped and not stripped.startswith("#"):
+            value = stripped.split("DEFAULT_REF=", 1)[1]
+            return value.strip().strip("\"'")
     raise AssertionError("scripts/install.sh does not define DEFAULT_REF")
 
 
