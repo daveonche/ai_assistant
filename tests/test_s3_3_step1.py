@@ -24,6 +24,7 @@ def _section(text: str, heading: str) -> str:
 
 S3_1_HEADING = "### Story S3.1: Release Reference Consistency Verification"
 S3_2_HEADING = "### Story S3.2: Release Tag Guard Verification"
+RELEASE_SCRIPT_HEADING = "### Release Script Work"
 
 
 def _subsection(text: str, heading: str) -> str:
@@ -79,3 +80,17 @@ def test_release_tag_guard_steps_completed():
     assert boxes, "S3.2 story records no steps"
     unchecked = [line for line in boxes if "- [ ]" in line]
     assert not unchecked, f"S3.2 has unchecked steps: {unchecked}"
+
+
+def test_release_script_work_completed():
+    """Must Support 4: the release-script work is listed as completed
+    steps in the Sprint 3 section."""
+    sprint3 = _sprint3_section()
+    assert RELEASE_SCRIPT_HEADING in sprint3, (
+        "Sprint 3 section does not record the release-script work"
+    )
+    work = _subsection(sprint3, RELEASE_SCRIPT_HEADING)
+    boxes = _checkbox_lines(work)
+    assert boxes, "Release Script Work records no steps"
+    unchecked = [line for line in boxes if "- [ ]" in line]
+    assert not unchecked, f"Release Script Work has unchecked steps: {unchecked}"
