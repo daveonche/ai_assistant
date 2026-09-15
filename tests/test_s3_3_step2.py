@@ -35,3 +35,22 @@ def test_release_tooling_script_referenced_in_pin_philosophy():
         "the pin-philosophy section does not reference "
         "scripts/release.sh as the repeatable release entry point"
     )
+
+
+def test_release_tag_guard_referenced_with_enforcement_mechanism():
+    """Must Support 2: the release tag-guard job is referenced where the
+    version-pinning philosophy is described, with how it enforces the
+    pinned references."""
+    section = _pin_philosophy()
+    assert "release-tag-guard" in section, (
+        "the pin-philosophy section does not reference the "
+        "release-tag-guard CI job"
+    )
+    assert "DEFAULT_REF" in section and "scripts/install.sh" in section, (
+        "the pin-philosophy section does not describe how the guard "
+        "enforces the pinned reference (DEFAULT_REF in scripts/install.sh)"
+    )
+    assert "v*" in section, (
+        "the pin-philosophy section does not state which pushes the "
+        "guard enforces (v* tag pushes)"
+    )
