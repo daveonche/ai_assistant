@@ -2,7 +2,7 @@
 
 A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It leverages Docker to run Aider in an isolated, containerized environment, integrating seamlessly with cloud-based LLM providers like OpenRouter, OpenAI, Google AI, and Hugging Face.
 
-#### Video Demo:  <URL-HERE>
+## Video Demo:  <URL-HERE>
 
 ## Description
 
@@ -40,8 +40,8 @@ It has been fully tested in VSCode terminal running bash on windows WSL Ubuntu 2
 1. **Clone the repository:**
 
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/daveonche/ai_assistant.git
+   cd ai_assistant
    ```
 
 2. **Configure Environment Variables:**
