@@ -4,9 +4,9 @@ Last updated: 2026-09-15
 
 ## Active Workflow
 
-- Command: `$workflows-post-scaffolding-chain` — chain active; Story S3.3 complete; awaiting S3.3 unit-testing phase
+- Command: `$workflows-post-scaffolding-chain` — chain active; Story S3.3 implemented and unit-tested; awaiting chain continuation
 - SKILL.md: `.agent/.aider.prompt/workflows/post-scaffolding-chain/SKILL.md`
-- Current step: S3.3 — unit-testing phase (Phase 4B) not yet run
-- Last completed: S3.3 Steps 1–3 implemented and verified: Sprint 3 section added to `docs/implementation_status.md`, release-tooling paragraph added to `docs/tech_stack.md`, convention checks clean (187 passed); commits 4a505f8, c34dc2e, a919eab.
-- Next action: run `$testing-unit-test S3.3` (documentation-only story; the phase may conclude no new tests are required)
-- Reload to resume: `/read-only docs/analysis/S3.3-story-steps.md`, `/read-only docs/implementation_status.md`, `/read-only docs/tech_stack.md`, `/read-only docs/sprints/sprint_3_stories.md` — everything else is recoverable via `/read-only` on demand; drops and adds never require a state-file rewrite.
+- Current step: S3.3 unit-testing phase (Phase 4B) complete; chain continuation pending
+- Last completed: S3.3 unit-testing phase (Phase 4B): 12 dedicated tests across three suites — Step 1: 5, Step 2: 3, Step 3: 4 — all passing; no new dependencies; commits 5e6b38a through 92a8d29.
+- Next action: confirm the full suite (`python3 -m pytest -q`, expected 200 passed) and the manual renderer preview of both documents, then re-enter `$workflows-post-scaffolding-chain` to continue the chain (no new dependencies, so dependency management is not triggered)
+- Reload to resume: `/read-only docs/sprints/sprint_3_stories.md`, `/read-only docs/implementation_status.md` — everything else is recoverable via `/read-only` on demand; drops and adds never require a state-file rewrite.
