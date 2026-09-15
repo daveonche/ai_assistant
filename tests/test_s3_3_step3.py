@@ -88,3 +88,47 @@ def test_both_documents_single_h1_ordered_atx_headings():
         if len(level_1) != 1:
             violations.append(f"{doc}: expected exactly one H1, found {len(level_1)}")
     _assert_clean(violations)
+
+
+def test_both_documents_list_rules_hold():
+    """Must Support 2: bullet marker `-` only, exactly one space after
+    the marker, ordered lists use `1.` style, task-list lines have one
+    space after the checkbox."""
+    violations: list[str] = []
+    for doc, lines in _load().items():
+        fenced = _inside_fence(lines)
+        for lineno, line in enumerate(lines, start=1):
+            if lineno in fenced:
+                continue
+            stripped = line.strip()
+            if not stripped:
+                continue
+            where = f"{doc}:{lineno}"
+            if stripped.startswith(("* ", "+ ")):
+                violations.append(
+                    f"{where}: bullet marker {stripped[0]!r}; use '-' only"
+                )
+            if stripped[0].isdigit() and ")" in stripped.split(" ", 1)[0]:
+                violations.append(
+                    f"{where}: ordered list uses ')'; use '1.' style"
+                )
+            if (
+                stripped.startswith("-")
+                and not stripped.startswith("- ")
+                and set(stripped.replace(" ", "")) != {"-"}
+            ):
+                violations.append(
+                    f"{where}: needs exactly one space after '-' "
+                    "('-item' is not a list item)"
+                )
+            if stripped.startswith(("- [ ]", "- [x]")):
+                rest = stripped[5:]
+                if rest and not rest.startswith(" "):
+                    violations.append(
+                        f"{where}: missing space after task-list checkbox"
+                    )
+                elif rest.startswith("  "):
+                    violations.append(
+                        f"{where}: multiple spaces after task-list checkbox"
+                    )
+    _assert_clean(violations)
