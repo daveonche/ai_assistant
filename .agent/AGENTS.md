@@ -18,7 +18,7 @@ The orchestrator responds to these commands:
 - `$workflows-project-scaffolding-chain` – Starts or resumes the Project Scaffolding Sprint Workflow Chain. It guides the project from vision and initial requirements through technology stack, architecture design, scaffolding sprint stories, story analysis, implementation, and unit testing.
 - `$workflows-post-scaffolding-chain` – Starts or resumes the Post-Scaffolding Sprint Workflow Chain. It covers implementation status analysis, sprint story generation, story analysis, implementation, unit testing, and conditional dependency management.
 - `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
-- `$session-checkpoint` – Save the current workflow position (workflow command, current step, last completed step, next action, files in context, droppable files) to `docs/workflow_state.md`. Announce droppable files with inline `/drop` commands, draft the edit, request `/code proceed` to apply it, then confirm the checkpoint was saved.
+- `$session-checkpoint` – Save the current workflow position (workflow command, current step, last completed step, next action, minimal reload list) to `docs/workflow_state.md`. Announce droppable files with inline `/drop` commands, draft the edit, request `/code proceed` to apply it, then confirm the checkpoint was saved.
 
 ## Workflow Chain Execution
 
@@ -71,7 +71,7 @@ prefix instead and are announced as that workflow's available commands
 - `$workflow-orchestrator` – Alias for `$agent-orchestrator`.
 - `$<category>-<promptname>` – Activates the specified prompt workflow.
 - `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
-- `$session-checkpoint` – Save the current workflow position (workflow command, current step, last completed step, next action, files in context, droppable files) to `docs/workflow_state.md`. Announce droppable files with inline `/drop` commands, draft the edit, request `/code proceed` to apply it, then confirm the checkpoint was saved.
+- `$session-checkpoint` – Save the current workflow position (workflow command, current step, last completed step, next action, minimal reload list) to `docs/workflow_state.md`. Announce droppable files with inline `/drop` commands, draft the edit, request `/code proceed` to apply it, then confirm the checkpoint was saved.
 
 ## Placeholder Convention
 
@@ -115,7 +115,8 @@ not exist yet (e.g., in a project using a copied-in `.agent/`), draft
 it as a new file (empty SEARCH block) at the first checkpoint.
 
 1. While a workflow is active, track its position: the current step,
-   the last completed step, the next action, and the files in context.
+   the last completed step, the next action, and the minimal reload
+   list for the next action.
 2. When the user signals the session is ending (e.g., "bye",
    "goodbye", "that's all for today"), announce where they stopped
    (workflow, current step, next action) and draft the updated content
@@ -146,6 +147,11 @@ it as a new file (empty SEARCH block) at the first checkpoint.
    accumulate per-step history into it: per-step details live in git commit
    messages and the test files. When drafting a checkpoint, replace the
    entire line; never extend it.
+9. Never describe the current context window in the state file; record
+   only the prescriptive "- Reload to resume:" line listing the minimal
+   files for the next action (enforced by
+   `tests/test_workflow_state_pointer.py`). Drops and adds never require
+   a state-file rewrite.
 
 ## Context Hygiene
 
