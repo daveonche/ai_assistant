@@ -1,5 +1,5 @@
 # Switch with /model genius
-- name: openrouter/x-ai/grok-4.6
+- name: openrouter/anthropic/claude-fable-5.1
   edit_format: diff
   extra_params:
     extra_body:
@@ -18,7 +18,8 @@
         effort: "max"
       provider:
         sort: "price"
-        allow_fallbacks: false
+        # only: ["Reka AI"]
+        allow_fallbacks: true
         data_collection: "deny"
 
 # Switch with /model architect
@@ -29,6 +30,8 @@
       provider:
         # Forces OpenRouter to strictly select the lowest-cost candidate endpoint
         sort: "price"
+        # Forces OpenRouter to exclusively use this provider
+        # only: ["DeepInfra"]
         # Disables high-cost safety fallback routes if the cheap host fails
         allow_fallbacks: true
         # Denies providers from logging your code data for training metrics
@@ -42,6 +45,7 @@
       provider:
         # Keeps editor operations anchored to the absolute cheapest endpoint
         sort: "price"
+        # only: ["OpenInference"]
         allow_fallbacks: true
         data_collection: "deny"
     temperature: 0.1
