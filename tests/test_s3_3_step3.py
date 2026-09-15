@@ -59,6 +59,45 @@ def _assert_clean(violations: list[str]) -> None:
     )
 
 
+def _leading_spaces(line: str) -> int:
+    return len(line) - len(line.lstrip(" "))
+
+
+def _cells(row: str) -> list[str]:
+    """Split a stripped table row into cells, honoring backslash escapes."""
+    inner = row[1:-1]
+    cells, current, escaped = [], "", False
+    for char in inner:
+        if escaped:
+            current += char
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        elif char == "|":
+            cells.append(current)
+            current = ""
+        else:
+            current += char
+    cells.append(current)
+    return cells
+
+
+def _table_blocks(lines: list[str], fenced: set[int]) -> list[list[str]]:
+    blocks: list[list[str]] = []
+    current: list[str] = []
+    for lineno, line in enumerate(lines, start=1):
+        if lineno in fenced:
+            continue
+        if line.strip().startswith("|"):
+            current.append(line)
+        elif current:
+            blocks.append(current)
+            current = []
+    if current:
+        blocks.append(current)
+    return blocks
+
+
 def test_both_documents_single_h1_ordered_atx_headings():
     """Must Support 1+2: exactly one H1 per document, levels descend
     without skipping, ATX style only, space after the opening hashes,
@@ -130,5 +169,75 @@ def test_both_documents_list_rules_hold():
                 elif rest.startswith("  "):
                     violations.append(
                         f"{where}: multiple spaces after task-list checkbox"
+                    )
+    _assert_clean(violations)
+
+
+def test_both_documents_blank_line_and_indentation_rules_hold():
+    """Must Support 2 (+1): blank lines around headings, lists, and
+    tables; no extra blank lines; no tabs; no 4+ leading spaces; GFM
+    table rules hold in both files."""
+    violations: list[str] = []
+    for doc, lines in _load().items():
+        fenced = _inside_fence(lines)
+        heading_linenos = {h[0] for h in _headings(lines)}
+        in_list = in_table = False
+        for lineno, line in enumerate(lines, start=1):
+            if lineno in fenced:
+                continue
+            stripped = line.strip()
+            blank = not stripped
+            prev = lines[lineno - 2].strip() if lineno > 1 else ""
+            nxt = lines[lineno].strip() if lineno < len(lines) else ""
+            where = f"{doc}:{lineno}"
+            if "\t" in line:
+                violations.append(f"{where}: tab character; use spaces")
+            if not blank and _leading_spaces(line) >= 4:
+                violations.append(
+                    f"{where}: 4+ leading spaces render as an indented "
+                    "code block; use a fenced block instead"
+                )
+            if blank and not prev:
+                violations.append(f"{where}: extra blank line")
+            if lineno in heading_linenos:
+                if prev:
+                    violations.append(f"{where}: missing blank line before heading")
+                if nxt:
+                    violations.append(f"{where}: missing blank line after heading")
+            is_item = (not blank) and stripped.startswith("- ")
+            is_table_row = (not blank) and stripped.startswith("|")
+            if is_item and not in_list and prev:
+                violations.append(f"{where}: missing blank line before list")
+            if not is_item and in_list and stripped:
+                violations.append(f"{where}: missing blank line after list")
+            if is_table_row and not in_table and prev:
+                violations.append(f"{where}: missing blank line before table")
+            if not is_table_row and in_table and stripped:
+                violations.append(f"{where}: missing blank line after table")
+            in_list, in_table = is_item, is_table_row
+        for block in _table_blocks(lines, fenced):
+            rows = [row.strip() for row in block]
+            for row in rows:
+                if not (row.startswith("|") and row.endswith("|")):
+                    violations.append(
+                        f"{doc}: table row missing leading/trailing pipe: {row[:40]!r}"
+                    )
+            if len(rows) < 2 or not all(
+                set(cell.strip()) <= {":", "-"} and "-" in cell
+                for cell in _cells(rows[1])
+            ):
+                violations.append(
+                    f"{doc}: table lacks a delimiter row: {rows[0][:40]!r}"
+                )
+                continue
+            header_cells = len(_cells(rows[0]))
+            if header_cells != len(_cells(rows[1])):
+                violations.append(
+                    f"{doc}: table header/delimiter cell count mismatch: {rows[0][:40]!r}"
+                )
+            for row in rows[2:]:
+                if len(_cells(row)) != header_cells:
+                    violations.append(
+                        f"{doc}: table row cell count differs from header: {row[:40]!r}"
                     )
     _assert_clean(violations)
