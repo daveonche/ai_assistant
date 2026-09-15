@@ -25,6 +25,12 @@ def _section(text: str, heading: str) -> str:
 S3_1_HEADING = "### Story S3.1: Release Reference Consistency Verification"
 S3_2_HEADING = "### Story S3.2: Release Tag Guard Verification"
 RELEASE_SCRIPT_HEADING = "### Release Script Work"
+NARRATIVE_HEADING = "## Priority Order for Next Implementation Phase"
+NARRATIVE_RELEASE_ITEMS = (
+    "release-reference consistency",
+    "release tag guard",
+    "release script",
+)
 
 
 def _subsection(text: str, heading: str) -> str:
@@ -37,6 +43,10 @@ def _subsection(text: str, heading: str) -> str:
 
 def _sprint3_section() -> str:
     return _section(_doc_text(), "## Sprint 3")
+
+
+def _closing_narrative() -> str:
+    return _section(_doc_text(), NARRATIVE_HEADING)
 
 
 def _checkbox_lines(story_text: str) -> list[str]:
@@ -94,3 +104,29 @@ def test_release_script_work_completed():
     assert boxes, "Release Script Work records no steps"
     unchecked = [line for line in boxes if "- [ ]" in line]
     assert not unchecked, f"Release Script Work has unchecked steps: {unchecked}"
+
+
+def test_closing_narrative_records_release_verification():
+    """Must Support 5: the closing status narrative reflects that the
+    release work is verified and recorded, and presents no release
+    work as pending."""
+    assert NARRATIVE_HEADING in _doc_text(), (
+        "closing status narrative section is missing"
+    )
+    narrative = _closing_narrative()
+    assert "verified and recorded" in narrative, (
+        "closing narrative does not state the release work is "
+        "verified and recorded"
+    )
+    missing = [item for item in NARRATIVE_RELEASE_ITEMS if item not in narrative]
+    assert not missing, (
+        f"closing narrative does not mention the release work item(s): {missing}"
+    )
+    unchecked = [
+        line
+        for line in _checkbox_lines(_sprint3_section())
+        if "- [ ]" in line
+    ]
+    assert not unchecked, (
+        f"Sprint 3 section still presents release work as pending: {unchecked}"
+    )
