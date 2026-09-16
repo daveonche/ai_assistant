@@ -24,6 +24,7 @@ from this design:
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import re
 import signal
@@ -270,6 +271,433 @@ def _root_config_counterparts(project_root: Path) -> dict[str, Path]:
         for name in MERGEABLE_CONFIG_FILES
         if (project_root / name).is_file()
     }
+
+
+# Directory (under agent_dir) holding merged configuration intermediates.
+# Intermediates are rewritten deterministically on each launch and removed
+# when the session ends (see _remove_merged_intermediates).
+MERGED_DIR_NAME = ".merged"
+
+# CLI flag for each value-based mergeable config file. .aiderignore is
+# handled separately: its union merge lands with the ignore-pattern step.
+VALUE_CONFIG_FLAGS = {
+    ".aider.conf.yml": "--config",
+    ".aider.model.settings.yml": "--model-settings-file",
+    ".aider.model.metadata.json": "--model-metadata-file",
+}
+
+
+def _deep_merge(base, override):
+    """Combine nested structures level by level; override wins conflicts.
+
+    dict+dict merges recursively; any other combination resolves to the
+    override value. Inputs are never mutated; a new structure is returned.
+    """
+    if isinstance(base, dict) and isinstance(override, dict):
+        merged = dict(base)
+        for key, value in override.items():
+            if key in merged:
+                merged[key] = _deep_merge(merged[key], value)
+            else:
+                merged[key] = value
+        return merged
+    return override
+
+
+def _merge_model_settings(base, override):
+    """Merge model-settings documents keyed by entry name.
+
+    Both documents are normally lists of model entries. Entries sharing a
+    name are merged (project root wins conflicts); agent-only entries are
+    retained in place; root-only entries are appended in their original
+    order. Non-list documents fall back to _deep_merge.
+    """
+    if not isinstance(base, list) or not isinstance(override, list):
+        return _deep_merge(base, override)
+    merged = list(base)
+    for entry in override:
+        if isinstance(entry, dict) and "name" in entry:
+            for index, existing in enumerate(merged):
+                if isinstance(existing, dict) and existing.get("name") == entry["name"]:
+                    merged[index] = _deep_merge(existing, entry)
+                    break
+            else:
+                merged.append(entry)
+        else:
+            merged.append(entry)
+    return merged
+
+
+def _merge_value_documents(name: str, agent_doc, root_doc):
+    """Dispatch the merge strategy for one value-based config file."""
+    if name == ".aider.model.settings.yml":
+        return _merge_model_settings(agent_doc, root_doc)
+    return _deep_merge(agent_doc, root_doc)
+
+
+def _merge_json_documents(agent_file: Path, root_file: Path):
+    """Load and deep-merge two JSON documents; the root document wins."""
+    with agent_file.open(encoding="utf-8") as handle:
+        agent_doc = json.load(handle)
+    with root_file.open(encoding="utf-8") as handle:
+        root_doc = json.load(handle)
+    return _deep_merge(agent_doc, root_doc)
+
+
+def _yaml_entries(text: str) -> list[list]:
+    """Return [indent, content] pairs for the meaningful lines of a document.
+
+    Raises ValueError for syntax outside the supported subset (document
+    markers, directives, tab indentation).
+    """
+    entries: list[list] = []
+    for raw in text.splitlines():
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped in ("---", "...") or stripped.startswith("%"):
+            raise ValueError("document markers are outside the supported subset")
+        leading = raw[: len(raw) - len(raw.lstrip())]
+        if "\t" in leading:
+            raise ValueError("tab indentation is outside the supported subset")
+        entries.append([len(leading), stripped])
+    return entries
+
+
+def _yaml_split_key(content: str) -> tuple[str, str]:
+    """Split a 'key: value' line into (key, rest); rest may be empty."""
+    if content[:1] in ('"', "'"):
+        quote = content[0]
+        end = content.find(quote, 1)
+        if end == -1:
+            raise ValueError("unterminated quoted key")
+        rest = content[end + 1 :]
+        if not rest.startswith(":"):
+            raise ValueError("expected ':' after a quoted key")
+        return content[1:end], rest[1:].strip()
+    for index, char in enumerate(content):
+        if char == ":" and (index + 1 == len(content) or content[index + 1] == " "):
+            return content[:index].strip(), content[index + 1 :].strip()
+    raise ValueError("line is not a mapping entry")
+
+
+def _strip_inline_comment(text: str) -> str:
+    """Drop an unquoted trailing '# ...' comment from a scalar."""
+    if text[:1] in ('"', "'"):
+        return text
+    for index, char in enumerate(text):
+        if char == "#" and (index == 0 or text[index - 1] == " "):
+            return text[:index].rstrip()
+    return text
+
+
+def _yaml_scalar(text: str):
+    """Convert a scalar token to a Python value.
+
+    Raises ValueError for syntax outside the supported subset (flow style,
+    anchors, aliases, tags, block scalars) so callers can fall back to
+    single-file pass-through.
+    """
+    stripped = text.strip()
+    if not stripped:
+        return None
+    if stripped[:1] in ("{", "[", "&", "*", "!", "|", ">"):
+        raise ValueError("syntax outside the supported YAML subset")
+    if stripped[:1] in ('"', "'"):
+        quote = stripped[0]
+        end = stripped.find(quote, 1)
+        if end == -1:
+            raise ValueError("unterminated quoted scalar")
+        return stripped[1:end]
+    lowered = stripped.lower()
+    if lowered in ("null", "~"):
+        return None
+    if lowered in ("true", "yes", "on"):
+        return True
+    if lowered in ("false", "no", "off"):
+        return False
+    try:
+        return int(stripped, 10)
+    except ValueError:
+        pass
+    try:
+        return float(stripped)
+    except ValueError:
+        pass
+    return stripped
+
+
+def _yaml_parse(entries: list[list], pos: int, indent: int):
+    """Parse one block (mapping or sequence) at the given indent.
+
+    Returns (value, next_pos). Raises ValueError on unexpected indentation
+    or syntax outside the supported subset.
+    """
+    if pos >= len(entries) or entries[pos][0] != indent:
+        raise ValueError("unexpected indentation")
+    if entries[pos][1] == "-" or entries[pos][1].startswith("- "):
+        items = []
+        while (
+            pos < len(entries)
+            and entries[pos][0] == indent
+            and (entries[pos][1] == "-" or entries[pos][1].startswith("- "))
+        ):
+            raw_payload = entries[pos][1][1:].lstrip()
+            pos += 1
+            if not raw_payload:
+                if pos < len(entries) and entries[pos][0] > indent:
+                    value, pos = _yaml_parse(entries, pos, entries[pos][0])
+                    items.append(value)
+                else:
+                    items.append(None)
+                continue
+            payload = _strip_inline_comment(raw_payload)
+            try:
+                _yaml_split_key(payload)
+            except ValueError:
+                items.append(_yaml_scalar(payload))
+                continue
+            # Sequence of mappings: re-anchor the payload as the first line
+            # of a mapping whose indent is the payload's own column.
+            item_indent = indent + (len(entries[pos - 1][1]) - len(raw_payload))
+            entries[pos - 1] = [item_indent, payload]
+            value, pos = _yaml_parse(entries, pos - 1, item_indent)
+            items.append(value)
+        return items, pos
+
+    mapping: dict = {}
+    while pos < len(entries) and entries[pos][0] == indent:
+        content = entries[pos][1]
+        if content == "-" or content.startswith("- "):
+            break
+        key, rest = _yaml_split_key(content)
+        pos += 1
+        rest = _strip_inline_comment(rest)
+        if rest:
+            mapping[key] = _yaml_scalar(rest)
+        elif pos < len(entries) and entries[pos][0] > indent:
+            mapping[key], pos = _yaml_parse(entries, pos, entries[pos][0])
+        else:
+            mapping[key] = None
+    return mapping, pos
+
+
+def _yaml_load(text: str):
+    """Parse a minimal YAML subset into Python structures.
+
+    Supports block mappings, block sequences (including sequences of
+    mappings), nested indentation, comments, and plain or quoted scalars.
+    Raises ValueError for syntax outside the subset (flow style, anchors,
+    aliases, tags, block scalars, document markers, tab indentation) so
+    callers can fall back to single-file pass-through.
+    """
+    entries = _yaml_entries(text)
+    if not entries:
+        return {}
+    value, pos = _yaml_parse(entries, 0, entries[0][0])
+    if pos != len(entries):
+        raise ValueError("trailing content outside the supported subset")
+    return value
+
+
+def _yaml_scalar_text(value) -> str:
+    """Render a scalar deterministically, quoting whenever required."""
+    if value is None:
+        return "null"
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if isinstance(value, (int, float)):
+        return str(value)
+    text = str(value)
+    quoted = not text or text != text.strip()
+    if not quoted:
+        quoted = text.lower() in (
+            "null",
+            "~",
+            "true",
+            "false",
+            "yes",
+            "no",
+            "on",
+            "off",
+        )
+    if not quoted:
+        try:
+            int(text, 10)
+            quoted = True
+        except ValueError:
+            pass
+    if not quoted:
+        try:
+            float(text)
+            quoted = True
+        except ValueError:
+            pass
+    if not quoted:
+        quoted = text.startswith(("- ", ": ", "? ")) or any(
+            char in text for char in ":#{}[]&*!|>%@`\"',"
+        )
+    if quoted:
+        return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    return text
+
+
+def _yaml_dump_lines(value, indent: int) -> list[str]:
+    """Render a parsed document as deterministic YAML lines."""
+    pad = " " * indent
+    lines: list[str] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            key_text = _yaml_scalar_text(str(key))
+            if isinstance(item, (dict, list)) and item:
+                lines.append(f"{pad}{key_text}:")
+                lines.extend(_yaml_dump_lines(item, indent + 2))
+            elif isinstance(item, dict):
+                lines.append(f"{pad}{key_text}: {{}}")
+            elif isinstance(item, list):
+                lines.append(f"{pad}{key_text}: []")
+            else:
+                lines.append(f"{pad}{key_text}: {_yaml_scalar_text(item)}")
+        return lines
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, (dict, list)) and item:
+                item_lines = _yaml_dump_lines(item, indent + 2)
+                lines.append(f"{pad}- {item_lines[0].lstrip()}")
+                lines.extend(item_lines[1:])
+            elif isinstance(item, dict):
+                lines.append(f"{pad}- {{}}")
+            elif isinstance(item, list):
+                lines.append(f"{pad}- []")
+            else:
+                lines.append(f"{pad}- {_yaml_scalar_text(item)}")
+        return lines
+    return [f"{pad}{_yaml_scalar_text(value)}"]
+
+
+def _yaml_dump(value) -> str:
+    """Serialize a parsed document deterministically across runs."""
+    return "\n".join(_yaml_dump_lines(value, 0)) + "\n"
+
+
+def _write_merged_value_file(
+    agent_dir: Path,
+    name: str,
+    agent_file: Path,
+    root_file: Path,
+    debug: bool,
+) -> Optional[Path]:
+    """Combine an agent default with its project-root counterpart.
+
+    Writes the combined document to a deterministic intermediate path under
+    agent_dir/.merged and returns it. Returns None when either side cannot
+    be parsed or the intermediate cannot be written; the caller then falls
+    back to single-file pass-through so a launch is never broken.
+    """
+    try:
+        if name == ".aider.model.metadata.json":
+            merged_doc = _merge_json_documents(agent_file, root_file)
+            serialized = json.dumps(merged_doc, indent=2) + "\n"
+        else:
+            agent_doc = _yaml_load(agent_file.read_text(encoding="utf-8"))
+            root_doc = _yaml_load(root_file.read_text(encoding="utf-8"))
+            merged_doc = _merge_value_documents(name, agent_doc, root_doc)
+            serialized = _yaml_dump(merged_doc)
+    except (OSError, ValueError):
+        if debug:
+            print(
+                f"Warning: could not merge {name}; using the assistant default.",
+                file=sys.stderr,
+            )
+        return None
+
+    merged_path = agent_dir / MERGED_DIR_NAME / name
+    try:
+        merged_path.parent.mkdir(parents=True, exist_ok=True)
+        existing = (
+            merged_path.read_text(encoding="utf-8") if merged_path.exists() else None
+        )
+        if existing != serialized:
+            merged_path.write_text(serialized, encoding="utf-8")
+    except (OSError, ValueError):
+        if debug:
+            print(
+                f"Warning: could not write the merged {name}; using the "
+                "assistant default.",
+                file=sys.stderr,
+            )
+        return None
+    return merged_path
+
+
+def _merged_config_args(
+    agent_dir: Path,
+    root_counterparts: dict[str, Path],
+    debug: bool,
+) -> list[str]:
+    """Return Aider config flags with project-root merging applied.
+
+    For each value-based config file:
+    - both copies present -> the flag points at the merged intermediate
+    - only the agent copy -> unchanged pass-through to the agent copy
+    - only the root counterpart -> the flag points at the root file directly,
+      which is already a complete, deliberately placed configuration
+    - unmergeable pair -> fall back to the agent copy (reported in debug)
+
+    With no counterparts at all this is exactly _aider_config_args.
+    .aiderignore keeps its single-file pass-through here; its union merge
+    lands with the ignore-pattern step.
+    """
+    if not root_counterparts:
+        return _aider_config_args(agent_dir)
+
+    args: list[str] = []
+
+    aiderignore_file = agent_dir / ".aiderignore"
+    if aiderignore_file.exists():
+        args.extend(["--aiderignore", str(aiderignore_file)])
+
+    for name, flag in VALUE_CONFIG_FLAGS.items():
+        agent_file = agent_dir / name
+        root_file = root_counterparts.get(name)
+        agent_exists = agent_file.exists()
+        if agent_exists and root_file is not None:
+            merged_path = _write_merged_value_file(
+                agent_dir, name, agent_file, root_file, debug
+            )
+            if merged_path is not None:
+                args.extend([flag, str(merged_path)])
+            else:
+                args.extend([flag, str(agent_file)])
+        elif agent_exists:
+            args.extend([flag, str(agent_file)])
+        elif root_file is not None:
+            args.extend([flag, str(root_file)])
+    return args
+
+
+def _remove_merged_intermediates(agent_dir: Path) -> None:
+    """Remove the merged-config intermediate directory after a session.
+
+    Intermediates are read by the assistant at startup only, so removing
+    them at session end is safe; the next launch rewrites them
+    deterministically from the same inputs.
+    """
+    merged_dir = agent_dir / MERGED_DIR_NAME
+    try:
+        if not merged_dir.is_dir():
+            return
+        for child in merged_dir.iterdir():
+            try:
+                if child.is_file():
+                    child.unlink()
+            except OSError:
+                pass
+        merged_dir.rmdir()
+    except OSError:
+        pass
 
 
 def _aider_config_args(agent_dir: Path) -> list[str]:
@@ -876,9 +1304,9 @@ def run_container(
     command.append(AIDER_IMAGE)
     command.extend(["--chat-mode", "ask"])
 
-    # Detect project-root counterparts before assembling config flags so the
-    # merge steps (S4.1 Steps 2-3) can act on them here. The flags below are
-    # unchanged until merging lands: counterparts are reported but not used.
+    # Detect project-root counterparts, then assemble config flags with
+    # project-root merging applied (value files merge here; the ignore
+    # pattern union lands with the next step).
     root_counterparts = _root_config_counterparts(Path(cwd))
     if root_counterparts and debug:
         print(
@@ -887,7 +1315,7 @@ def run_container(
             file=sys.stderr,
         )
 
-    command.extend(_aider_config_args(agent_dir))
+    command.extend(_merged_config_args(agent_dir, root_counterparts, debug))
 
     # Keep aider metadata inside .agent rather than the project root. These
     # paths resolve inside the container because agent_dir sits under the
@@ -1043,6 +1471,7 @@ def main() -> int:
     )
 
     _cleanup_empty_artifacts(project_root, AGENT_DIR)
+    _remove_merged_intermediates(AGENT_DIR)
 
     return result
 
