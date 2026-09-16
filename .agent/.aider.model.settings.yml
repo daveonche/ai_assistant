@@ -1,5 +1,5 @@
 # Switch with /model genius
-- name: openrouter/anthropic/claude-fable-5.1
+- name: openrouter/qwen/qwen3.8-max-0902
   edit_format: diff
   extra_params:
     extra_body:
