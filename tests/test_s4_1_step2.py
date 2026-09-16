@@ -266,7 +266,8 @@ def test_write_merged_metadata_creates_intermediate(assistant, workspace):
 
     assert merged_path == agent_dir / ".merged" / ".aider.model.metadata.json"
     assert json.loads(merged_path.read_text(encoding="utf-8")) == {
-        "gpt-4o": {"max_input_tokens": 128000, "max_output_tokens": 16384}
+        "gpt-4o": {"max_input_tokens": 128000, "max_output_tokens": 16384},
+        "root-only-model": {"notes": "added"},
     }
 
 
