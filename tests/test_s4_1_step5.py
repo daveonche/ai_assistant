@@ -128,8 +128,11 @@ def main() -> int:
                 except OSError:
                     entry["files"][token] = None
     log_path = Path(os.environ["STUB_LOG_PATH"])
+    # "\\n" here is a literal backslash-n in the stub source: the stub is
+    # embedded in a non-raw string, so a plain "\n" would become a real
+    # newline and break the generated script.
     with log_path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(entry) + "\n")
+        handle.write(json.dumps(entry) + "\\n")
     return 0
 
 
