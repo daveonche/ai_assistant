@@ -2,12 +2,12 @@
 
 ## Story S4.1: Mergeable Aider Configuration with Project Root
 
-As a developer, I want the launcher to make `.agent/`'s `.aider.conf.yml`, `.aider.model.settings.yml`, and `.aiderignore` mergeable with same-named files found in the project root, so that consumer projects can override or extend assistant defaults without editing the installed assistant files.
+As a developer, I want the launcher to make `.agent/`'s `.aider.conf.yml`, `.aider.model.settings.yml`, `.aiderignore`, and `.aider.model.metadata.json` mergeable with same-named files found in the project root, so that consumer projects can override or extend assistant defaults without editing the installed assistant files.
 
 Acceptance Criteria:
 
-- When a project-root counterpart of any of the three config files exists, the launcher combines the `.agent/` and project-root versions instead of passing only the `.agent/` copy
-- Project-root values take precedence over `.agent/` defaults for `.aider.conf.yml` and `.aider.model.settings.yml`; ignore patterns are combined (union) for `.aiderignore`
+- When a project-root counterpart of any of the four config files exists, the launcher combines the `.agent/` and project-root versions instead of passing only the `.agent/` copy
+- Project-root values take precedence over `.agent/` defaults for `.aider.conf.yml`, `.aider.model.settings.yml`, and `.aider.model.metadata.json`; ignore patterns are combined (union) for `.aiderignore`
 - When no project-root counterpart exists, launcher behavior is unchanged from the current single-file pass-through
 - Merging is deterministic and the merge behavior is documented (README or prerequisite docs)
 - Verification suites cover: merge case, no-counterpart case, and precedence rules
@@ -17,7 +17,7 @@ Dependencies: None
 Developer Notes:
 
 - Maps to environment/launcher requirements REQ-1, REQ-2
-- Current behavior: `_aider_config_args()` in `.agent/ai_assistant.py` passes `--config`, `--model-settings-file`, and `--aiderignore` pointing solely at the `.agent/` copies
+- Current behavior: `_aider_config_args()` in `.agent/ai_assistant.py` passes `--config`, `--model-settings-file`, `--aiderignore`, and `--model-metadata-file` pointing solely at the `.agent/` copies
 - The launcher is stdlib-only Python (host pin 3.12.12) — implement YAML-aware merging within that constraint
 - Shell/Python changes must pass the existing static checks and verification suites
 
