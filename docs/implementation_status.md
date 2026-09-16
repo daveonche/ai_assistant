@@ -115,4 +115,11 @@ requirement in `docs/requirements/core_requirements.md` has source evidence in
 tag guard, and the release script all pass their verification suites. The
 backlog is empty; no further implementation stories are pending.
 
+One optional, non-blocking documentation nit was recorded during the Sprint 3
+analysis: the `--auto` increment example in the `README.md`
+"Cutting a release" section reads `v1.0.4` -> `v1.0.4`, while the usage text
+in `scripts/release.sh` correctly shows the patch segment changing
+(`v1.0.2` -> `v1.0.3`). This does not affect the pin consistency enforced by
+REQ-15.
+
 Next workflow step: `#generate-sprint-stories`
