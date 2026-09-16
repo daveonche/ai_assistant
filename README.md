@@ -139,7 +139,6 @@ your project root. For example, a root `.aider.conf.yml` containing
 `.agent/.aider.conf.yml` default still applies:
 
 ```yaml
-# .aider.conf.yml in your project root
 auto_commits: true
 ```
 
