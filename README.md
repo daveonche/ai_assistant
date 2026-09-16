@@ -120,6 +120,39 @@ ai-assistant
 > an isolated application install, you can also use
 > `pipx install -e .agent`.
 
+#### Mergeable configuration with your project root
+
+At launch — whether via `./agent.sh` or the `ai-assistant` command — the
+launcher checks your project root for same-named counterparts of its four
+configuration files and combines them with the `.agent/` defaults:
+
+| File | Format | Combination rule |
+| :--- | :--- | :--- |
+| `.aider.conf.yml` | YAML | Deep-merged: your root value wins each conflict, agent defaults are kept for keys you do not set |
+| `.aider.model.settings.yml` | YAML | Entries merged per model `name`: your entry overrides the matching default, untouched defaults are kept |
+| `.aider.model.metadata.json` | JSON | Deep-merged: your root value wins each conflict, agent defaults are kept |
+| `.aiderignore` | gitignore patterns | Union of both files' patterns, duplicates counted once |
+
+To override or extend the defaults, create a file with the same name in
+your project root. For example, a root `.aider.conf.yml` containing
+`auto_commits: true` flips that one setting while every other
+`.agent/.aider.conf.yml` default still applies:
+
+```yaml
+# .aider.conf.yml in your project root
+auto_commits: true
+```
+
+If your project root has no counterpart for a file, the `.agent/` copy is
+used unchanged — nothing changes until you add one. If a counterpart
+cannot be parsed (for example unsupported YAML syntax), the launcher falls
+back to the `.agent/` copy instead of failing the launch, and reports it
+in `--debug` output.
+
+The combined files are written under `.agent/.merged/` — never to either
+source file — rewritten deterministically on every launch, and removed
+when the session ends.
+
 #### One-command install
 
 The quickest way to set the assistant up in another project is the
