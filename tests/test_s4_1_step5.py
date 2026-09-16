@@ -127,9 +127,10 @@ def main() -> int:
                 except OSError:
                     entry["files"][token] = None
     log_path = Path(os.environ["STUB_LOG_PATH"])
-    # "\\n" here is a literal backslash-n in the stub source: the stub is
-    # embedded in a non-raw string, so a plain "\n" would become a real
-    # newline and break the generated script.
+    # The doubled backslash below keeps a literal newline escape in the
+    # generated stub. STUB_DOCKER is not a raw string, so the test file's
+    # parser processes every escape first; an escape sequence written in a
+    # comment here would corrupt the generated script.
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry) + "\\n")
     return 0
@@ -177,7 +178,12 @@ def _make_sandbox(tmp_path: Path) -> tuple[Path, Path]:
     # (tests may run /venv/bin/python3 by absolute path), which made
     # `docker version` exit non-zero and the launcher report the Docker
     # CLI as unavailable.
-    _write(stub, f"#!{sys.executable}\n" + STUB_DOCKER)
+    stub_text = f"#!{sys.executable}\n" + STUB_DOCKER
+    # Fail fast in the harness (with the stub's own error) if the embedded
+    # stub source is ever syntactically invalid, instead of failing later
+    # with the launcher's "Docker CLI is not available" message.
+    compile(stub_text, "stub docker", "exec")
+    _write(stub, stub_text)
     stub.chmod(0o755)
     return sandbox, stub_dir
 
