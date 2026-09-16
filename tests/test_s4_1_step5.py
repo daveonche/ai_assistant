@@ -97,7 +97,6 @@ ROOT_METADATA = """\
 """
 
 STUB_DOCKER = """\
-#!/usr/bin/env python3
 # Stub docker CLI: records every invocation as a JSON line and, for
 # `docker run`, snapshots the content of each config file the launcher
 # pointed the assistant at. Always exits 0 so the launcher takes the
@@ -173,7 +172,12 @@ def _make_sandbox(tmp_path: Path) -> tuple[Path, Path]:
 
     stub_dir = tmp_path / "bin"
     stub = stub_dir / "docker"
-    _write(stub, STUB_DOCKER)
+    # Pin the stub's interpreter to the exact Python running the tests:
+    # `#!/usr/bin/env python3` fails when PATH does not expose `python3`
+    # (tests may run /venv/bin/python3 by absolute path), which made
+    # `docker version` exit non-zero and the launcher report the Docker
+    # CLI as unavailable.
+    _write(stub, f"#!{sys.executable}\n" + STUB_DOCKER)
     stub.chmod(0o755)
     return sandbox, stub_dir
 
