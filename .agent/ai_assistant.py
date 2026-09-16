@@ -279,7 +279,7 @@ def _root_config_counterparts(project_root: Path) -> dict[str, Path]:
 MERGED_DIR_NAME = ".merged"
 
 # CLI flag for each value-based mergeable config file. .aiderignore is
-# handled separately: its union merge lands with the ignore-pattern step.
+# handled separately: its patterns are union-merged (see _merge_aiderignore).
 VALUE_CONFIG_FLAGS = {
     ".aider.conf.yml": "--config",
     ".aider.model.settings.yml": "--model-settings-file",
@@ -632,6 +632,67 @@ def _write_merged_value_file(
     return merged_path
 
 
+def _merge_aiderignore(agent_file: Path, root_file: Path) -> list[str]:
+    """Return the union of ignore patterns from both files.
+
+    Blank lines and comment lines are excluded. Agent patterns keep their
+    original order first, then root-only patterns in their original order,
+    so the result is deterministic for identical inputs; duplicates are
+    counted once. Trailing whitespace is dropped (not significant in
+    gitignore syntax); everything else is preserved as-is, including
+    negation patterns.
+
+    Raises OSError when either file cannot be read, so the caller can fall
+    back to single-file pass-through instead of losing one side's patterns.
+    """
+    patterns: list[str] = []
+    seen: set[str] = set()
+    for file in (agent_file, root_file):
+        for line in file.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            pattern = line.rstrip()
+            if pattern not in seen:
+                seen.add(pattern)
+                patterns.append(pattern)
+    return patterns
+
+
+def _write_merged_ignore_file(
+    agent_dir: Path,
+    agent_file: Path,
+    root_file: Path,
+    debug: bool,
+) -> Optional[Path]:
+    """Combine both ignore files into one deterministic intermediate.
+
+    Writes the union of patterns to agent_dir/.merged/.aiderignore and
+    returns it. Returns None when either file cannot be read or the
+    intermediate cannot be written; the caller then falls back to the
+    agent copy so a launch is never broken.
+    """
+    try:
+        patterns = _merge_aiderignore(agent_file, root_file)
+        serialized = "\n".join(patterns) + "\n"
+        merged_path = agent_dir / MERGED_DIR_NAME / ".aiderignore"
+        merged_path.parent.mkdir(parents=True, exist_ok=True)
+        existing = (
+            merged_path.read_text(encoding="utf-8") if merged_path.exists() else None
+        )
+        if existing != serialized:
+            merged_path.write_text(serialized, encoding="utf-8")
+    except OSError:
+        if debug:
+            print(
+                "Warning: could not merge .aiderignore; using the assistant "
+                "default.",
+                file=sys.stderr,
+            )
+        return None
+    return merged_path
+
+
 def _merged_config_args(
     agent_dir: Path,
     root_counterparts: dict[str, Path],
@@ -646,9 +707,11 @@ def _merged_config_args(
       which is already a complete, deliberately placed configuration
     - unmergeable pair -> fall back to the agent copy (reported in debug)
 
+    .aiderignore follows the same rules with a union merge: both copies
+    present -> the flag points at an intermediate holding the union of
+    patterns from both files (see _merge_aiderignore).
+
     With no counterparts at all this is exactly _aider_config_args.
-    .aiderignore keeps its single-file pass-through here; its union merge
-    lands with the ignore-pattern step.
     """
     if not root_counterparts:
         return _aider_config_args(agent_dir)
@@ -656,8 +719,19 @@ def _merged_config_args(
     args: list[str] = []
 
     aiderignore_file = agent_dir / ".aiderignore"
-    if aiderignore_file.exists():
+    root_ignore_file = root_counterparts.get(".aiderignore")
+    if aiderignore_file.exists() and root_ignore_file is not None:
+        merged_ignore = _write_merged_ignore_file(
+            agent_dir, aiderignore_file, root_ignore_file, debug
+        )
+        if merged_ignore is not None:
+            args.extend(["--aiderignore", str(merged_ignore)])
+        else:
+            args.extend(["--aiderignore", str(aiderignore_file)])
+    elif aiderignore_file.exists():
         args.extend(["--aiderignore", str(aiderignore_file)])
+    elif root_ignore_file is not None:
+        args.extend(["--aiderignore", str(root_ignore_file)])
 
     for name, flag in VALUE_CONFIG_FLAGS.items():
         agent_file = agent_dir / name
@@ -1305,8 +1379,8 @@ def run_container(
     command.extend(["--chat-mode", "ask"])
 
     # Detect project-root counterparts, then assemble config flags with
-    # project-root merging applied (value files merge here; the ignore
-    # pattern union lands with the next step).
+    # project-root merging applied (value files deep-merge; ignore patterns
+    # union-merge).
     root_counterparts = _root_config_counterparts(Path(cwd))
     if root_counterparts and debug:
         print(

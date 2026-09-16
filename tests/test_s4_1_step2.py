@@ -305,8 +305,8 @@ def test_merged_config_args_both_present_points_at_intermediate(assistant, works
     for name, flag in assistant.VALUE_CONFIG_FLAGS.items():
         index = args.index(flag)
         assert args[index + 1] == str(agent_dir / ".merged" / name)
-    # The .aiderignore union merge lands with the next step; with both
-    # copies present the agent copy is still passed through.
+    # No project-root .aiderignore was written, so the agent copy is
+    # passed through unchanged.
     ignore_index = args.index("--aiderignore")
     assert args[ignore_index + 1] == str(agent_dir / ".aiderignore")
 
