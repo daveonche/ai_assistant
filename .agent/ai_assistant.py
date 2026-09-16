@@ -245,6 +245,33 @@ def _get_docker_gid() -> Optional[int]:
         return None
 
 
+# Configuration files the launcher supports merging with project-root
+# counterparts (see _root_config_counterparts and _aider_config_args).
+MERGEABLE_CONFIG_FILES = (
+    ".aider.conf.yml",
+    ".aider.model.settings.yml",
+    ".aiderignore",
+    ".aider.model.metadata.json",
+)
+
+
+def _root_config_counterparts(project_root: Path) -> dict[str, Path]:
+    """Detect project-root counterparts of the mergeable config files.
+
+    Checks the project root for same-named counterparts of each file in
+    MERGEABLE_CONFIG_FILES. Detection is per file, so any mix of present
+    and absent counterparts is handled correctly; only regular files count.
+
+    Returns a mapping of file name to project-root path for every detected
+    counterpart; empty when only the assistant-default copies exist.
+    """
+    return {
+        name: project_root / name
+        for name in MERGEABLE_CONFIG_FILES
+        if (project_root / name).is_file()
+    }
+
+
 def _aider_config_args(agent_dir: Path) -> list[str]:
     """Return Aider CLI flags for config files stored in agent_dir."""
     args: list[str] = []
@@ -848,6 +875,18 @@ def run_container(
 
     command.append(AIDER_IMAGE)
     command.extend(["--chat-mode", "ask"])
+
+    # Detect project-root counterparts before assembling config flags so the
+    # merge steps (S4.1 Steps 2-3) can act on them here. The flags below are
+    # unchanged until merging lands: counterparts are reported but not used.
+    root_counterparts = _root_config_counterparts(Path(cwd))
+    if root_counterparts and debug:
+        print(
+            "Project-root config counterparts detected: "
+            + ", ".join(sorted(root_counterparts)),
+            file=sys.stderr,
+        )
+
     command.extend(_aider_config_args(agent_dir))
 
     # Keep aider metadata inside .agent rather than the project root. These
