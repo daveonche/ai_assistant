@@ -105,21 +105,40 @@
 
 - [x] Enable the release script and its verification suites
 
+## Sprint 4
+
+### Story S4.1: Mergeable Aider Configuration with Project Root
+
+- [x] Step 1. Enable project-root counterpart discovery for the four mergeable config files (`.agent/ai_assistant.py` `_root_config_counterparts()`; verified by `tests/test_s4_1_step1.py`)
+- [x] Step 2. Enable value-based config merging with project-root precedence (`.agent/ai_assistant.py` `_deep_merge()`, `_merge_model_settings()`, `_write_merged_value_file()`; verified by `tests/test_s4_1_step2.py`)
+- [x] Step 3. Enable ignore-pattern union merging (`.agent/ai_assistant.py` `_merge_aiderignore()`, `_write_merged_ignore_file()`; verified by `tests/test_s4_1_step3.py`)
+- [x] Step 4. Enable documented merge behavior in the readme (`README.md` "Mergeable configuration with your project root")
+- [x] Step 5. Enable end-to-end launch verification of the merge behavior (verified by `tests/test_s4_1_step5.py`)
+
+### Story S4.2: Framework Detection and Conventions Recommendation
+
+- [x] Step 1. Enable framework detection instructions in the orchestration config (`.agent/AGENTS.md` "Project Framework Detection")
+- [x] Step 2. Enable framework-based conventions recommendation and routing rules (`.agent/AGENTS.md` framework conventions rules; verified by `tests/test_s4_2_step2.py`)
+- [x] Step 3. Enable unit-test verification of the detection and recommendation behavior (verified by `tests/test_s4_2_step3.py`)
+
 ## Priority Order for Next Implementation Phase
 
-No unimplemented requirements remain: every functional and non-functional
-requirement in `docs/requirements/core_requirements.md` has source evidence in
-`.agent/ai_assistant.py`, `scripts/install.sh`, `.agent/pyproject.toml`,
-`docs/tech_stack.md`, and `README.md`. The Sprint 3 release-management work
-(REQ-15) is verified and recorded: release-reference consistency, the release
-tag guard, and the release script all pass their verification suites. The
-backlog is empty; no further implementation stories are pending.
+All Sprint 4 stories with code, configuration, or orchestration impact
+(S4.1 mergeable root configuration, S4.2 framework detection and conventions
+recommendation) are implemented and unit-tested; their source evidence is
+recorded in the Sprint 4 section above. The remaining Sprint 4 work is
+documentation-only.
 
-One optional, non-blocking documentation nit was recorded during the Sprint 3
-analysis: the `--auto` increment example in the `README.md`
-"Cutting a release" section reads `v1.0.4` -> `v1.0.4`, while the usage text
-in `scripts/release.sh` correctly shows the patch segment changing
-(`v1.0.2` -> `v1.0.3`). This does not affect the pin consistency enforced by
-REQ-15.
+Priority 1 - Sprint 4 feature closure:
+- S4.3: correct the `--auto` increment example in the `README.md`
+  "Cutting a release" section so it shows the patch segment changing
+  (e.g., `v1.0.3` -> `v1.0.4`), consistent with the usage text in
+  `scripts/release.sh` (`v1.0.2` -> `v1.0.3`); documentation-only, resolves
+  the nit recorded during the Sprint 3 analysis, and unblocks S4.4
+
+Priority 2 - Record keeping:
+- S4.4: record the Sprint 4 work in `docs/implementation_status.md` and
+  update its Priority Order section to the new backlog state (depends on
+  S4.1-S4.3 completion)
 
 Next workflow step: `#generate-sprint-stories`
