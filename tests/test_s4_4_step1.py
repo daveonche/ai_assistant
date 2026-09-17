@@ -69,3 +69,13 @@ def test_s43_entry_style_matches_s41_s42_entries():
         assert step_lines
         for line in step_lines:
             assert step_pattern.match(line)
+
+
+def test_s43_entry_references_existing_verification_files():
+    """The S4.3 entry references verification files that exist."""
+    sprint4 = _sprint4_text()
+    entry = sprint4[sprint4.index("### Story S4.3:") :]
+    references = re.findall(r"`(tests/test_[^`]+\.py)`", entry)
+    assert references
+    for reference in references:
+        assert (REPO_ROOT / reference).is_file()
