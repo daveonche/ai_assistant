@@ -1,10 +1,9 @@
 """Step 2 tests for Story S4.4.
 
 Verifies that the Priority Order section of docs/implementation_status.md
-reflects the new backlog state: no completed Sprint 4 feature story remains
-listed as pending work, the remaining-work summary names only the S4.4
-record-keeping story as outstanding, and the status narrative matches the
-recorded completions.
+reflects the current backlog state: no story remains listed as pending work,
+and the status narrative records every Sprint 4 story (including the S4.4
+record-keeping story) as implemented with an empty backlog.
 """
 
 import re
@@ -54,15 +53,14 @@ def test_feature_closure_priority_block_absent():
     assert not block_lines
 
 
-def test_only_s44_pending_bullet_remains():
-    """The remaining-work summary names only the S4.4 record-keeping story."""
+def test_no_pending_story_bullets_remain():
+    """No story bullet remains listed as pending work in the Priority Order."""
     priority = _priority_text()
     bullet_pattern = re.compile(r"^- S\d\.\d:")
     pending_bullets = [
         line for line in priority.splitlines() if bullet_pattern.match(line)
     ]
-    assert len(pending_bullets) == 1
-    assert pending_bullets[0].startswith("- S4.4:")
+    assert not pending_bullets
 
 
 def test_narrative_names_feature_stories_implemented():
@@ -73,8 +71,9 @@ def test_narrative_names_feature_stories_implemented():
         assert story_id in narrative
 
 
-def test_narrative_names_s44_as_only_outstanding_work():
-    """The narrative identifies S4.4 as the only outstanding Sprint 4 work."""
+def test_narrative_records_empty_backlog():
+    """The narrative records S4.4 as implemented and the backlog as empty."""
     narrative = " ".join(_narrative_text().split())
-    assert "only outstanding Sprint 4 work" in narrative
-    assert "S4.4 record-keeping story" in narrative
+    assert "implemented and verified" in narrative
+    assert "S4.4" in narrative
+    assert "backlog is empty" in narrative
