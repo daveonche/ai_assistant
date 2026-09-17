@@ -54,9 +54,9 @@ IMPLEMENTATION PHASE (code mode):
 - [ ] Step 5: Implement and validate
 
 [STEP 1] First, check for these essential items in the available project context:
-1. The story steps report (S<X.Y>-story-steps.md)
-2. The sprint story
-3. Approved dependencies or dependency context from the Dependency Management workflow
+1. The story steps report (`docs/analysis/S<X.Y>-story-steps.md`)
+2. The sprint story (`docs/sprints/sprint_[number]_stories.md`)
+3. Approved dependencies or dependency context from the Dependency Management workflow (`docs/dependencies/S<X.Y>-dependencies.md` when a report was generated)
 
 Context availability rule: a file counts as available when its contents appear anywhere in the conversation — including files provided before the workflow started (e.g., the initial read-only reference set) — not only via a recent "/read-only" confirmation. Scan the full transcript before listing items as missing; request a `/read-only` only when the contents are absent from the transcript or there is reason to believe the on-disk copy changed since it was added.
 

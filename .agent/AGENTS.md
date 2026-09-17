@@ -241,3 +241,4 @@ do not ask them to paste output manually.
 3. Always wait for explicit user input at [STOP] points.
 4. If user input at a [STOP] point is invalid or unexpected, re-prompt with the original question.
 5. A file counts as in context when its contents appear anywhere in the conversation — including the initial read-only reference set — not only via a recent `/read-only` confirmation. Scan the full transcript before asking the user to run `/read-only`; request it only when the contents are absent from the transcript or the on-disk copy may have changed since it was added.
+6. Never construct a file path that is not stated verbatim in a SKILL.md, a routing table, or the transcript. When a required file's location is unknown, ask the user for its actual path instead of inferring it from sibling directories or similar file names.
