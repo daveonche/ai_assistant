@@ -52,7 +52,7 @@
     max_tokens: 4096
 
 # Switch with /model helper
-- name: openrouter/openai/gpt-oss-120b
+- name: openrouter/deepseek/deepseek-v4-flash-0731
   edit_format: diff
   extra_params:
     extra_body:
