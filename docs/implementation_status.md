@@ -133,16 +133,10 @@ The remaining Sprint 4 work is documentation-only.
 
 Priority 1 - Sprint 4 feature closure:
 
-- S4.3: correct the `--auto` increment example in the `README.md`
-  "Cutting a release" section so it shows the patch segment changing
-  (e.g., `v1.0.3` -> `v1.0.4`), consistent with the usage text in
-  `scripts/release.sh` (`v1.0.2` -> `v1.0.3`); documentation-only, resolves
-  the nit recorded during the Sprint 3 analysis, and unblocks S4.4
+- S4.3: correct the `--auto` increment example in the `README.md` "Cutting a release" section so it shows the patch segment changing (e.g., `v1.0.3` -> `v1.0.4`), consistent with the usage text in `scripts/release.sh` (`v1.0.2` -> `v1.0.3`); documentation-only, resolves the nit recorded during the Sprint 3 analysis, and unblocks S4.4
 
 Priority 2 - Record keeping:
 
-- S4.4: record the Sprint 4 work in `docs/implementation_status.md` and
-  update its Priority Order section to the new backlog state (depends on
-  S4.1-S4.3 completion)
+- S4.4: record the Sprint 4 work in `docs/implementation_status.md` and update its Priority Order section to the new backlog state (depends on S4.1-S4.3 completion)
 
 Next workflow step: `#generate-sprint-stories`
