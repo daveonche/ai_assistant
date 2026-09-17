@@ -30,3 +30,15 @@ def test_files_declare_delta_only_scope():
         )
         assert "API references" in text, f"{path} missing exclusion of API references"
         assert "tutorials" in text, f"{path} missing exclusion of tutorials"
+
+
+def test_files_reference_version_specific_layout():
+    expected_refs = {
+        CONVENTIONS_DIR / "ELGG.md": "references/ELGG/v7",
+        CONVENTIONS_DIR / "RAILS.md": "references/RAILS/v7",
+    }
+    for path, ref in expected_refs.items():
+        text = _file_text(path)
+        assert ref in text, (
+            f"{path} does not cite a concrete version-specific example ({ref})"
+        )
