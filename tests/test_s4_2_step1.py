@@ -150,7 +150,9 @@ def test_files_follow_markdown_conventions():
     .agent/.aider.conventions/references/github-flavored-markdown.md):
     single ordered ATX headings, '-' list markers, blank lines around
     headings/lists/tables, no tabs or 4+ leading spaces, GFM table
-    rules, single final newline, no trailing whitespace."""
+    rules, single final newline, no trailing whitespace. Indented
+    continuation lines inside a list item count as list content (GFM
+    lazy continuation), not as the end of the list."""
     violations: list[str] = []
     for doc in SEEDED_FILES:
         text = _file_text(doc)
@@ -204,7 +206,10 @@ def test_files_follow_markdown_conventions():
                     violations.append(f"{where}: missing blank line before heading")
                 if nxt:
                     violations.append(f"{where}: missing blank line after heading")
-            is_item = (not blank) and stripped.startswith("- ")
+            is_item = (not blank) and (
+                stripped.startswith("- ")
+                or (in_list and _leading_spaces(line) > 0)
+            )
             is_table_row = (not blank) and stripped.startswith("|")
             if is_item and not in_list and prev:
                 violations.append(f"{where}: missing blank line before list")
