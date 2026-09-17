@@ -110,6 +110,7 @@ task touches. Before creating or editing any file, check this mapping:
 | `SKILL.md` prompt files | `.agent/.aider.conventions/references/agent-skills.md` |
 | `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/.aider.conventions/references/docker-best-practices.md` |
 | `compose.yml`, `compose.yaml`, `docker-compose*.yml`, `docker-compose*.yaml`, or any Compose file | `.agent/.aider.conventions/references/compose-file-spec.md` |
+| A framework identified by Project Framework Detection | The matching framework-named file in `.agent/.aider.conventions/` (e.g., `ELGG.md`, `RAILS.md`) |
 
 Routing rules:
 
@@ -124,6 +125,20 @@ Routing rules:
 5. When a `SKILL.md` is added to context, verify it contains the
    Convention Check Reminder line; if missing, add it to that file
    before proceeding with the workflow.
+
+Framework conventions:
+
+- Framework files are discovered by scanning the framework-named files in
+  `.agent/.aider.conventions/` (e.g., `ELGG.md`, `RAILS.md`); adding a new
+  framework requires only adding its conventions file, never a table edit.
+- When the detected framework matches a framework-named file, output the
+  matching `/read-only` command inline (per Critical Rules) and wait for the
+  user to add it. When that file points at version-specific conventions under
+  `.agent/.aider.conventions/references/<FRAMEWORK>/<version>/`, the detected
+  version is identifiable, and a matching directory exists, recommend loading
+  that reference too.
+- When no framework-named file matches the detected framework, make no
+  recommendation and continue with the existing conventions.
 
 ## Session State Persistence
 
