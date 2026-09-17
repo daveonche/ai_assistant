@@ -34,3 +34,12 @@ def test_no_s43_pending_bullet_in_priority_order():
         line for line in priority.splitlines() if line.startswith("- S4.3:")
     ]
     assert not pending_bullets
+
+
+def test_feature_closure_priority_block_absent():
+    """The removed Sprint 4 feature-closure priority block does not reappear."""
+    priority = _priority_text()
+    block_lines = [
+        line for line in priority.splitlines() if "Sprint 4 feature closure" in line
+    ]
+    assert not block_lines
