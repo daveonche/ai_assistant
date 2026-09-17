@@ -71,3 +71,10 @@ def test_narrative_names_feature_stories_implemented():
     assert "implemented and verified" in narrative
     for story_id in ("S4.1", "S4.2", "S4.3"):
         assert story_id in narrative
+
+
+def test_narrative_names_s44_as_only_outstanding_work():
+    """The narrative identifies S4.4 as the only outstanding Sprint 4 work."""
+    narrative = " ".join(_narrative_text().split())
+    assert "only outstanding Sprint 4 work" in narrative
+    assert "S4.4 record-keeping story" in narrative
