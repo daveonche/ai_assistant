@@ -28,6 +28,16 @@ def _routing_rules() -> str:
     return "\n".join(lines[start:end])
 
 
+def _routing_table() -> str:
+    """Return the routing table block of the 'Conventions Reference
+    Routing' section of .agent/AGENTS.md, up to the 'Routing rules:'
+    line."""
+    lines = AGENTS_MD.read_text(encoding="utf-8").splitlines()
+    start = lines.index("## Conventions Reference Routing") + 1
+    end = lines.index("Routing rules:")
+    return "\n".join(lines[start:end])
+
+
 def _normalized(text: str) -> str:
     """Whitespace-collapsed, lowercased text for phrase assertions."""
     return " ".join(text.replace("`", "").split()).lower()
@@ -84,3 +94,17 @@ def test_recommendation_follows_routing_conventions():
     # The framework bullet mirrors the routing rule's directive phrasing.
     assert mirrored in rules
     assert mirrored in bullets
+
+
+def test_routing_table_has_framework_name_matching_rule():
+    """Must Support: the routing table in the orchestration
+    documentation gains the framework-based routing rule as a generic
+    name-matching rule alongside the existing file-type rules."""
+    table = _normalized(_routing_table())
+    assert "a framework identified by project framework detection" in table
+    assert "the matching framework-named file in .agent/.aider.conventions/" in table
+    assert "elgg.md" in table
+    assert "rails.md" in table
+    # Placed in the same table as the existing file-type rules.
+    assert ".github/workflows/*.yml" in table
+    assert "ci-cd-best-practices.md" in table
