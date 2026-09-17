@@ -34,3 +34,14 @@ def test_detection_guidance_covers_source_directory_indicators():
     assert "framework-specific config files" in section
     assert "entry points" in section
     assert "module layout" in section
+
+
+def test_detection_guidance_covers_root_manifests_and_configs():
+    """Must Support: guidance instructs the assistant to inspect root
+    manifests and configuration files as additional framework
+    indicators."""
+    section = _normalized(_detection_section())
+    assert "root manifests and configuration files" in section
+    assert "composer.json" in section
+    assert "package.json" in section
+    assert "go.mod" in section
