@@ -47,3 +47,17 @@ def test_matching_framework_recommends_inline_read_only():
     assert "output the matching /read-only command inline" in section
     assert "per critical rules" in section
     assert "wait for the user to add it" in section
+
+
+def test_version_specific_reference_recommended_when_identifiable():
+    """Must Support: when the matched framework conventions file
+    references version-specific conventions under the conventions
+    reference directory and the project's framework version is
+    identifiable, the assistant also recommends loading the matching
+    version-specific reference."""
+    section = _normalized(_framework_conventions_bullets())
+    assert "points at version-specific conventions under" in section
+    assert ".agent/.aider.conventions/references/<framework>/<version>/" in section
+    assert "the detected version is identifiable" in section
+    assert "a matching directory exists" in section
+    assert "recommend loading that reference too" in section
