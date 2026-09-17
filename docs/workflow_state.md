@@ -4,9 +4,9 @@ Last updated: 2026-09-17
 
 ## Active Workflow
 
-- Command: `$workflows-post-scaffolding-chain` — chain active; Phase 1 (Implementation Status Analysis) complete
+- Command: `$workflows-post-scaffolding-chain` — chain active; Phase 4A + 4B complete for S4.3
 - SKILL.md: `.agent/.aider.prompt/workflows/post-scaffolding-chain/SKILL.md`
-- Current step: Phase 1 complete — analysis approved, report saved to docs/implementation_status.md, post-save validation passed; next phase is Sprint Story Generation
-- Last completed: Phase 1 #analyze-impl complete: analysis approved and saved to docs/implementation_status.md (Sprint 4 section added, Priority Order updated; commits bf4abb6, 9dd4ad0, fb9643d); post-save validation passed, 273 tests green.
-- Next action: run `#generate-sprint-stories` to start Phase 2 (Sprint Story Generation) from the updated implementation status report
-- Reload to resume: `/read-only .agent/.aider.prompt/workflows/post-scaffolding-chain/SKILL.md`, `/read-only .agent/AGENTS.md` — everything else is recoverable via `/read-only` on demand; drops and adds never require a state-file rewrite.
+- Current step: S4.3 fully implemented and unit-tested; next phase is Phase 3 Story Analysis for S4.4 (Sprint 4 record keeping)
+- Last completed: S4.3 complete: all 3 steps implemented and unit-tested (README --auto example fixed, commit bb9cd14; dedicated tests in tests/test_s4_3_step1.py and tests/test_s4_3_step3.py, commits 25c47b9, 8242fcf, b700939, 49139f0); suite green.
+- Next action: run `$planning-story-analysis S4.4` to analyze the Sprint 4 record-keeping story
+- Reload to resume: `/read-only .agent/.aider.prompt/workflows/post-scaffolding-chain/SKILL.md`, `/read-only .agent/AGENTS.md`, `/read-only docs/sprints/sprint_4_stories.md`, `/read-only docs/implementation_status.md` — everything else is recoverable via `/read-only` on demand; drops and adds never require a state-file rewrite.
