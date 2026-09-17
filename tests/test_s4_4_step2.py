@@ -28,6 +28,14 @@ def _priority_text() -> str:
     return text[start:]
 
 
+def _narrative_text() -> str:
+    """Return the narrative paragraph of the Priority Order section."""
+    priority = _priority_text()
+    start = priority.index(PRIORITY_HEADING) + len(PRIORITY_HEADING)
+    end = priority.index("Priority 1 -", start)
+    return priority[start:end]
+
+
 def test_no_s43_pending_bullet_in_priority_order():
     """The Priority Order section no longer lists S4.3 as pending work."""
     priority = _priority_text()
@@ -55,3 +63,11 @@ def test_only_s44_pending_bullet_remains():
     ]
     assert len(pending_bullets) == 1
     assert pending_bullets[0].startswith("- S4.4:")
+
+
+def test_narrative_names_feature_stories_implemented():
+    """The narrative names S4.1, S4.2, and S4.3 as implemented and verified."""
+    narrative = _narrative_text()
+    assert "implemented and verified" in narrative
+    for story_id in ("S4.1", "S4.2", "S4.3"):
+        assert story_id in narrative
