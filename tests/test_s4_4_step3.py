@@ -56,3 +56,9 @@ def test_list_markers_are_consistent():
         assert not line.startswith("+ ")
         if line.startswith("- ["):
             assert task_pattern.match(line)
+
+
+def test_no_trailing_whitespace():
+    """No line in the document ends with trailing whitespace."""
+    for line in _doc_lines():
+        assert line == line.rstrip(" \t")
