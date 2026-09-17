@@ -121,6 +121,12 @@
 - [x] Step 2. Enable framework-based conventions recommendation and routing rules (`.agent/AGENTS.md` framework conventions rules; verified by `tests/test_s4_2_step2.py`)
 - [x] Step 3. Enable unit-test verification of the detection and recommendation behavior (verified by `tests/test_s4_2_step3.py`)
 
+### Story S4.3: README `--auto` Release Example Fix
+
+- [x] Step 1. Enable a corrected automatic-increment example in the release documentation (`README.md` "Cutting a release" `--auto` example; verified by `tests/test_s4_3_step1.py`)
+- [x] Step 2. Enable confirmation that the documentation edit preserves release-reference consistency (full verification suite green, including `tests/test_release_ref_consistency.py`)
+- [x] Step 3. Enable documentation-conventions conformance for the edited section (verified by `tests/test_s4_3_step3.py`)
+
 ## Priority Order for Next Implementation Phase
 
 The Sprint 3 release-management work (REQ-15) is verified and recorded:
