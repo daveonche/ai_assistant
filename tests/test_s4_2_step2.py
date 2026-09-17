@@ -45,3 +45,14 @@ def test_detection_guidance_covers_root_manifests_and_configs():
     assert "composer.json" in section
     assert "package.json" in section
     assert "go.mod" in section
+
+
+def test_detection_guidance_captures_version_alongside_name():
+    """Must Support: when the project indicators reveal the framework
+    version, detection captures it alongside the framework name."""
+    section = _normalized(_detection_section())
+    assert "when the indicators reveal the framework version" in section
+    assert "capture it alongside the framework name" in section
+    assert "manifest constraints" in section
+    assert "lock files" in section
+    assert "version pins" in section
