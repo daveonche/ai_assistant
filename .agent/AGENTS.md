@@ -77,6 +77,25 @@ prefix instead and are announced as that workflow's available commands
 
 Bracketed items inside quoted output templates (e.g., `[promptname]`, `[category]`, `[filename]`) are placeholders, not literal output. Before outputting any templated text, replace every placeholder with the actual value from the current context (e.g., the real prompt name, category, or file path). Never output placeholder text literally. Structural markers such as `[STEP n]` and `[STOP - ...]` are not placeholders; output them as written.
 
+## Project Framework Detection
+
+Before offering coding guidance in a project session, identify the project's
+framework by inspecting read-only indicators:
+
+- Root manifests and configuration files (e.g., `composer.json`, `Gemfile`,
+  `package.json`, `pyproject.toml`, `pubspec.yaml`, `go.mod`)
+- Framework indicators under the source directory (e.g., `src/` and other
+  conventional source directories: framework-specific config files, entry
+  points, module layout)
+
+When the indicators reveal the framework version (manifest constraints, lock
+files, version pins), capture it alongside the framework name.
+
+Conclude detection before offering coding guidance: announce the identified
+framework and version, or state that no framework was identified when no
+indicators are found. Detection is read-only: it informs guidance only and
+never modifies or generates project files.
+
 ## Conventions Reference Routing
 
 The files in `.agent/.aider.conventions/references/` are NOT loaded at
