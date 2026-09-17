@@ -25,7 +25,7 @@ Read `.agent/.aider.prompt/testing/unit-test/references/gotchas.md` before start
 
 ### [STEP 1] Context Check
 Check for these essential items:
-1. Story steps report (`S<X.Y>-story-steps.md`)
+1. Story steps report (`docs/analysis/S<X.Y>-story-steps.md`)
 2. Implementation files for step
 3. Existing test files
 
