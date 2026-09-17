@@ -21,7 +21,7 @@ def _framework_conventions_bullets() -> str:
 
 def _normalized(text: str) -> str:
     """Whitespace-collapsed, lowercased text for phrase assertions."""
-    return " ".join(text.split()).lower()
+    return " ".join(text.replace("`", "").split()).lower()
 
 
 def test_framework_conventions_discovered_by_scanning():
@@ -35,3 +35,15 @@ def test_framework_conventions_discovered_by_scanning():
     assert ".agent/.aider.conventions/" in section
     assert "adding a new framework requires only adding its conventions file" in section
     assert "never a table edit" in section
+
+
+def test_matching_framework_recommends_inline_read_only():
+    """Must Support: when the detected framework matches an available
+    conventions file, the assistant recommends loading that file via the
+    /read-only command, outputting the command inline rather than
+    executing it itself."""
+    section = _normalized(_framework_conventions_bullets())
+    assert "when the detected framework matches a framework-named file" in section
+    assert "output the matching /read-only command inline" in section
+    assert "per critical rules" in section
+    assert "wait for the user to add it" in section
