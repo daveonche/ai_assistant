@@ -62,3 +62,10 @@ def test_no_trailing_whitespace():
     """No line in the document ends with trailing whitespace."""
     for line in _doc_lines():
         assert line == line.rstrip(" \t")
+
+
+def test_single_final_newline():
+    """The document ends with exactly one newline."""
+    text = _doc_text()
+    assert text.endswith("\n")
+    assert not text.endswith("\n\n")
