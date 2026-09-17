@@ -14,8 +14,13 @@ _AUTO_EXAMPLE_PATTERN = re.compile(
     r"\s*->\s*`v(\d+)\.(\d+)\.(\d+)`\s*\)"
 )
 
+# The usage text's --auto description is the only place a version pair is
+# immediately followed by "; mutually exclusive", which disambiguates it
+# from the identical pair inside the resolve_new_ref comment (which ends
+# with a period).
 _RELEASE_USAGE_PATTERN = re.compile(
-    r"--auto\b[^\n]*?v(\d+)\.(\d+)\.(\d+)\s*->\s*v(\d+)\.(\d+)\.(\d+)"
+    r"\(\s*v(\d+)\.(\d+)\.(\d+)\s*->\s*v(\d+)\.(\d+)\.(\d+)\s*\);"
+    r"\s*mutually exclusive"
 )
 
 
