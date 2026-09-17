@@ -67,7 +67,7 @@ def test_only_s44_pending_bullet_remains():
 
 def test_narrative_names_feature_stories_implemented():
     """The narrative names S4.1, S4.2, and S4.3 as implemented and verified."""
-    narrative = _narrative_text()
+    narrative = " ".join(_narrative_text().split())
     assert "implemented and verified" in narrative
     for story_id in ("S4.1", "S4.2", "S4.3"):
         assert story_id in narrative
