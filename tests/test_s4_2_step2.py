@@ -56,3 +56,12 @@ def test_detection_guidance_captures_version_alongside_name():
     assert "manifest constraints" in section
     assert "lock files" in section
     assert "version pins" in section
+
+
+def test_detection_guidance_concludes_before_coding_guidance():
+    """Must Support: detection concludes with an identified framework
+    before coding guidance is offered."""
+    section = _normalized(_detection_section())
+    assert "conclude detection before offering coding guidance" in section
+    assert "identify the project's framework" in section
+    assert "by inspecting read-only indicators" in section
