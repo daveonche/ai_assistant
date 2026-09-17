@@ -46,3 +46,13 @@ def test_heading_levels_do_not_skip():
     assert levels[0] == 1
     for previous, current in zip(levels, levels[1:]):
         assert current <= previous + 1
+
+
+def test_list_markers_are_consistent():
+    """List items use the "-" bullet marker with conformant task-list syntax."""
+    task_pattern = re.compile(r"^- \[[ x]\] ")
+    for line in _doc_lines():
+        assert not line.startswith("* ")
+        assert not line.startswith("+ ")
+        if line.startswith("- ["):
+            assert task_pattern.match(line)
