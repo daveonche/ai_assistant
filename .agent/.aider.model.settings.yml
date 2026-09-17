@@ -54,12 +54,10 @@
     max_tokens: 4096
 
 # Switch with /model helper
-- name: openrouter/deepseek/deepseek-v4-flash-0731
+- name: openrouter/inclusionai/ling-3.0-flash
   edit_format: diff
   extra_params:
     extra_body:
-      reasoning:
-        effort: "low"
       provider:
         sort: "price"
         allow_fallbacks: true
