@@ -108,3 +108,13 @@ def test_routing_table_has_framework_name_matching_rule():
     # Placed in the same table as the existing file-type rules.
     assert ".github/workflows/*.yml" in table
     assert "ci-cd-best-practices.md" in table
+
+
+def test_no_matching_framework_makes_no_recommendation():
+    """Must Support: when the detected framework has no matching
+    conventions file, the assistant makes no recommendation and
+    continues with existing default conventions."""
+    section = _normalized(_framework_conventions_bullets())
+    assert "when no framework-named file matches the detected framework" in section
+    assert "make no recommendation" in section
+    assert "continue with the existing conventions" in section
