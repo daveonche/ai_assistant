@@ -5,6 +5,7 @@ Story S4.3 with each implementation step listed as completed, and that the
 entry detail style is consistent with the existing S4.1 and S4.2 entries.
 """
 
+import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -49,3 +50,22 @@ def test_s43_entry_lists_all_steps_completed():
     ]
     assert len(checked_steps) == 3
     assert "- [ ]" not in entry
+
+
+def test_s43_entry_style_matches_s41_s42_entries():
+    """The S4.3 entry style matches the S4.1 and S4.2 entries."""
+    sprint4 = _sprint4_text()
+    entries = [
+        _story_entry_text(sprint4, "### Story S4.1:", "### Story S4.2:"),
+        _story_entry_text(sprint4, "### Story S4.2:", "### Story S4.3:"),
+        sprint4[sprint4.index("### Story S4.3:") :],
+    ]
+    heading_pattern = re.compile(r"^### Story S4\.\d: .+$")
+    step_pattern = re.compile(r"^- \[x\] Step \d+\. Enable .+$")
+    for entry in entries:
+        lines = entry.splitlines()
+        assert heading_pattern.match(lines[0])
+        step_lines = [line for line in lines if line.startswith("- [x]")]
+        assert step_lines
+        for line in step_lines:
+            assert step_pattern.match(line)
