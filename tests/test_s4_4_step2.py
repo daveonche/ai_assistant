@@ -7,6 +7,7 @@ record-keeping story as outstanding, and the status narrative matches the
 recorded completions.
 """
 
+import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -43,3 +44,14 @@ def test_feature_closure_priority_block_absent():
         line for line in priority.splitlines() if "Sprint 4 feature closure" in line
     ]
     assert not block_lines
+
+
+def test_only_s44_pending_bullet_remains():
+    """The remaining-work summary names only the S4.4 record-keeping story."""
+    priority = _priority_text()
+    bullet_pattern = re.compile(r"^- S\d\.\d:")
+    pending_bullets = [
+        line for line in priority.splitlines() if bullet_pattern.match(line)
+    ]
+    assert len(pending_bullets) == 1
+    assert pending_bullets[0].startswith("- S4.4:")
