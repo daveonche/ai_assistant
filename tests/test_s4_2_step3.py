@@ -19,6 +19,15 @@ def _framework_conventions_bullets() -> str:
     return "\n".join(body)
 
 
+def _routing_rules() -> str:
+    """Return the 'Routing rules:' numbered-list block of
+    .agent/AGENTS.md, up to the 'Framework conventions:' heading."""
+    lines = AGENTS_MD.read_text(encoding="utf-8").splitlines()
+    start = lines.index("Routing rules:") + 1
+    end = lines.index(FRAMEWORK_CONVENTIONS_HEADING)
+    return "\n".join(lines[start:end])
+
+
 def _normalized(text: str) -> str:
     """Whitespace-collapsed, lowercased text for phrase assertions."""
     return " ".join(text.replace("`", "").split()).lower()
@@ -61,3 +70,17 @@ def test_version_specific_reference_recommended_when_identifiable():
     assert "the detected version is identifiable" in section
     assert "a matching directory exists" in section
     assert "recommend loading that reference too" in section
+
+
+def test_recommendation_follows_routing_conventions():
+    """Must Support: the recommendation follows the routing conventions
+    established in the orchestration documentation."""
+    rules = _normalized(_routing_rules())
+    bullets = _normalized(_framework_conventions_bullets())
+    mirrored = (
+        "output the matching /read-only command inline "
+        "(per critical rules) and wait for the user to add it"
+    )
+    # The framework bullet mirrors the routing rule's directive phrasing.
+    assert mirrored in rules
+    assert mirrored in bullets
