@@ -42,3 +42,20 @@ def test_files_reference_version_specific_layout():
         assert ref in text, (
             f"{path} does not cite a concrete version-specific example ({ref})"
         )
+
+
+def test_files_valid_without_version_dirs():
+    for path in SEEDED_FILES:
+        text = _file_text(path)
+        assert "when a directory matching" in text.lower(), (
+            f"{path} missing load-when-directory-exists branch"
+        )
+        assert "when it does not" in text.lower(), (
+            f"{path} missing continue-without branch"
+        )
+        assert "continue without them" in text, (
+            f"{path} does not state to continue without version-specific files"
+        )
+        assert "valid on its own" in text, (
+            f"{path} does not declare standalone validity"
+        )

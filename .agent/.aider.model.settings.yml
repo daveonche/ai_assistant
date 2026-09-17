@@ -42,8 +42,10 @@
   edit_format: diff
   extra_params:
     extra_body:
+      reasoning:
+        # Cuts down the thinking delay
+        effort: "low"
       provider:
-        # Keeps editor operations anchored to the absolute cheapest endpoint
         sort: "price"
         # only: ["OpenInference"]
         allow_fallbacks: true
@@ -56,6 +58,8 @@
   edit_format: diff
   extra_params:
     extra_body:
+      reasoning:
+        effort: "low"
       provider:
         sort: "price"
         allow_fallbacks: true
