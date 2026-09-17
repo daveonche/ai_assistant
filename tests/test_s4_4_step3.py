@@ -5,6 +5,7 @@ markdown conventions: a single top-level heading, ordered heading levels,
 consistent list markers, no trailing whitespace, and a single final newline.
 """
 
+import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -21,7 +22,27 @@ def _doc_lines() -> list[str]:
     return _doc_text().splitlines()
 
 
+def _headings() -> list[int]:
+    """Return the heading levels (1-6) of the document in order."""
+    heading_pattern = re.compile(r"^(#+) ")
+    levels = []
+    for line in _doc_lines():
+        match = heading_pattern.match(line)
+        if match:
+            levels.append(len(match.group(1)))
+    return levels
+
+
 def test_document_has_exactly_one_h1():
     """The document contains exactly one top-level heading."""
     h1_lines = [line for line in _doc_lines() if line.startswith("# ")]
     assert len(h1_lines) == 1
+
+
+def test_heading_levels_do_not_skip():
+    """Heading levels descend in order without skipping."""
+    levels = _headings()
+    assert levels
+    assert levels[0] == 1
+    for previous, current in zip(levels, levels[1:]):
+        assert current <= previous + 1
