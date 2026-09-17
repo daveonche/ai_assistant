@@ -131,17 +131,13 @@
 
 The Sprint 3 release-management work (REQ-15) is verified and recorded:
 release-reference consistency, the release tag guard, and the release script
-all pass their verification suites. All Sprint 4 stories with code,
-configuration, or orchestration impact (S4.1 mergeable root configuration,
-S4.2 framework detection and conventions recommendation) are implemented and
-unit-tested; their source evidence is recorded in the Sprint 4 section above.
-The remaining Sprint 4 work is documentation-only.
+all pass their verification suites. All Sprint 4 feature stories (S4.1
+mergeable root configuration, S4.2 framework detection and conventions
+recommendation, S4.3 README `--auto` release example fix) are implemented and
+verified; their source evidence is recorded in the Sprint 4 section above.
+The only outstanding Sprint 4 work is the S4.4 record-keeping story.
 
-Priority 1 - Sprint 4 feature closure:
-
-- S4.3: correct the `--auto` increment example in the `README.md` "Cutting a release" section so it shows the patch segment changing (e.g., `v1.0.3` -> `v1.0.4`), consistent with the usage text in `scripts/release.sh` (`v1.0.2` -> `v1.0.3`); documentation-only, resolves the nit recorded during the Sprint 3 analysis, and unblocks S4.4
-
-Priority 2 - Record keeping:
+Priority 1 - Record keeping:
 
 - S4.4: record the Sprint 4 work in `docs/implementation_status.md` and update its Priority Order section to the new backlog state (depends on S4.1-S4.3 completion)
 
