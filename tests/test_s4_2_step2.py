@@ -65,3 +65,12 @@ def test_detection_guidance_concludes_before_coding_guidance():
     assert "conclude detection before offering coding guidance" in section
     assert "identify the project's framework" in section
     assert "by inspecting read-only indicators" in section
+
+
+def test_detection_guidance_states_no_framework_identified_outcome():
+    """Must Support: when no indicators are found, detection concludes
+    that no framework is identified."""
+    section = _normalized(_detection_section())
+    assert "state that no framework was identified" in section
+    assert "when no indicators are found" in section
+    assert "announce the identified framework and version" in section
