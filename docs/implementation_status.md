@@ -131,14 +131,15 @@
 
 The Sprint 3 release-management work (REQ-15) is verified and recorded:
 release-reference consistency, the release tag guard, and the release script
-all pass their verification suites. All Sprint 4 feature stories (S4.1
-mergeable root configuration, S4.2 framework detection and conventions
-recommendation, S4.3 README `--auto` release example fix) are implemented and
-verified; their source evidence is recorded in the Sprint 4 section above.
-The only outstanding Sprint 4 work is the S4.4 record-keeping story.
+all pass their verification suites. All Sprint 4 stories (S4.1 mergeable root
+configuration, S4.2 framework detection and conventions recommendation, S4.3
+README `--auto` release example fix, and the S4.4 record-keeping story) are
+implemented and verified; their source evidence is recorded in the Sprint 4
+section above. Every requirement (REQ-1 through REQ-15) is implemented with
+source evidence, and the backlog is empty.
 
-Priority 1 - Record keeping:
+Priority 1 - New capability intake:
 
-- S4.4: record the Sprint 4 work in `docs/implementation_status.md` and update its Priority Order section to the new backlog state (depends on S4.1-S4.3 completion)
+- No outstanding requirements remain; the next sprint requires user-introduced features or requirements (the same pattern that produced Sprint 4's S4.1-S4.3)
 
 Next workflow step: `#generate-sprint-stories`
