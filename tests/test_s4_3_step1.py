@@ -14,6 +14,10 @@ _AUTO_EXAMPLE_PATTERN = re.compile(
     r"\s*->\s*`v(\d+)\.(\d+)\.(\d+)`\s*\)"
 )
 
+_RELEASE_USAGE_PATTERN = re.compile(
+    r"--auto\b[^\n]*?v(\d+)\.(\d+)\.(\d+)\s*->\s*v(\d+)\.(\d+)\.(\d+)"
+)
+
 
 def _read(path: str) -> str:
     return (_REPO_ROOT / path).read_text(encoding="utf-8")
@@ -48,3 +52,33 @@ def test_auto_increment_example_shows_patch_segment_changing():
     assert after_patch == before_patch + 1, (
         "the --auto example must show the patch segment incrementing by one"
     )
+
+
+def _release_script_usage_pair() -> tuple[str, str]:
+    """Extract the (before, after) versions from the release script usage text."""
+    text = _read("scripts/release.sh")
+    match = _RELEASE_USAGE_PATTERN.search(text)
+    assert match is not None, (
+        "scripts/release.sh usage text must show an --auto version pair"
+    )
+    before = "v{}.{}.{}".format(*match.groups()[:3])
+    after = "v{}.{}.{}".format(*match.groups()[3:])
+    return before, after
+
+
+def test_auto_increment_example_relationship_matches_release_script_usage():
+    readme_before, readme_after = _auto_example_pair()
+    script_before, script_after = _release_script_usage_pair()
+
+    for label, before, after in (
+        ("README --auto example", readme_before, readme_after),
+        ("release script usage example", script_before, script_after),
+    ):
+        before_major, before_minor, before_patch = _parse_patch(before)
+        after_major, after_minor, after_patch = _parse_patch(after)
+        assert (after_major, after_minor) == (before_major, before_minor), (
+            f"the {label} must change only the patch segment"
+        )
+        assert after_patch == before_patch + 1, (
+            f"the {label} must show the patch segment incrementing by one"
+        )
