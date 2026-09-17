@@ -299,7 +299,7 @@ in sync with `origin/main` — the script aborts otherwise:
 ```
 
 `--auto` increments the current `DEFAULT_REF`'s patch segment
-(`v1.0.4` -> `v1.0.4`). To choose the reference explicitly, pass it as
+(`v1.0.4` -> `v1.0.5`). To choose the reference explicitly, pass it as
 the only argument:
 
 ```bash
