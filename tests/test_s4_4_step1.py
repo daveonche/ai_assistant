@@ -38,3 +38,14 @@ def test_s43_entry_present_in_sprint4_section():
     """The Sprint 4 section contains a Story S4.3 entry."""
     sprint4 = _sprint4_text()
     assert "### Story S4.3:" in sprint4
+
+
+def test_s43_entry_lists_all_steps_completed():
+    """The S4.3 entry lists Steps 1-3 all as checked items."""
+    sprint4 = _sprint4_text()
+    entry = sprint4[sprint4.index("### Story S4.3:") :]
+    checked_steps = [
+        line for line in entry.splitlines() if line.startswith("- [x] Step ")
+    ]
+    assert len(checked_steps) == 3
+    assert "- [ ]" not in entry
