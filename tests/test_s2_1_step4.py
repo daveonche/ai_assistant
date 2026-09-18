@@ -176,7 +176,7 @@ def test_install_records_executable_and_immediately_runnable(
 
 @pytest.fixture
 def release_repo(tmp_path: Path) -> Path:
-    """Local release repository tagged v1.0.4 whose entry scripts were
+    """Local release repository tagged v1.0.5 whose entry scripts were
     committed as 100644 under core.fileMode=false, simulating a
     mode-insensitive source environment."""
     repo = tmp_path / "release"
@@ -193,8 +193,8 @@ def release_repo(tmp_path: Path) -> Path:
     for path in ENTRY_SCRIPTS:
         (repo / path).chmod(0o755)  # exec bit on disk, but ...
     _git(repo, "add", ".agent", "agent.sh")
-    _git(repo, "commit", "-m", "release v1.0.4")
-    _git(repo, "tag", "v1.0.4")
+    _git(repo, "commit", "-m", "release v1.0.5")
+    _git(repo, "tag", "v1.0.5")
     # ... the source records 100644, as on a mode-insensitive filesystem
     assert set(_index_modes(repo).values()) == {"100644"}
     return repo
