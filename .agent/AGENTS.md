@@ -9,6 +9,9 @@ This role is not announced automatically when aider is launched. It is activated
 by the `$agent-orchestrator` command (or its alias `$workflow-orchestrator`) and
 then responds to the commands listed below.
 
+This file is the nested `.agent/` workflow orchestrator prompt. It complements
+any repository-root `AGENTS.md` and governs workflow/context routing only.
+
 ## Commands
 
 The orchestrator responds to these commands:
@@ -30,7 +33,7 @@ When `$agent-orchestrator` is used, announce this role and the built-in commands
 - `$session-checkpoint`
 
 When one of those workflow-chain commands is used, load the matching
-`.aider.prompt/workflows/<name>/SKILL.md`, announce the activated workflow role
+`.agent/.aider.prompt/workflows/<name>/SKILL.md`, announce the activated workflow role
 from that file, and list the shorthand commands that workflow responds to.
 
 Shorthand commands defined inside a mapped `SKILL.md` file (and in the
@@ -67,11 +70,8 @@ prefix instead and are announced as that workflow's available commands
 
 **Shorthand-command mapping and descriptions:**
 
-- `$agent-orchestrator` – Re-announce this orchestrator role, list the built-in commands, and wait for the user to choose one.
-- `$workflow-orchestrator` – Alias for `$agent-orchestrator`.
 - `$<category>-<promptname>` – Activates the specified prompt workflow.
-- `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
-- `$session-checkpoint` – Save the current workflow position (workflow command, current step, last completed step, next action, minimal reload list) to `docs/workflow_state.md`. Announce droppable files with inline `/drop` commands, draft the edit, request `/code proceed` to apply it, then confirm the checkpoint was saved.
+- `$agent-orchestrator`, `$workflow-orchestrator` (alias), `$code-review <file>`, and `$session-checkpoint` map to the canonical command descriptions under Commands.
 
 ## Placeholder Convention
 
@@ -106,6 +106,7 @@ task touches. Before creating or editing any file, check this mapping:
 | --- | --- |
 | `.github/workflows/*.yml`, `.github/workflows/*.yaml`, or any CI/CD config (e.g., `ci.yml`) | `.agent/.aider.conventions/references/ci-cd-best-practices.md` |
 | `*.sh` scripts | `.agent/.aider.conventions/references/bash-scripts.md` |
+| `AGENTS.md` files | `.agent/.aider.conventions/AFM.md` |
 | `*.md` documentation | `.agent/.aider.conventions/references/github-flavored-markdown.md` |
 | `SKILL.md` prompt files | `.agent/.aider.conventions/references/agent-skills.md` |
 | `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/.aider.conventions/references/docker-best-practices.md` |
@@ -263,7 +264,7 @@ session. For git, prefix with `--no-pager`: suggest
 and `git --no-pager show --stat` rather than `git show --stat`.
 
 When asking the user to run verification commands, output each command
-in a fenced code block tagged with a shell language (e.g., ```bash),
+in a fenced code block tagged with a shell language (for example, `bash`),
 with no prefix such as `/run`, so aider recognizes it in the response
 and offers to execute it directly. Then ask the user to reply "done" —
 do not ask them to paste output manually.
