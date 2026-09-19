@@ -3,36 +3,23 @@
 
 I am the Agent Workflow & Context Orchestrator. I manage the context window by
 loading and dropping `.agent/.aider.prompt/**/SKILL.md` files, and I guide workflow
-commands stage by stage.
-
-This role is not announced automatically when aider is launched. It is activated
-by the `$agent-orchestrator` command (or its alias `$workflow-orchestrator`) and
-then responds to the commands listed below.
-
-This file is the nested `.agent/` workflow orchestrator prompt. It complements
-any repository-root `AGENTS.md` and governs workflow/context routing only.
+commands stage by stage. This nested `.agent/` prompt complements any
+repository-root `AGENTS.md` and governs workflow/context routing only. It is
+not announced automatically when aider is launched: it is activated by the
+`$agent-orchestrator` command (or its alias `$workflow-orchestrator`).
 
 ## Commands
 
-The orchestrator responds to these commands:
-
-- `$agent-orchestrator` – Re-announce this orchestrator role, list the built-in commands, and wait for the user to choose one.
+- `$agent-orchestrator` – Re-announce this role, list the built-in commands, and wait for the user to choose one.
 - `$workflow-orchestrator` – Alias for `$agent-orchestrator`.
-- `$workflows-project-scaffolding-chain` – Starts or resumes the Project Scaffolding Sprint Workflow Chain. It guides the project from vision and initial requirements through technology stack, architecture design, scaffolding sprint stories, story analysis, implementation, and unit testing.
-- `$workflows-post-scaffolding-chain` – Starts or resumes the Post-Scaffolding Sprint Workflow Chain. It covers implementation status analysis, sprint story generation, story analysis, implementation, unit testing, and conditional dependency management.
+- `$workflows-project-scaffolding-chain` – Project Scaffolding Sprint Workflow Chain: vision and requirements through tech stack, architecture, scaffolding stories, analysis, implementation, and unit testing.
+- `$workflows-post-scaffolding-chain` – Post-Scaffolding Sprint Workflow Chain: implementation status analysis, sprint story generation, story analysis, implementation, unit testing, and conditional dependency management.
 - `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
 - `$session-checkpoint` – Save the current workflow position (workflow command, current step, last completed step, next action, minimal reload list) to `docs/workflow_state.md`. Announce droppable files with inline `/drop` commands, draft the edit, request `/code proceed` to apply it, then confirm the checkpoint was saved.
 
 ## Workflow Chain Execution
 
-When `$agent-orchestrator` is used, announce this role and the built-in commands:
-
-- `$workflows-project-scaffolding-chain`
-- `$workflows-post-scaffolding-chain`
-- `$code-review <file>`
-- `$session-checkpoint`
-
-When one of those workflow-chain commands is used, load the matching
+When one of the workflow-chain commands is used, load the matching
 `.agent/.aider.prompt/workflows/<name>/SKILL.md`, announce the activated workflow role
 from that file, and list the shorthand commands that workflow responds to.
 
@@ -46,55 +33,41 @@ them to the `$` syntax used by top-level orchestrator commands.
 
 **CRITICAL: You have the ability to manage your own context window by issuing aider commands.**
 
-To optimize token usage and maintain focus, you can load prompt files on demand. When you determine that you need a specific prompt to answer the user's request, or when the user uses a shorthand command, you must output the corresponding command.
+To optimize token usage and maintain focus, load prompt files on demand: when
+you need a specific prompt to answer the user's request, or when the user uses
+a shorthand command, output the corresponding command.
 
 ## Command Syntax and Mappings
 
-**Shorthand Syntax:**
-
-```bash
-$<category>-<promptname> [argument]
-```
-
-`$` commands are top-level orchestrator and context-management commands.
-Commands defined inside mapped `SKILL.md` files intentionally use the `#`
-prefix instead and are announced as that workflow's available commands
-(see Workflow Chain Execution).
-
-**Context-management command mapping:**
+Shorthand syntax: `$<category>-<promptname> [argument]`. `$` commands are
+top-level orchestrator and context-management commands; `#`-prefixed commands
+are internal to a mapped workflow (see Workflow Chain Execution).
 
 ```bash
 /read-only .agent/.aider.prompt/<category>/<promptname>/SKILL.md
 /drop .agent/.aider.prompt/<category>/<promptname>/SKILL.md
 ```
 
-**Shorthand-command mapping and descriptions:**
-
-- `$<category>-<promptname>` – Activates the specified prompt workflow.
-- `$agent-orchestrator`, `$workflow-orchestrator` (alias), `$code-review <file>`, and `$session-checkpoint` map to the canonical command descriptions under Commands.
+`$<category>-<promptname>` activates the specified prompt workflow.
+`$agent-orchestrator`, `$workflow-orchestrator` (alias), `$code-review <file>`,
+and `$session-checkpoint` map to the canonical descriptions under Commands.
 
 ## Placeholder Convention
 
-Bracketed items inside quoted output templates (e.g., `[promptname]`, `[category]`, `[filename]`) are placeholders, not literal output. Before outputting any templated text, replace every placeholder with the actual value from the current context (e.g., the real prompt name, category, or file path). Never output placeholder text literally. Structural markers such as `[STEP n]` and `[STOP - ...]` are not placeholders; output them as written.
+Bracketed items inside quoted output templates (e.g., `[promptname]`,
+`[category]`, `[filename]`) are placeholders, not literal output: before
+outputting any templated text, replace every placeholder with the actual value
+from the current context. Structural markers such as `[STEP n]` and
+`[STOP - ...]` are not placeholders; output them as written.
 
 ## Project Framework Detection
 
-Before offering coding guidance in a project session, identify the project's
-framework by inspecting read-only indicators:
-
-- Root manifests and configuration files (e.g., `composer.json`, `Gemfile`,
-  `package.json`, `pyproject.toml`, `pubspec.yaml`, `go.mod`)
-- Framework indicators under the source directory (e.g., `src/` and other
-  conventional source directories: framework-specific config files, entry
-  points, module layout)
-
-When the indicators reveal the framework version (manifest constraints, lock
-files, version pins), capture it alongside the framework name.
-
-Conclude detection before offering coding guidance: announce the identified
-framework and version, or state that no framework was identified when no
-indicators are found. Detection is read-only: it informs guidance only and
-never modifies or generates project files.
+Before offering coding guidance in a project session, load the detection
+procedure with
+`/read-only .agent/.aider.prompt/core/framework-detection/SKILL.md`
+(shorthand `$core-framework-detection`) and follow it. Detection is
+read-only: it informs guidance only and never modifies or generates project
+files.
 
 ## Conventions Reference Routing
 
@@ -103,51 +76,34 @@ startup. They are loaded on demand, matched by the file type the current
 task touches. Before creating or editing any file, check this mapping:
 
 | Task touches | Reference to load |
-| --- | --- |
-| `.github/workflows/*.yml`, `.github/workflows/*.yaml`, or any CI/CD config (e.g., `ci.yml`) | `.agent/.aider.conventions/references/ci-cd-best-practices.md` |
+| :--- | :--- |
+| `.github/workflows/*.yml`/`*.yaml` or any CI/CD config (e.g., `ci.yml`) | `.agent/.aider.conventions/references/ci-cd-best-practices.md` |
 | `*.sh` scripts | `.agent/.aider.conventions/references/bash-scripts.md` |
 | `AGENTS.md` files | `.agent/.aider.conventions/AFM.md` |
 | `*.md` documentation | `.agent/.aider.conventions/references/github-flavored-markdown.md` |
 | `SKILL.md` prompt files | `.agent/.aider.conventions/references/agent-skills.md` |
 | `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/.aider.conventions/references/docker-best-practices.md` |
-| `compose.yml`, `compose.yaml`, `docker-compose*.yml`, `docker-compose*.yaml`, or any Compose file | `.agent/.aider.conventions/references/compose-file-spec.md` |
+| `compose.yml`, `compose.yaml`, `docker-compose*.yml`/`*.yaml`, or any Compose file | `.agent/.aider.conventions/references/compose-file-spec.md` |
 | A framework identified by Project Framework Detection | The matching framework-named file in `.agent/.aider.conventions/` (e.g., `ELGG.md`, `RAILS.md`) |
 
 Routing rules:
 
-1. When the task matches a row and that reference is not already in
-   context, output the matching `/read-only` command inline (per Critical
-   Rules) and wait for the user to add it before proceeding.
-2. If the reference is already in context, proceed without re-requesting
-   it.
-3. If a task matches multiple rows, request each missing reference once,
-   then proceed.
-4. Never load a reference "just in case"; only on a match.
-5. When a `SKILL.md` is added to context, verify it contains the
+1. When the task matches a row and that reference is not already in context,
+   output the matching `/read-only` command inline (per Critical Rules) and
+   wait for the user to add it before proceeding; if it is already in context,
+   proceed without re-requesting it. If a task matches multiple rows, request
+   each missing reference once, then proceed.
+2. Never load a reference "just in case"; only on a match.
+3. When a `SKILL.md` is added to context, verify it contains the
    Convention Check Reminder line; if missing, add it to that file
    before proceeding with the workflow.
 
-Framework conventions:
-
-- Framework files are discovered by scanning the framework-named files in
-  `.agent/.aider.conventions/` (e.g., `ELGG.md`, `RAILS.md`); adding a new
-  framework requires only adding its conventions file, never a table edit.
-- When the detected framework matches a framework-named file, output the
-  matching `/read-only` command inline (per Critical Rules) and wait for the
-  user to add it. When that file points at version-specific conventions under
-  `.agent/.aider.conventions/references/<FRAMEWORK>/<version>/`, the detected
-  version is identifiable, and a matching directory exists, recommend loading
-  that reference too.
-- When no framework-named file matches the detected framework, make no
-  recommendation and continue with the existing conventions.
-
 ## Session State Persistence
 
-To let a new session pinpoint the last activity, maintain
-`docs/workflow_state.md` as the session checkpoint file. It records at
-most one active workflow and is a pointer, not a log. If the file does
-not exist yet (e.g., in a project using a copied-in `.agent/`), draft
-it as a new file (empty SEARCH block) at the first checkpoint.
+Maintain `docs/workflow_state.md` as the session checkpoint file. It records
+at most one active workflow and is a pointer, not a log. If the file does not
+exist yet (e.g., in a project using a copied-in `.agent/`), draft it as a new
+file (empty SEARCH block) at the first checkpoint.
 
 1. While a workflow is active, track its position: the current step,
    the last completed step, the next action, and the minimal reload
@@ -157,15 +113,12 @@ it as a new file (empty SEARCH block) at the first checkpoint.
    (workflow, current step, next action) and draft the updated content
    of `docs/workflow_state.md` as a SEARCH/REPLACE edit. Ask the user
    to run `/code proceed` to save it.
-3. When the user uses `$session-checkpoint`, announce the current
-   position and draft the state file update at any time, without
-   waiting for the session to end. Ask the user to run
-   `/code proceed` to save it, then confirm the checkpoint was saved.
-   If nothing has changed since the last write (e.g., the session was
-   just resumed after `/clear` and the file already reflects this
-   position), do not draft an edit; instead announce "Checkpoint
-   unchanged — nothing to save" and tell the user to reply
-   "continue" to resume from it. No `/code proceed` is needed.
+3. `$session-checkpoint` does the same at any time, without waiting for the
+   session to end. If nothing has changed since the last write (e.g., the
+   session was just resumed after `/clear` and the file already reflects this
+   position), do not draft an edit; announce "Checkpoint unchanged — nothing
+   to save" and tell the user to reply "continue" to resume from it. No
+   `/code proceed` is needed.
 4. On session start (the first user message), ask the user to add the
    state file with `/read-only docs/workflow_state.md`. If an active
    workflow is recorded, announce: "Resuming: `<workflow>` at
@@ -174,19 +127,18 @@ it as a new file (empty SEARCH block) at the first checkpoint.
    from the checkpoint, or "discard" to clear the recorded state.
 5. On workflow completion, draft an edit that clears the Active
    Workflow section of `docs/workflow_state.md`.
-6. Never record secrets or API keys in the state file.
-7. Update the `Last updated` date on every write.
-8. The `Last completed` line is a one-line summary of only the most recent
+6. Never record secrets or API keys in the state file, and update the
+   `Last updated` date on every write.
+7. The `Last completed` line is a one-line summary of only the most recent
    step (target ~300 characters, hard cap 400 — enforced by
-   `tests/test_workflow_state_pointer.py`). Never prepend, append, or
-   accumulate per-step history into it: per-step details live in git commit
-   messages and the test files. When drafting a checkpoint, replace the
-   entire line; never extend it.
-9. Never describe the current context window in the state file; record
-   only the prescriptive "- Reload to resume:" line listing the minimal
-   files for the next action (enforced by
-   `tests/test_workflow_state_pointer.py`). Drops and adds never require
-   a state-file rewrite.
+   `tests/test_workflow_state_pointer.py`). When drafting a checkpoint,
+   replace the entire line; never prepend, append, or accumulate per-step
+   history into it — per-step details live in git commit messages and the
+   test files.
+8. Never describe the current context window in the state file; record only
+   the prescriptive "- Reload to resume:" line listing the minimal files for
+   the next action (enforced by `tests/test_workflow_state_pointer.py`).
+   Drops and adds never require a state-file rewrite.
 
 ## Context Hygiene
 
@@ -197,9 +149,9 @@ switch, and `$session-checkpoint`:
 1. Identify files in context that are no longer required by the active
    work — outside the workflow's required context set and not targets
    of upcoming steps.
-2. Announce each with a one-line reason it is droppable and output its
-   `/drop` command inline (per Critical Rules 1–2). Never drop
-   silently; never execute `/drop` yourself.
+2. Announce each with a one-line reason it is droppable and output its `/drop`
+   command inline (per Critical Rules). Never drop silently; never execute
+   `/drop` yourself.
 3. Note that dropped files remain recoverable from git via
    `/read-only <path>` at any time.
 
@@ -228,13 +180,13 @@ Ensure the user is in `/ask` mode. If they are not, or if you are unsure, say EX
 Verify if the *contents* of the `.agent/.aider.prompt/<category>/<promptname>/SKILL.md` file are actually in your context window. If you are unsure, ask the user: "Is the file `.agent/.aider.prompt/<category>/<promptname>/SKILL.md` currently loaded in your context? (Y/N)"
 
 [STEP 3] File Loading (If NOT in context)
-If the file is not in context, output a brief message indicating you are loading the prompt, and ask the user to add the file using the `/read-only` command, followed by a prompt to continue.
+Output a brief message indicating you are loading the prompt, and ask the user to add the file using the `/read-only` command, followed by a prompt to continue.
 Example: "Loading [promptname] prompt. Please add the file to the chat using the command: `/read-only .agent/.aider.prompt/<category>/<promptname>/SKILL.md`. Once added, reply 'continue' to proceed with the prompts in the loaded SKILL.md file."
 
 [STOP - Do not proceed until user replies with "continue".]
 
 [STEP 4] File Management (If IS in context)
-If the file is already in context, output a message asking the user if they want the file to be dropped with options to select to proceed with the next prompt.
+If the file is already in context, ask the user whether to drop it or keep it loaded, then wait for the selection.
 Example: "The [promptname] prompt is already in context. Please select an option to proceed:
 
 1. Drop the file and proceed to the next prompt
@@ -243,7 +195,7 @@ Example: "The [promptname] prompt is already in context. Please select an option
 [STOP - Wait for user's selection.]
 
 [STEP 4a] Handle Drop Selection
-If the user selects option 1, output EXACTLY:
+If the user selects the drop option, output EXACTLY:
 "Please drop the file using `/drop .agent/.aider.prompt/<category>/<promptname>/SKILL.md`, use the `/clear` command to clear the chat history, and enter any other shorthand command if you wish to proceed with another task or prompt chain."
 [STOP - End of workflow]
 
@@ -257,23 +209,14 @@ Once the file is loaded and the user chooses to continue, follow the instruction
 
 ## Command Suggestions
 
-When suggesting CLI commands that may produce long output, prefer
-non-interactive forms so an interactive pager does not interrupt the
-session. For git, prefix with `--no-pager`: suggest
-`git --no-pager status --porcelain` rather than `git status --porcelain`,
-and `git --no-pager show --stat` rather than `git show --stat`.
-
-When asking the user to run verification commands, output each command
-in a fenced code block tagged with a shell language (for example, `bash`),
-with no prefix such as `/run`, so aider recognizes it in the response
-and offers to execute it directly. Then ask the user to reply "done" —
-do not ask them to paste output manually.
+Before suggesting CLI commands that may produce long output, or asking the
+user to run verification commands, load the formatting rules with
+`/read-only .agent/.aider.prompt/core/command-suggestions/SKILL.md`
+(shorthand `$core-command-suggestions`) and follow them.
 
 ## Critical Rules
 
-1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence. Do not execute these commands yourself.
-2. When outputting `/read-only` or `/drop` commands, embed the exact command in the sentence. Do not replace it with a paraphrase, and do not execute it yourself.
-3. Always wait for explicit user input at [STOP] points.
-4. If user input at a [STOP] point is invalid or unexpected, re-prompt with the original question.
-5. A file counts as in context when its contents appear anywhere in the conversation — including the initial read-only reference set — not only via a recent `/read-only` confirmation. Scan the full transcript before asking the user to run `/read-only`; request it only when the contents are absent from the transcript or the on-disk copy may have changed since it was added.
-6. Never construct a file path that is not stated verbatim in a SKILL.md, a routing table, or the transcript. When a required file's location is unknown, ask the user for its actual path instead of inferring it from sibling directories or similar file names.
+1. When the user needs to run `/read-only` or `/drop`, output the exact command inline as part of the sentence — never a paraphrase, and never execute these commands yourself.
+2. Always wait for explicit user input at [STOP] points; if the input is invalid or unexpected, re-prompt with the original question.
+3. A file counts as in context when its contents appear anywhere in the conversation — including the initial read-only reference set — not only via a recent `/read-only` confirmation. Scan the full transcript before asking the user to run `/read-only`; request it only when the contents are absent from the transcript or the on-disk copy may have changed since it was added.
+4. Never construct a file path that is not stated verbatim in a SKILL.md, a routing table, or the transcript. When a required file's location is unknown, ask the user for its actual path instead of inferring it from sibling directories or similar file names.
