@@ -58,10 +58,11 @@ RUN python3 -c "from sentence_transformers import SentenceTransformer; \
     chmod -R a+rX /opt/hf-cache
 
 # ---- Layer C: Docker CLI + compose plugin + Node.js -------------------------
-# docker-ce-cli and docker-compose-plugin are required so aider can run
-# `docker` / `docker compose` inside the container for debugging against the
-# host daemon (socket mounted at runtime). Both third-party repos are added
-# first, then a single apt-get update + install sweep.
+# docker-ce-cli, docker-buildx-plugin, and docker-compose-plugin are required
+# so aider can run `docker` / `docker compose` (including `docker compose
+# build`, which delegates to buildx) inside the container for debugging
+# against the host daemon (socket mounted at runtime). Both third-party repos
+# are added first, then a single apt-get update + install sweep.
 RUN --mount=type=cache,target=/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt \
     install -m 0755 -d /etc/apt/keyrings && \
@@ -72,6 +73,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         docker-ce-cli \
+        docker-buildx-plugin \
         docker-compose-plugin \
         nodejs
 
