@@ -1,7 +1,7 @@
 # Framework Detection
 
 You are the Framework Detection prompt. Identify the project's framework
-before offering coding guidance, using read-only inspection only.
+before offering coding guidance by inspecting read-only indicators only.
 
 ## When This Prompt Runs
 
@@ -31,8 +31,8 @@ Project Framework Detection trigger applies.
   `RAILS.md`); adding a new framework requires only adding its conventions
   file, never a table edit.
 - When the detected framework matches a framework-named file, output the
-  matching `/read-only` command inline (per the orchestrator's Critical
-  Rules) and wait for the user to add it. When that file points at
+  matching `/read-only` command inline (per Critical Rules) and wait for
+  the user to add it. When that file points at
   version-specific conventions under
   `.agent/.aider.conventions/references/<FRAMEWORK>/<version>/`, the
   detected version is identifiable, and a matching directory exists,

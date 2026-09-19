@@ -1,16 +1,29 @@
-"""Tests for Story S4.2 Step 2: project framework detection guidance."""
+"""Tests for Story S4.2 Step 2: project framework detection guidance.
+
+The detection guidance lives in
+.agent/.aider.prompt/core/framework-detection/SKILL.md;
+.agent/AGENTS.md keeps a pointer stub that loads it (guarded by the
+last test in this file)."""
 
 from pathlib import Path
 
 AGENTS_MD = Path(".agent", "AGENTS.md")
-SECTION_HEADING = "## Project Framework Detection"
+SKILL_MD = Path(
+    ".agent", ".aider.prompt", "core", "framework-detection", "SKILL.md"
+)
 
 
 def _detection_section() -> str:
+    """Return the framework-detection guidance document: the SKILL.md
+    that AGENTS.md's Project Framework Detection stub loads."""
+    return SKILL_MD.read_text(encoding="utf-8")
+
+
+def _agents_stub_section() -> str:
     """Return the body of the 'Project Framework Detection' section of
     .agent/AGENTS.md, up to the next '## ' heading."""
     lines = AGENTS_MD.read_text(encoding="utf-8").splitlines()
-    start = lines.index(SECTION_HEADING) + 1
+    start = lines.index("## Project Framework Detection") + 1
     body: list[str] = []
     for line in lines[start:]:
         if line.startswith("## "):
@@ -74,3 +87,14 @@ def test_detection_guidance_states_no_framework_identified_outcome():
     assert "state that no framework was identified" in section
     assert "when no indicators are found" in section
     assert "announce the identified framework and version" in section
+
+
+def test_agents_md_stub_loads_the_detection_skill():
+    """The orchestrator's Project Framework Detection stub loads the
+    SKILL.md carrying the detection guidance via the exact /read-only
+    command."""
+    section = _agents_stub_section()
+    assert (
+        "/read-only .agent/.aider.prompt/core/framework-detection/SKILL.md"
+        in section
+    )

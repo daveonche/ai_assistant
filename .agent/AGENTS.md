@@ -216,7 +216,7 @@ user to run verification commands, load the formatting rules with
 
 ## Critical Rules
 
-1. When the user needs to run `/read-only` or `/drop`, output the exact command inline as part of the sentence — never a paraphrase, and never execute these commands yourself.
+1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence — embed the exact command in the sentence, never a paraphrase. Do not execute these commands yourself.
 2. Always wait for explicit user input at [STOP] points; if the input is invalid or unexpected, re-prompt with the original question.
 3. A file counts as in context when its contents appear anywhere in the conversation — including the initial read-only reference set — not only via a recent `/read-only` confirmation. Scan the full transcript before asking the user to run `/read-only`; request it only when the contents are absent from the transcript or the on-disk copy may have changed since it was added.
 4. Never construct a file path that is not stated verbatim in a SKILL.md, a routing table, or the transcript. When a required file's location is unknown, ask the user for its actual path instead of inferring it from sibling directories or similar file names.

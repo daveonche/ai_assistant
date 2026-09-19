@@ -1,15 +1,23 @@
-"""Tests for Story S4.2 Step 3: framework-agnostic conventions recommendation."""
+"""Tests for Story S4.2 Step 3: framework-agnostic conventions recommendation.
+
+The framework-conventions bullets live in the Framework Conventions
+Routing section of
+.agent/.aider.prompt/core/framework-detection/SKILL.md; the routing
+table and routing rules remain in .agent/AGENTS.md."""
 
 from pathlib import Path
 
 AGENTS_MD = Path(".agent", "AGENTS.md")
-FRAMEWORK_CONVENTIONS_HEADING = "Framework conventions:"
+SKILL_MD = Path(
+    ".agent", ".aider.prompt", "core", "framework-detection", "SKILL.md"
+)
+FRAMEWORK_CONVENTIONS_HEADING = "## Framework Conventions Routing"
 
 
 def _framework_conventions_bullets() -> str:
-    """Return the 'Framework conventions:' bullet block of
-    .agent/AGENTS.md, up to the next '## ' heading."""
-    lines = AGENTS_MD.read_text(encoding="utf-8").splitlines()
+    """Return the 'Framework Conventions Routing' bullet block of the
+    framework-detection SKILL.md, up to the next '## ' heading."""
+    lines = SKILL_MD.read_text(encoding="utf-8").splitlines()
     start = lines.index(FRAMEWORK_CONVENTIONS_HEADING) + 1
     body: list[str] = []
     for line in lines[start:]:
@@ -21,11 +29,15 @@ def _framework_conventions_bullets() -> str:
 
 def _routing_rules() -> str:
     """Return the 'Routing rules:' numbered-list block of
-    .agent/AGENTS.md, up to the 'Framework conventions:' heading."""
+    .agent/AGENTS.md, up to the next '## ' heading."""
     lines = AGENTS_MD.read_text(encoding="utf-8").splitlines()
     start = lines.index("Routing rules:") + 1
-    end = lines.index(FRAMEWORK_CONVENTIONS_HEADING)
-    return "\n".join(lines[start:end])
+    body: list[str] = []
+    for line in lines[start:]:
+        if line.startswith("## "):
+            break
+        body.append(line)
+    return "\n".join(body)
 
 
 def _routing_table() -> str:
