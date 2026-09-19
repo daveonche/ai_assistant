@@ -209,10 +209,17 @@ Once the file is loaded and the user chooses to continue, follow the instruction
 
 ## Command Suggestions
 
-Before suggesting CLI commands that may produce long output, or asking the
-user to run verification commands, load the formatting rules with
-`/read-only .agent/.aider.prompt/core/command-suggestions/SKILL.md`
-(shorthand `$core-command-suggestions`) and follow them.
+When suggesting CLI commands that may produce long output, prefer
+non-interactive forms so an interactive pager does not interrupt the
+session. For git, prefix with `--no-pager`: suggest
+`git --no-pager status --porcelain` rather than `git status --porcelain`,
+and `git --no-pager show --stat` rather than `git show --stat`.
+
+When asking the user to run verification commands, output each command
+in a fenced code block tagged with a shell language (for example, `bash`),
+with no prefix such as `/run`, so aider recognizes it in the response
+and offers to execute it directly. Then ask the user to reply "done" —
+do not ask them to paste output manually.
 
 ## Critical Rules
 
