@@ -205,3 +205,19 @@ def test_project_root_mount_is_read_write(tmp_path):
     options = parts[2:]  # empty for a plain read-write mount
     flags = {f for opt in options for f in opt.split(",")}
     assert not flags & {"ro", "readonly"}, mount
+
+
+def test_buildx_state_redirected_to_writable_cache(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    result = run_chain(sandbox, stub_dir, [])
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+
+    # Buildx writes per-builder state under $HOME/.docker/buildx, but
+    # /home/.docker is mounted read-only; the launcher must point buildx's
+    # state at the writable cache mount so in-container builds succeed.
+    env_values = _values_after(run_inv, "-e")
+    assert "BUILDX_CONFIG=/home/.cache/buildx" in env_values, env_values

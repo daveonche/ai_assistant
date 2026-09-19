@@ -1335,7 +1335,8 @@ def run_container(
         command.extend(["-v", f"{gitconfig}:/home/.gitconfig:ro"])
 
     # Mounted read-only so `docker compose` inside the container can use the
-    # host's registry credentials when pulling or building images.
+    # host's registry credentials when pulling or building images. Buildx's
+    # mutable state is redirected off this mount via BUILDX_CONFIG below.
     if docker_config.exists():
         command.extend(["-v", f"{docker_config}:/home/.docker:ro"])
 
@@ -1366,6 +1367,13 @@ def run_container(
         command.extend(["--env-file", str(env_file)])
     elif agent_env_file.exists():
         command.extend(["--env-file", str(agent_env_file)])
+
+    # Buildx keeps per-builder state under $HOME/.docker/buildx, but
+    # /home/.docker is mounted read-only (credentials only), which aborts
+    # in-container builds. Point buildx's mutable state at the writable
+    # cache mount instead. Placed after --env-file so a project .env cannot
+    # override it back onto the read-only mount.
+    command.extend(["-e", "BUILDX_CONFIG=/home/.cache/buildx"])
 
     # Forward host-exported credentials by name only: Docker fills the value
     # from this process's environment, so secrets never appear in the command
