@@ -46,6 +46,15 @@ fi
 # never fatal, matching the ssh-agent block above.
 if [[ -t 0 && -t 1 ]] && command -v ssh-keygen >/dev/null 2>&1; then
   github_known_hosts="${HOME:-}/.ssh/known_hosts"
+  # Key blobs are split across concatenated literals so no source line
+  # exceeds the 80-character limit; the pieces join into one base64 blob.
+  github_ed25519_key='AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabg'
+  github_ed25519_key+='H5C9okWi0dh2l9GKJl'
+  github_ecdsa_key='AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAA'
+  github_ecdsa_key+='BBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRg'
+  github_ecdsa_key+='g6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg='
+  github_ed25519_fp='SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU'
+  github_ecdsa_fp='SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM'
   github_rsa_key=""
   # Fetch the rsa key only while no rsa key is pinned for github.com yet.
   if command -v curl >/dev/null 2>&1 && ! ssh-keygen -F github.com \
@@ -73,8 +82,8 @@ if [[ -t 0 && -t 1 ]] && command -v ssh-keygen >/dev/null 2>&1; then
           >> "$github_known_hosts" ) 2>/dev/null || true
     fi
   done <<EOF
-ssh-ed25519|AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl|SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU
-ecdsa-sha2-nistp256|AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=|SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM
+ssh-ed25519|$github_ed25519_key|$github_ed25519_fp
+ecdsa-sha2-nistp256|$github_ecdsa_key|$github_ecdsa_fp
 ${github_rsa_triplet}
 EOF
 fi
