@@ -72,6 +72,38 @@ The base image in `.agent/Dockerfile.aider` is pinned to tag + manifest-list dig
 
 Verification record: the Docker Hub tags API for `paulgauthier/aider-full:v0.86.2` reported digest `sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4`, the manifest-list digest covering all architectures, matching the pinned value. (`docker buildx imagetools inspect <ref>` is the equivalent local command when the buildx plugin is installed.)
 
+### Image-Internal Component Pins
+
+Components baked into `.agent/Dockerfile.aider` beyond the base image, with
+the pin nature each follows.
+
+| Component | Pin | Nature | Used in |
+| :--- | :--- | :--- | :--- |
+| ShellCheck | `v0.10.0` static binary | exact (GitHub release download) | `.agent/Dockerfile.aider` Layer D2 |
+| pytest | `8.3.5` (pip into `/venv`) | exact, matches `.agent/pyproject.toml` | `.agent/Dockerfile.aider` Layer D3 |
+| `sentence-transformers/all-MiniLM-L6-v2` | pre-baked to `/opt/hf-cache` | model name; revision resolves at build | `.agent/Dockerfile.aider` Layer B |
+| Node.js | `22.x` via NodeSource `setup_22.x` | major line | `.agent/Dockerfile.aider` Layer C |
+| `@mermaid-js/mermaid-cli` | `^11` (npm) | caret range | `.agent/Dockerfile.aider` Layer D |
+| Chromium, `cmark-gfm`, `openssh-client` | Debian bookworm packages | distro-managed | `.agent/Dockerfile.aider` Layer A |
+
+Notes:
+
+- The npm `shellcheck` wrapper package is deliberately not used: it downloads
+  the real binary on first run into a root-owned path, which fails with
+  `EACCES` for the non-root runtime user. The official static binary is
+  baked at build time instead, so shellcheck is offline at runtime and
+  executable by every user.
+- The embedding model is baked at build time (`HF_HOME=/opt/hf-cache`, made
+  world-readable with `chmod -R a+rX`) so the runtime user loads it offline
+  instead of re-downloading roughly 100 MB on first run.
+- Puppeteer is pointed at the system Chromium (`PUPPETEER_SKIP_DOWNLOAD=true`,
+  `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true`,
+  `PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium`), so mermaid-cli renders
+  diagrams without a bundled Chrome download.
+- pytest is installed into the base image's `/venv` interpreter at the same
+  version pinned in `.agent/pyproject.toml`, so the container can run the
+  project's test suite exactly like the host.
+
 ### Verified Host Runtime Pin
 
 The host runtime that executes the launcher `.agent/ai_assistant.py` is pinned to an exact version.

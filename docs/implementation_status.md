@@ -127,6 +127,23 @@
 - [x] Step 2. Enable confirmation that the documentation edit preserves release-reference consistency (full verification suite green, including `tests/test_release_ref_consistency.py`)
 - [x] Step 3. Enable documentation-conventions conformance for the edited section (verified by `tests/test_s4_3_step3.py`)
 
+### Story S4.5: Container SSH Support for Git Remotes
+
+- [x] Step 1. Enable read-only host `~/.ssh` mount and ssh-agent socket forwarding (`.agent/ai_assistant.py` `run_container()`; `openssh-client` in `.agent/Dockerfile.aider` Layer A; verified by `tests/test_s1_5_step2.py`)
+- [x] Step 2. Enable guarded per-user ssh-agent bootstrap in the entry script (`.agent/ai-assistant.sh`; interactive-only, best-effort, never fails the launch)
+- [x] Step 3. Enable fingerprint-verified GitHub host-key pinning for `github.com` (`.agent/ai-assistant.sh`; embedded ed25519/ecdsa blobs split into 80-character literals, rsa key fetched from `api.github.com` and fingerprint-gated, idempotent via `ssh-keygen -F`; verified by fingerprint re-derivation and `tests/test_s1_2_step3.py`)
+- [x] Step 4. Enable documented SSH usage and the key-rotation caveat (`README.md` "SSH access for git remotes")
+
+### Story S4.6: Container Build Tooling Fixes
+
+- [x] Step 1. Enable docker-buildx-plugin in the image for in-container compose builds (`.agent/Dockerfile.aider` Layer C; exercised by the CI image build smoke test)
+- [x] Step 2. Enable Buildx state redirection to the writable cache mount (`.agent/ai_assistant.py` `run_container()` `BUILDX_CONFIG=/home/.cache/buildx`; verified by `tests/test_s1_5_step2.py`)
+
+### Story S4.7: Container Image Pins and Offline Pre-bakes
+
+- [x] Step 1. Enable the image-internal component pin record (`docs/tech_stack.md` "Image-Internal Component Pins": ShellCheck v0.10.0 static binary, pytest 8.3.5, the pre-baked embedding model, Node.js 22.x, mermaid-cli ^11, distro-managed packages)
+- [x] Step 2. Enable the exact-pin scope statement and accepted-deviation note (`docs/tech_stack.md` "Version Lock Rationale")
+
 ## Priority Order for Next Implementation Phase
 
 The Sprint 3 release-management work (REQ-15) is verified and recorded:
@@ -140,6 +157,6 @@ source evidence, and the backlog is empty.
 
 Priority 1 - New capability intake:
 
-- No outstanding requirements remain; the next sprint requires user-introduced features or requirements (the same pattern that produced Sprint 4's S4.1-S4.3)
+- No outstanding requirements remain; the next sprint requires user-introduced features or requirements (the same pattern that produced Sprint 4's S4.1-S4.3 and S4.5-S4.7)
 
 Next workflow step: `#generate-sprint-stories`

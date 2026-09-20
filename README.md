@@ -152,6 +152,33 @@ The combined files are written under `.agent/.merged/` — never to either
 source file — rewritten deterministically on every launch, and removed
 when the session ends.
 
+#### SSH access for git remotes
+
+Git push/pull over SSH remotes works inside the container without manual
+setup. The launcher mounts your host `~/.ssh` directory read-only at the
+identical path, so keys, config, and `known_hosts` travel together and the
+container can never modify the host's SSH state. When an ssh-agent is
+reachable, its socket is forwarded at the identical path and
+passphrase-protected keys work without copying them; the entry script
+starts or reuses a persistent per-user agent on the first interactive
+launch.
+
+GitHub's published SSH host keys are pinned automatically for `github.com`:
+the ed25519 and ecdsa keys are embedded in the entry script, and the rsa
+key is fetched from `api.github.com` once (a one-time fetch, up to ten
+seconds, on the first interactive launch) and appended only after its
+SHA256 fingerprint matches GitHub's published value. First-use connections
+therefore never stall on a host-key prompt. Pinning is idempotent, runs
+only in interactive launches, and never fails the launch. Projects using
+HTTPS remotes are unaffected.
+
+> **Note:** if GitHub ever rotates a host key, connections fail with a
+> host-key-changed error. Remove the stale entry with
+> `ssh-keygen -R github.com`, update to a release whose entry script
+> carries the new key, and relaunch — pinning re-runs and re-verifies each
+> key. The rsa key needs no script update: it is re-fetched and
+> fingerprint-verified whenever no rsa key is pinned.
+
 #### One-command install
 
 The quickest way to set the assistant up in another project is the
