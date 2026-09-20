@@ -414,12 +414,17 @@ def _merge_value_documents(name: str, agent_doc, root_doc):
 
 
 def _merge_json_documents(agent_file: Path, root_file: Path):
-    """Load and deep-merge two JSON documents; the root document wins."""
+    """Load and deep-merge two JSON documents; the root document wins.
+
+    The root document is filtered through _strip_protected_keys first, so
+    the JSON path is guarded exactly like the YAML paths (see
+    _merge_value_documents).
+    """
     with agent_file.open(encoding="utf-8") as handle:
         agent_doc = json.load(handle)
     with root_file.open(encoding="utf-8") as handle:
         root_doc = json.load(handle)
-    return _deep_merge(agent_doc, root_doc)
+    return _deep_merge(agent_doc, _strip_protected_keys(root_doc))
 
 
 def _yaml_entries(text: str) -> list[list]:
@@ -684,6 +689,36 @@ def _atomic_write_text(path: Path, text: str) -> None:
                 pass
 
 
+def _write_serialized_intermediate(
+    agent_dir: Path,
+    name: str,
+    serialized: str,
+    debug: bool,
+    warning: str,
+) -> Optional[Path]:
+    """Write serialized config content to the deterministic intermediate.
+
+    Writes only when the content differs from what is already on disk, and
+    always through _atomic_write_text so a planted symlink at the
+    intermediate path is replaced rather than followed. Returns the
+    intermediate path, or None when the write fails (warning printed in
+    debug mode); the caller then applies its own fallback.
+    """
+    merged_path = agent_dir / MERGED_DIR_NAME / name
+    try:
+        merged_path.parent.mkdir(parents=True, exist_ok=True)
+        existing = (
+            merged_path.read_text(encoding="utf-8") if merged_path.exists() else None
+        )
+        if existing != serialized:
+            _atomic_write_text(merged_path, serialized)
+    except (OSError, ValueError):
+        if debug:
+            print(warning, file=sys.stderr)
+        return None
+    return merged_path
+
+
 def _write_merged_value_file(
     agent_dir: Path,
     name: str,
@@ -715,23 +750,59 @@ def _write_merged_value_file(
             )
         return None
 
-    merged_path = agent_dir / MERGED_DIR_NAME / name
+    return _write_serialized_intermediate(
+        agent_dir,
+        name,
+        serialized,
+        debug,
+        f"Warning: could not write the merged {name}; using the assistant "
+        "default.",
+    )
+
+
+def _write_root_only_value_file(
+    agent_dir: Path,
+    name: str,
+    root_file: Path,
+    debug: bool,
+) -> Optional[Path]:
+    """Write a root-only value config as a filtered intermediate.
+
+    A project-root counterpart without an agent-side copy is still
+    untrusted repo content: the protected confirmation keys are stripped
+    exactly as in the both-present merge (see _merge_value_documents), and
+    the filtered document is written to the deterministic intermediate.
+    Returns None when the document cannot be parsed or written; the caller
+    then omits the config flag entirely rather than passing the unfiltered
+    root file through, so aider's built-in confirmation defaults stay in
+    force.
+    """
     try:
-        merged_path.parent.mkdir(parents=True, exist_ok=True)
-        existing = (
-            merged_path.read_text(encoding="utf-8") if merged_path.exists() else None
-        )
-        if existing != serialized:
-            _atomic_write_text(merged_path, serialized)
-    except (OSError, ValueError):
+        if name == ".aider.model.metadata.json":
+            with root_file.open(encoding="utf-8") as handle:
+                merged_doc = _strip_protected_keys(json.load(handle))
+            serialized = json.dumps(merged_doc, indent=2) + "\n"
+        else:
+            root_doc = _yaml_load(root_file.read_text(encoding="utf-8"))
+            merged_doc = _strip_protected_keys(root_doc)
+            serialized = _yaml_dump(merged_doc)
+    except (OSError, ValueError, RecursionError):
         if debug:
             print(
-                f"Warning: could not write the merged {name}; using the "
-                "assistant default.",
+                f"Warning: could not filter {name}; ignoring the project-root "
+                "copy.",
                 file=sys.stderr,
             )
         return None
-    return merged_path
+
+    return _write_serialized_intermediate(
+        agent_dir,
+        name,
+        serialized,
+        debug,
+        f"Warning: could not write the filtered {name}; ignoring the "
+        "project-root copy.",
+    )
 
 
 def _merge_aiderignore(agent_file: Path, root_file: Path) -> list[str]:
@@ -809,8 +880,11 @@ def _merged_config_args(
     For each value-based config file:
     - both copies present -> the flag points at the merged intermediate
     - only the agent copy -> unchanged pass-through to the agent copy
-    - only the root counterpart -> the flag points at the root file directly,
-      which is already a complete, deliberately placed configuration
+    - only the root counterpart -> the flag points at a filtered
+      intermediate holding the root document with the protected
+      confirmation keys removed (see _write_root_only_value_file); when the
+      document cannot be filtered, the flag is omitted so the unfiltered
+      file is never passed through
     - unmergeable pair -> fall back to the agent copy (reported in debug)
 
     .aiderignore follows the same rules with a union merge: both copies
@@ -854,7 +928,14 @@ def _merged_config_args(
         elif agent_exists:
             args.extend([flag, str(agent_file)])
         elif root_file is not None:
-            args.extend([flag, str(root_file)])
+            filtered = _write_root_only_value_file(
+                agent_dir, name, root_file, debug
+            )
+            if filtered is not None:
+                args.extend([flag, str(filtered)])
+            # Unfilterable root copy: omit the flag instead of passing the
+            # unfiltered file through, so the protected confirmation keys
+            # can never reach aider from repo content.
     return args
 
 

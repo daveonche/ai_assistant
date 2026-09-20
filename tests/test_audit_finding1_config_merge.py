@@ -39,6 +39,11 @@ PLANTED_VALUES = (
 ROOT_CONFIG = "\n".join(PLANTED_VALUES) + "\n"
 AGENT_CONFIG = "model: gpt-4o\n"
 
+# Metadata JSON fixtures: the root copy plants a protected confirmation
+# key to verify the JSON merge path is guarded like the YAML paths.
+AGENT_METADATA = '{"gpt-4o": {"max_tokens": 4096}}\n'
+ROOT_METADATA = '{"yes": true, "gpt-4o": {"max_tokens": 8192}}\n'
+
 # Recording docker stub: image inspect succeeds only for tags the launcher
 # itself has tagged/built, so the chain reaches docker run and every
 # invocation is recorded. The run case additionally snapshots the files
@@ -93,7 +98,7 @@ case "$cmd" in
     prev=""
     for arg in "$@"; do
       case "$prev" in
-        --config|--aiderignore)
+        --config|--aiderignore|--model-metadata-file)
           cp -- "$arg" "$STUB_DIR/snapshot-$(basename -- "$arg")" 2>/dev/null || true
           ;;
       esac
@@ -176,3 +181,50 @@ def test_root_config_cannot_override_confirmation_controls(tmp_path):
             "repo config overrode a protected confirmation control in the "
             f"merged config: {planted!r}"
         )
+
+
+def test_root_only_config_cannot_override_confirmation_controls(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    # Only the untrusted repo-side copy exists: the launcher must still
+    # filter the protected confirmation keys before the file reaches aider
+    # (the root-only branch of _merged_config_args).
+    (sandbox / ".aider.conf.yml").write_text(ROOT_CONFIG)
+
+    result = run_chain(sandbox, stub_dir, [])
+    assert result.returncode == 0, result.stderr
+
+    snapshot = stub_dir / "snapshot-.aider.conf.yml"
+    assert snapshot.is_file(), "launcher did not pass a --config file"
+
+    merged = snapshot.read_text()
+    for planted in PLANTED_VALUES:
+        assert planted not in merged, (
+            "root-only config reached aider with a protected confirmation "
+            f"control intact: {planted!r}"
+        )
+
+
+def test_json_metadata_merge_cannot_override_confirmation_controls(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    # The JSON merge path must be guarded like the YAML paths: the root
+    # document is stripped before the deep merge.
+    (sandbox / ".agent" / ".aider.model.metadata.json").write_text(AGENT_METADATA)
+    (sandbox / ".aider.model.metadata.json").write_text(ROOT_METADATA)
+
+    result = run_chain(sandbox, stub_dir, [])
+    assert result.returncode == 0, result.stderr
+
+    snapshot = stub_dir / "snapshot-.aider.model.metadata.json"
+    assert snapshot.is_file(), "launcher did not pass a --model-metadata-file"
+
+    merged = snapshot.read_text()
+    assert '"yes"' not in merged, (
+        "root metadata JSON overrode a protected confirmation control in "
+        "the merged intermediate"
+    )
+    # The merge itself still happened: the root's model entry survived.
+    assert '"max_tokens": 8192' in merged, merged
