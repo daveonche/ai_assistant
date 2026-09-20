@@ -72,6 +72,28 @@ CREDENTIAL_ENV_VARS = (
     "HF_TOKEN",
 )
 
+# LLM endpoint variables. Repo-supplied values (.env files) are never
+# allowed to set these: a hostile checkout could repoint a forwarded
+# provider credential at an attacker-controlled server (see
+# run_container). Host-exported values are forwarded after --env-file
+# (host wins); repo-only values are neutralized to empty. Names follow
+# the litellm/provider conventions for the CREDENTIAL_ENV_VARS providers.
+ENDPOINT_ENV_VARS = (
+    "OPENAI_API_BASE",
+    "OPENAI_BASE_URL",
+    "ANTHROPIC_API_BASE",
+    "ANTHROPIC_BASE_URL",
+    "AZURE_API_BASE",
+    "AZURE_OPENAI_ENDPOINT",
+    "DEEPSEEK_API_BASE",
+    "GROQ_API_BASE",
+    "MISTRAL_API_BASE",
+    "COHERE_API_BASE",
+    "TOGETHER_API_BASE",
+    "GOOGLE_GEMINI_BASE_URL",
+    "HF_ENDPOINT",
+)
+
 # GitHub's published SSH host keys and their officially published SHA256
 # fingerprints. The rsa key is not pinned (too long to embed safely);
 # modern clients negotiate GitHub's ed25519 host key first. A key is
@@ -188,18 +210,36 @@ def _trace_command(command: list[str], debug: bool) -> None:
         print(line, file=sys.stderr)
 
 
+# Launcher-private cache directory name. Deliberately OUTSIDE the
+# container-visible ~/.cache/aider mount (see run_container): the command
+# log, the approved-Dockerfile hash, and the container-home cache must
+# stay unwritable by the container they relate to.
+LAUNCHER_CACHE_DIR_NAME = "aider-agent"
+
+# File recording the Dockerfile hash at the last user-approved build.
+APPROVED_DOCKERFILE_NAME = ".approved-dockerfile"
+
+
+def _launcher_cache_dir() -> Path:
+    """Return the launcher-private cache directory."""
+    return Path.home() / ".cache" / LAUNCHER_CACHE_DIR_NAME
+
+
 def _configure_command_log(workspace_hash: str, session_id: str) -> Path:
     """Point the command log at a per-session file in the user's cache.
 
-    The log lives under the user-private ~/.cache/aider directory (created
-    0700) instead of a shared temp directory, so another local user cannot
-    plant a symlink at the guessable path in the first place. The file name
-    is derived from the workspace hash and session ID, so the location is
-    stable for a given session. The file is created on first write and
-    appended to afterwards, never truncated.
+    The log lives under the user-private ~/.cache/aider-agent directory
+    (created 0700) instead of a shared temp directory, so another local
+    user cannot plant a symlink at the guessable path in the first place.
+    The directory is also outside the container-visible ~/.cache/aider
+    mount (see run_container), so an in-container session cannot rewrite
+    the audit log of the launch that ran it. The file name is derived
+    from the workspace hash and session ID, so the location is stable
+    for a given session. The file is created on first write and appended
+    to afterwards, never truncated.
     """
     global COMMAND_LOG_PATH
-    cache_dir = Path.home() / ".cache" / "aider"
+    cache_dir = _launcher_cache_dir()
     try:
         cache_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     except OSError:
@@ -339,6 +379,10 @@ PROTECTED_CONFIG_KEYS = (
     "test-cmd",
     "lint-cmd",
     "auto-commits",
+    # LLM endpoint settings: a repo counterpart must never repoint a
+    # forwarded provider credential at an attacker-controlled server
+    # (see ENDPOINT_ENV_VARS and run_container).
+    "openai-api-base",
 )
 
 
@@ -1040,6 +1084,68 @@ def _image_cache_tag(dockerfile_path: Path, debug: bool = False) -> str:
     return f"aider-agent:c-{hasher.hexdigest()[:16]}"
 
 
+def _dockerfile_hash(dockerfile_path: Path) -> str:
+    """Return the sha256 of the Dockerfile bytes ("" when unreadable)."""
+    try:
+        return hashlib.sha256(dockerfile_path.read_bytes()).hexdigest()
+    except OSError:
+        return ""
+
+
+def _approved_dockerfile_hash() -> str:
+    """Return the Dockerfile hash recorded at the last approved build."""
+    try:
+        approved = _launcher_cache_dir() / APPROVED_DOCKERFILE_NAME
+        return approved.read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def _record_approved_dockerfile(dockerfile_path: Path) -> None:
+    """Record the Dockerfile hash as approved after a successful build."""
+    try:
+        cache_dir = _launcher_cache_dir()
+        cache_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        approved = cache_dir / APPROVED_DOCKERFILE_NAME
+        approved.write_text(
+            _dockerfile_hash(dockerfile_path) + "\n", encoding="utf-8"
+        )
+    except OSError:
+        pass
+
+
+def _rebuild_approved(dockerfile_path: Path, debug: bool = False) -> bool:
+    """Return True when building the repo-provided Dockerfile is allowed.
+
+    The build executes instructions from the repo-writable Dockerfile, so
+    a changed definition is rebuilt only with fresh user confirmation:
+    the current Dockerfile hash is compared against the hash recorded at
+    the last approved build, and a differing (or first-time) hash prompts
+    on an interactive session. Non-interactive sessions (tests, CI) cannot
+    prompt: the build proceeds after the visible warning, preserving
+    automation behavior (documented residual risk).
+    """
+    if _dockerfile_hash(dockerfile_path) == _approved_dockerfile_hash():
+        return True
+    print(
+        f"Warning: {dockerfile_path} executes repo-provided build "
+        "instructions and differs from the last approved build.",
+        file=sys.stderr,
+    )
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        if debug:
+            print(
+                "Note: non-interactive session; rebuild proceeding.",
+                file=sys.stderr,
+            )
+        return True
+    try:
+        answer = input("Approve rebuild? [y/N] ")
+    except (EOFError, KeyboardInterrupt):
+        return False
+    return answer.strip().lower() in ("y", "yes")
+
+
 def _image_exists(tag: str, debug: bool = False) -> bool:
     """Return True when a local Docker image exists for the given tag."""
     command = ["docker", "image", "inspect", tag]
@@ -1143,6 +1249,21 @@ def _ensure_github_known_hosts(debug: bool) -> None:
         )
 
 
+def _valid_container_home(home: str) -> bool:
+    """Return True when home is safe to embed in a bind-mount spec.
+
+    The value is embedded as "{home}/.ssh" inside a -v argument, so a
+    colon or whitespace would corrupt the mount spec (or inject extra
+    mount fields); a poisoned cache entry must never reach docker run.
+    """
+    return (
+        home.startswith("/")
+        and home != "/"
+        and ":" not in home
+        and not any(char.isspace() for char in home)
+    )
+
+
 def _container_passwd_home(cache_tag: str, debug: bool) -> Optional[str]:
     """Return the passwd home directory of the runtime uid in the image.
 
@@ -1154,13 +1275,13 @@ def _container_passwd_home(cache_tag: str, debug: bool) -> Optional[str]:
     when the lookup fails; the caller then keeps the legacy /home mount
     only.
     """
-    cache_path = Path.home() / ".cache" / "aider" / ".container-home"
+    cache_path = _launcher_cache_dir() / ".container-home"
     prefix = f"{cache_tag} "
     try:
         cached = cache_path.read_text(encoding="utf-8").splitlines()
         if cached and cached[0].startswith(prefix):
             home = cached[0][len(prefix):]
-            if home.startswith("/") and home != "/":
+            if _valid_container_home(home):
                 return home
     except OSError:
         pass
@@ -1198,7 +1319,7 @@ def _container_passwd_home(cache_tag: str, debug: bool) -> Optional[str]:
             )
         return None
     home = (result.stdout or "").strip()
-    if result.returncode != 0 or not home.startswith("/") or home == "/":
+    if result.returncode != 0 or not _valid_container_home(home):
         if debug:
             print(
                 f"Note: no passwd home for uid {uid} in {AIDER_IMAGE}; "
@@ -1541,6 +1662,25 @@ def build_image(
             pass
 
 
+def _repo_env_keys(env_file: Path) -> set[str]:
+    """Return the variable names set by a repo .env file (names only).
+
+    Values are never read; the names drive the endpoint neutralization in
+    run_container (see ENDPOINT_ENV_VARS).
+    """
+    try:
+        text = env_file.read_text(errors="replace")
+    except OSError:
+        return set()
+    keys: set[str] = set()
+    for raw in text.splitlines():
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        keys.add(stripped.split("=", 1)[0].strip())
+    return keys
+
+
 def run_container(
     workspace_hash: str,
     session_id: str,
@@ -1705,10 +1845,13 @@ def run_container(
     env_file = project_root / ".env"
     agent_env_file = agent_dir / ".env"
 
+    effective_env_file: Optional[Path] = None
     if env_file.exists():
         command.extend(["--env-file", str(env_file)])
+        effective_env_file = env_file
     elif agent_env_file.exists():
         command.extend(["--env-file", str(agent_env_file)])
+        effective_env_file = agent_env_file
 
     # Environment forwards placed after --env-file so a project .env file
     # cannot override them (e.g. redirecting HOME or disarming SSH agent
@@ -1734,6 +1877,25 @@ def run_container(
     for var in CREDENTIAL_ENV_VARS:
         if var in os.environ:
             command.extend(["-e", var])
+
+    # LLM endpoints are never taken from repo files: a hostile checkout
+    # could repoint a forwarded credential at an attacker-controlled
+    # server. Host-exported endpoint values are forwarded (host wins over
+    # --env-file); repo-only values are neutralized to empty so the
+    # container falls back to the provider's default endpoint.
+    for var in ENDPOINT_ENV_VARS:
+        if var in os.environ:
+            command.extend(["-e", var])
+        elif (
+            effective_env_file is not None
+            and var in _repo_env_keys(effective_env_file)
+        ):
+            command.extend(["-e", f"{var}="])
+            print(
+                f"Warning: {effective_env_file} sets {var}; ignored because "
+                "repo files cannot set LLM endpoints.",
+                file=sys.stderr,
+            )
 
     command.append(AIDER_IMAGE)
     command.extend(["--chat-mode", "ask"])
@@ -1874,8 +2036,19 @@ def main() -> int:
         )
         build_code = 0
     else:
+        # The build executes instructions from the repo-writable
+        # Dockerfile, so a changed definition is rebuilt only with fresh
+        # user confirmation (see _rebuild_approved).
+        if not _rebuild_approved(dockerfile_path, debug=debug):
+            print(
+                "Rebuild declined; launch aborted. Inspect "
+                f"{dockerfile_path}, then re-run to approve the build.",
+                file=sys.stderr,
+            )
+            return 1
         build_code = build_image(dockerfile_path, AGENT_DIR, debug=debug)
         if build_code == 0:
+            _record_approved_dockerfile(dockerfile_path)
             command = ["docker", "tag", AIDER_IMAGE, cache_tag]
             _trace_command(command, debug)
             subprocess.run(
