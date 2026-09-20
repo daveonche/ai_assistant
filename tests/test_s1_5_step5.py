@@ -217,11 +217,13 @@ def test_credential_value_absent_from_files_and_traces(tmp_path):
 
     # ...nor in the per-session command log (asserted written this session,
     # so the absence check is meaningful, not vacuous). The log path mirrors
-    # the launcher's own derivation: ~/.cache/aider under the session HOME,
+    # the launcher's own derivation: ~/.cache/aider-agent under the session
+    # HOME — the launcher-private directory, outside the container-visible
+    # ~/.cache/aider mount (see _launcher_cache_dir in ai_assistant.py) —
     # named by md5 of the workspace path + session id.
     workspace_hash = hashlib.md5((str(sandbox) + "\n").encode()).hexdigest()
     command_log = (
-        sandbox / "home" / ".cache" / "aider"
+        sandbox / "home" / ".cache" / "aider-agent"
         / f"ai-assistant-{workspace_hash[:8]}-s1-5-5.log"
     )
     assert command_log.is_file(), command_log
