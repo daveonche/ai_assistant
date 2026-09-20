@@ -150,10 +150,12 @@ The Sprint 3 release-management work (REQ-15) is verified and recorded:
 release-reference consistency, the release tag guard, and the release script
 all pass their verification suites. All Sprint 4 stories (S4.1 mergeable root
 configuration, S4.2 framework detection and conventions recommendation, S4.3
-README `--auto` release example fix, and the S4.4 record-keeping story) are
-implemented and verified; their source evidence is recorded in the Sprint 4
-section above. Every requirement (REQ-1 through REQ-15) is implemented with
-source evidence, and the backlog is empty.
+README `--auto` release example fix, S4.5 container SSH support for git
+remotes, S4.6 container build tooling fixes, S4.7 container image pins and
+offline pre-bakes, and the S4.4 record-keeping story) are implemented and
+verified; their source evidence is recorded in the Sprint 4 section above.
+Every requirement (REQ-1 through REQ-15) is implemented with source evidence,
+and the backlog is empty.
 
 Priority 1 - New capability intake:
 
