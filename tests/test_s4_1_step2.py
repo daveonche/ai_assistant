@@ -311,7 +311,9 @@ def test_merged_config_args_both_present_points_at_intermediate(assistant, works
     assert args[ignore_index + 1] == str(agent_dir / ".aiderignore")
 
 
-def test_merged_config_args_root_only_points_at_root_file(assistant, workspace):
+def test_merged_config_args_root_only_points_at_filtered_intermediate(
+    assistant, workspace
+):
     agent_dir = workspace / ".agent"
     (agent_dir / ".aider.conf.yml").unlink()
     _write_root_counterparts(workspace, [".aider.conf.yml"])
@@ -321,7 +323,12 @@ def test_merged_config_args_root_only_points_at_root_file(assistant, workspace):
     )
 
     index = args.index("--config")
-    assert args[index + 1] == str(workspace / ".aider.conf.yml")
+    # Root-only value configs are filtered through the deterministic
+    # intermediate (protected confirmation keys stripped), never passed
+    # through raw (see _write_root_only_value_file).
+    assert args[index + 1] == str(agent_dir / ".merged" / ".aider.conf.yml")
+    doc = assistant._yaml_load(Path(args[index + 1]).read_text(encoding="utf-8"))
+    assert doc == {"auto_commits": True, "weak_model": "gpt-4o-mini"}
 
 
 def test_merged_config_args_mixed_counterparts(assistant, workspace):
