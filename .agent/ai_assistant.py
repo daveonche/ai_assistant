@@ -1120,12 +1120,24 @@ def _rebuild_approved(dockerfile_path: Path, debug: bool = False) -> bool:
     The build executes instructions from the repo-writable Dockerfile, so
     a changed definition is rebuilt only with fresh user confirmation:
     the current Dockerfile hash is compared against the hash recorded at
-    the last approved build, and a differing (or first-time) hash prompts
-    on an interactive session. Non-interactive sessions (tests, CI) cannot
-    prompt: the build proceeds after the visible warning, preserving
-    automation behavior (documented residual risk).
+    the last approved build, and a differing hash prompts on an
+    interactive session. A first-time build (nothing approved yet) is
+    not gated: prompting there would hang unattended launch chains whose
+    stdin is never written (pty drivers, editor integrations); the hash
+    is recorded on success, so every later change is gated. Non-
+    interactive sessions (tests, CI) cannot prompt: the build proceeds
+    after the visible warning, preserving automation behavior (documented
+    residual risk).
     """
-    if _dockerfile_hash(dockerfile_path) == _approved_dockerfile_hash():
+    approved = _approved_dockerfile_hash()
+    if _dockerfile_hash(dockerfile_path) == approved:
+        return True
+    if not approved:
+        print(
+            f"Warning: {dockerfile_path} executes repo-provided build "
+            "instructions; the build is recorded as approved on success.",
+            file=sys.stderr,
+        )
         return True
     print(
         f"Warning: {dockerfile_path} executes repo-provided build "

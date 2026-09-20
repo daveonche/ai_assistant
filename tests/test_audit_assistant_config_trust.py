@@ -2,10 +2,12 @@
 
 Covers audit Findings 1-3:
 
-1. A changed (or first-time) repo-writable .agent/Dockerfile.aider must
-   not be rebuilt without fresh interactive confirmation: the build
-   executes repo-provided instructions and the image runs with the host
-   docker socket and forwarded credentials.
+1. A repo-writable .agent/Dockerfile.aider that differs from the last
+   user-approved build must not be rebuilt without fresh interactive
+   confirmation: the build executes repo-provided instructions and the
+   image runs with the host docker socket and forwarded credentials.
+   (First-time builds proceed with a warning: prompting there would hang
+   unattended pty launch chains whose stdin is never written.)
 2. A repo .env file must not be able to set LLM endpoint variables,
    which would send host-forwarded provider keys to an
    attacker-controlled server.
@@ -230,16 +232,26 @@ def _dockerfile_cache_tag(dockerfile: Path) -> str:
 
 
 def test_declined_rebuild_blocks_build_and_launch(tmp_path: Path):
-    """A first-time (unapproved) Dockerfile must not be built when the
-    interactive user declines the rebuild confirmation."""
+    """A Dockerfile that differs from the last approved build must not be
+    rebuilt when the interactive user declines the confirmation."""
     sandbox = _make_sandbox(tmp_path)
     stub_dir = _write_docker_stub(sandbox)
+
+    # First launch (non-interactive: warns and proceeds) records the
+    # approved Dockerfile hash.
+    first = run_chain(sandbox, stub_dir, [])
+    assert first.returncode == 0, first.stderr
+    offset = len(stub_invocations(sandbox))
+
+    dockerfile = sandbox / ".agent" / "Dockerfile.aider"
+    with dockerfile.open("a", encoding="utf-8") as handle:
+        handle.write("# rebuild probe\n")
 
     result = run_chain_pty(sandbox, stub_dir, answer="n\n")
     transcript = result.stdout
 
     assert result.returncode != 0, transcript
-    invocations = stub_invocations(sandbox)
+    invocations = stub_invocations(sandbox)[offset:]
     assert not _builds(invocations), invocations
     assert not _container_runs(invocations), invocations
     assert "repo-provided build instructions" in transcript, transcript
