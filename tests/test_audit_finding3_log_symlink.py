@@ -88,6 +88,9 @@ esac
 def _make_sandbox(tmp_path: Path) -> Path:
     sandbox = tmp_path / "project"
     (sandbox / ".agent").mkdir(parents=True)
+    # Created here, not only in _launcher_env: the symlink-target tests
+    # write the victim file into sandbox/home before the launcher runs.
+    (sandbox / "home").mkdir()
     for rel in SANDBOX_FILES:
         shutil.copy2(REPO_ROOT / rel, sandbox / rel)
     return sandbox
