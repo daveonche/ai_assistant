@@ -35,7 +35,9 @@ them to the `$` syntax used by top-level orchestrator commands.
 
 To optimize token usage and maintain focus, load prompt files on demand: when
 you need a specific prompt to answer the user's request, or when the user uses
-a shorthand command, output the corresponding command.
+a shorthand command, output the corresponding command. Before requesting any
+file that is not already in context, run the Context Hygiene sweep (see below)
+first to free space before spending new tokens.
 
 ## Command Syntax and Mappings
 
@@ -149,11 +151,18 @@ switch, and `$session-checkpoint`:
 1. Identify files in context that are no longer required by the active
    work — outside the workflow's required context set and not targets
    of upcoming steps.
-2. Announce each with a one-line reason it is droppable and output its `/drop`
-   command inline (per Critical Rules). Never drop silently; never execute
-   `/drop` yourself.
+2. Announce each file with a one-line reason it is droppable, then output all
+   droppable paths together under a single `/drop` command on one line,
+   space-separated (e.g., `/drop <path1> <path2>`), inline (per Critical
+   Rules). Never drop silently; never execute `/drop` yourself.
 3. Note that dropped files remain recoverable from git via
    `/read-only <path>` at any time.
+
+Before outputting any `/read-only` command for a file whose contents are not
+already in the transcript (per Critical Rule 3), run this sweep first and
+announce any droppables with the single `/drop` line, so context is freed
+before new files are loaded. If nothing is droppable, say so in one line and
+proceed with the request.
 
 ## Workflow Orchestration Mode
 
