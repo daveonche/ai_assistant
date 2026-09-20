@@ -157,6 +157,15 @@ verified; their source evidence is recorded in the Sprint 4 section above.
 Every requirement (REQ-1 through REQ-15) is implemented with source evidence,
 and the backlog is empty.
 
+Post-Sprint-4 orchestration-config hygiene work (REQ-7, REQ-9, REQ-12, and
+REQ-13) is also implemented and verified: one-line droppable format and
+sweep-before-request context-hygiene rules in `.agent/AGENTS.md` (commit
+af20f11), the one-line `/read-only`/`/add` file-request format with Critical
+Rule 5 in `.agent/AGENTS.md` (commit 781ac6e), and default project input
+locations baked into the implementation-analysis prompt
+`.agent/.aider.prompt/planning/implementation-analysis/SKILL.md` (commit
+70d0e84); the full suite stayed green after each change.
+
 Priority 1 - New capability intake:
 
 - No outstanding requirements remain; the next sprint requires user-introduced features or requirements (the same pattern that produced Sprint 4's S4.1-S4.3 and S4.5-S4.7)
