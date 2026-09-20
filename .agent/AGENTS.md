@@ -54,6 +54,13 @@ are internal to a mapped workflow (see Workflow Chain Execution).
 `$agent-orchestrator`, `$workflow-orchestrator` (alias), `$code-review <file>`,
 and `$session-checkpoint` map to the canonical descriptions under Commands.
 
+File request format: when one or more files must be added to the chat for
+reading only, request them under a single `/read-only` command on one line,
+space-separated (e.g., `/read-only <path1> <path2>`); when one or more files
+must be added for editing, request them under a single `/add` command on one
+line, space-separated (e.g., `/add <path1> <path2>`). This mirrors the
+one-line droppables format under Context Hygiene.
+
 ## Placeholder Convention
 
 Bracketed items inside quoted output templates (e.g., `[promptname]`,
@@ -236,3 +243,7 @@ do not ask them to paste output manually.
 2. Always wait for explicit user input at [STOP] points; if the input is invalid or unexpected, re-prompt with the original question.
 3. A file counts as in context when its contents appear anywhere in the conversation — including the initial read-only reference set — not only via a recent `/read-only` confirmation. Scan the full transcript before asking the user to run `/read-only`; request it only when the contents are absent from the transcript or the on-disk copy may have changed since it was added.
 4. Never construct a file path that is not stated verbatim in a SKILL.md, a routing table, or the transcript. When a required file's location is unknown, ask the user for its actual path instead of inferring it from sibling directories or similar file names.
+5. Request files in the one-line format: a single space-separated
+   `/read-only <path1> <path2>` command for files needed for reading only, and
+   a single space-separated `/add <path1> <path2>` command for files that need
+   editing. Never output one command per file.
