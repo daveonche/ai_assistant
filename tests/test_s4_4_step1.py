@@ -44,7 +44,9 @@ def test_s43_entry_present_in_sprint4_section():
 def test_s43_entry_lists_all_steps_completed():
     """The S4.3 entry lists Steps 1-3 all as checked items."""
     sprint4 = _sprint4_text()
-    entry = sprint4[sprint4.index("### Story S4.3:") :]
+    start = sprint4.index("### Story S4.3:")
+    end = sprint4.find("### Story", start + 1)
+    entry = sprint4[start:] if end == -1 else sprint4[start:end]
     checked_steps = [
         line for line in entry.splitlines() if line.startswith("- [x] Step ")
     ]
