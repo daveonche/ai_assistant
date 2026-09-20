@@ -210,3 +210,32 @@ def test_merged_intermediate_symlink_does_not_reach_victim_file(tmp_path):
         )
     finally:
         _command_log_path(sandbox, "audit-finding-3").unlink(missing_ok=True)
+
+
+def test_merged_ignore_symlink_does_not_reach_victim_file(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    # Both ignore copies present -> the launcher writes the union
+    # intermediate to .agent/.merged/.aiderignore. The symlink planted
+    # there must never redirect the write onto the victim file.
+    (sandbox / ".agent" / ".aiderignore").write_text("node_modules\n")
+    (sandbox / ".aiderignore").write_text("dist\n")
+
+    victim = sandbox / "home" / "victim.txt"
+    victim.write_text("victim original content\n")
+
+    merged_dir = sandbox / ".agent" / ".merged"
+    merged_dir.mkdir()
+    (merged_dir / ".aiderignore").symlink_to(victim)
+
+    try:
+        result = run_chain(sandbox, stub_dir, [])
+        assert result.returncode == 0, result.stderr
+
+        assert victim.read_text() == "victim original content\n", (
+            "launcher wrote the merged ignore intermediate through a "
+            "planted symlink"
+        )
+    finally:
+        _command_log_path(sandbox, "audit-finding-3").unlink(missing_ok=True)
