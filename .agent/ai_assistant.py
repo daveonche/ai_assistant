@@ -168,15 +168,18 @@ def _trace_command(command: list[str], debug: bool) -> None:
     if COMMAND_LOG_PATH is not None:
         try:
             COMMAND_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-            # 0600 on creation and afterwards: the log lives in a shared
-            # temp directory and must stay private to the launching user
-            # (chmod also tightens files created by older versions).
+            # 0600 on creation and afterwards: the log holds the session's
+            # engine commands and must stay private to the launching user
+            # (fchmod also tightens files created by older versions).
+            # O_NOFOLLOW keeps the append on the real log file: a symlink
+            # planted at the predictable path is never followed, and the
+            # mode change lands on the opened file, not on a link target.
             fd = os.open(
                 COMMAND_LOG_PATH,
-                os.O_WRONLY | os.O_CREAT | os.O_APPEND,
+                os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW,
                 0o600,
             )
-            os.chmod(COMMAND_LOG_PATH, 0o600)
+            os.fchmod(fd, 0o600)
             with os.fdopen(fd, "a", encoding="utf-8") as log_file:
                 log_file.write(line + "\n")
         except OSError:
@@ -186,16 +189,23 @@ def _trace_command(command: list[str], debug: bool) -> None:
 
 
 def _configure_command_log(workspace_hash: str, session_id: str) -> Path:
-    """Point the command log at a predictable per-session file.
+    """Point the command log at a per-session file in the user's cache.
 
-    The file name is derived from the workspace hash and session ID, so the
-    location is stable for a given session. The file is created on first
-    write and appended to afterwards, never truncated.
+    The log lives under the user-private ~/.cache/aider directory (created
+    0700) instead of a shared temp directory, so another local user cannot
+    plant a symlink at the guessable path in the first place. The file name
+    is derived from the workspace hash and session ID, so the location is
+    stable for a given session. The file is created on first write and
+    appended to afterwards, never truncated.
     """
     global COMMAND_LOG_PATH
+    cache_dir = Path.home() / ".cache" / "aider"
+    try:
+        cache_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    except OSError:
+        pass
     COMMAND_LOG_PATH = (
-        Path(tempfile.gettempdir())
-        / f"ai-assistant-{workspace_hash[:8]}-{session_id}.log"
+        cache_dir / f"ai-assistant-{workspace_hash[:8]}-{session_id}.log"
     )
     return COMMAND_LOG_PATH
 
@@ -319,6 +329,36 @@ VALUE_CONFIG_FLAGS = {
 }
 
 
+# Configuration keys that control whether the assistant auto-approves and
+# executes commands. A project-root counterpart must never override them:
+# the human-confirmation control is load-bearing because the container
+# mounts the host docker.sock (see run_container).
+PROTECTED_CONFIG_KEYS = (
+    "yes",
+    "auto-test",
+    "test-cmd",
+    "lint-cmd",
+    "auto-commits",
+)
+
+
+def _strip_protected_keys(doc):
+    """Return doc without the protected confirmation keys.
+
+    Applied to the project-root document before merging so untrusted repo
+    configuration can only add settings, never weaken the launcher's
+    built-in human-confirmation controls (see PROTECTED_CONFIG_KEYS).
+    Non-mapping documents are returned unchanged.
+    """
+    if not isinstance(doc, dict):
+        return doc
+    return {
+        key: value
+        for key, value in doc.items()
+        if key not in PROTECTED_CONFIG_KEYS
+    }
+
+
 def _deep_merge(base, override):
     """Combine nested structures level by level; override wins conflicts.
 
@@ -361,7 +401,13 @@ def _merge_model_settings(base, override):
 
 
 def _merge_value_documents(name: str, agent_doc, root_doc):
-    """Dispatch the merge strategy for one value-based config file."""
+    """Dispatch the merge strategy for one value-based config file.
+
+    The project-root document is filtered through _strip_protected_keys
+    first, so a repo counterpart cannot override the confirmation controls
+    regardless of which merge strategy applies.
+    """
+    root_doc = _strip_protected_keys(root_doc)
     if name == ".aider.model.settings.yml":
         return _merge_model_settings(agent_doc, root_doc)
     return _deep_merge(agent_doc, root_doc)
@@ -614,6 +660,30 @@ def _yaml_dump(value) -> str:
     return "\n".join(_yaml_dump_lines(value, 0)) + "\n"
 
 
+def _atomic_write_text(path: Path, text: str) -> None:
+    """Write text to path without following a symlink planted there.
+
+    Writes a temporary file in the destination directory and renames it
+    over the destination: os.replace() swaps the directory entry itself,
+    so a symlink at path is replaced rather than followed and the bytes
+    never reach the link target. The temporary file is created 0600 by
+    mkstemp and removed again if the write or rename fails.
+    """
+    fd, temp_name = tempfile.mkstemp(
+        dir=str(path.parent), prefix=f".{path.name}.", suffix=".tmp"
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(text)
+        os.replace(temp_name, path)
+    finally:
+        if os.path.exists(temp_name):
+            try:
+                os.unlink(temp_name)
+            except OSError:
+                pass
+
+
 def _write_merged_value_file(
     agent_dir: Path,
     name: str,
@@ -652,7 +722,7 @@ def _write_merged_value_file(
             merged_path.read_text(encoding="utf-8") if merged_path.exists() else None
         )
         if existing != serialized:
-            merged_path.write_text(serialized, encoding="utf-8")
+            _atomic_write_text(merged_path, serialized)
     except (OSError, ValueError):
         if debug:
             print(
@@ -671,20 +741,24 @@ def _merge_aiderignore(agent_file: Path, root_file: Path) -> list[str]:
     original order first, then root-only patterns in their original order,
     so the result is deterministic for identical inputs; duplicates are
     counted once. Trailing whitespace is dropped (not significant in
-    gitignore syntax); everything else is preserved as-is, including
-    negation patterns.
+    gitignore syntax). Agent negation patterns are preserved; root-supplied
+    negations are dropped so the union can only add ignoring, never remove
+    it: gitignore semantics are last-match-wins, and a trailing root
+    negation would otherwise unignore paths the agent policy protects.
 
     Raises OSError when either file cannot be read, so the caller can fall
     back to single-file pass-through instead of losing one side's patterns.
     """
     patterns: list[str] = []
     seen: set[str] = set()
-    for file in (agent_file, root_file):
+    for file, allow_negations in ((agent_file, True), (root_file, False)):
         for line in file.read_text(encoding="utf-8").splitlines():
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 continue
             pattern = line.rstrip()
+            if not allow_negations and pattern.startswith("!"):
+                continue
             if pattern not in seen:
                 seen.add(pattern)
                 patterns.append(pattern)

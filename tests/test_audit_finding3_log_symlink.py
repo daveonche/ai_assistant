@@ -18,7 +18,6 @@ import hashlib
 import os
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -134,10 +133,19 @@ def run_chain(
 
 
 def _command_log_path(sandbox: Path, session_id: str) -> Path:
-    """Replicate the launcher's command-log path derivation."""
+    """Replicate the launcher's command-log path derivation.
+
+    Mirrors _configure_command_log: the log lives under ~/.cache/aider,
+    named by workspace hash and session ID. HOME is redirected into the
+    sandbox by _launcher_env, so the launcher's Path.home() resolves to
+    sandbox/home — the same directory used here.
+    """
     workspace_hash = hashlib.md5((str(sandbox.resolve()) + "\n").encode()).hexdigest()
     return (
-        Path(tempfile.gettempdir())
+        sandbox
+        / "home"
+        / ".cache"
+        / "aider"
         / f"ai-assistant-{workspace_hash[:8]}-{session_id}.log"
     )
 
