@@ -37,5 +37,47 @@ if [[ -z "${SSH_AUTH_SOCK:-}" && -d "${HOME}/.ssh" && -t 0 && -t 1 ]] \
   fi
 fi
 
+# Best-effort: pin GitHub's published SSH host keys so git push/pull over
+# SSH remotes never stalls on a host-key prompt inside the container. The
+# ed25519 and ecdsa keys are embedded; the rsa key is too long to embed
+# reliably and is fetched from GitHub's API instead. A key is appended
+# only if its SHA256 fingerprint matches GitHub's published fingerprint,
+# and only when that key type is not already pinned. Interactive-only and
+# never fatal, matching the ssh-agent block above.
+if [[ -t 0 && -t 1 ]] && command -v ssh-keygen >/dev/null 2>&1; then
+  github_known_hosts="${HOME:-}/.ssh/known_hosts"
+  github_rsa_key=""
+  # Fetch the rsa key only while no rsa key is pinned for github.com yet.
+  if command -v curl >/dev/null 2>&1 && ! ssh-keygen -F github.com \
+      -f "$github_known_hosts" 2>/dev/null | grep -qF ' ssh-rsa '; then
+    github_rsa_key="$(
+      curl -fsSL --max-time 10 https://api.github.com/meta 2>/dev/null \
+        | grep -o '"ssh-rsa [^"]*"' | head -n 1 | tr -d '"'
+    )" || true
+  fi
+  github_rsa_triplet=""
+  if [[ -n "$github_rsa_key" ]]; then
+    github_rsa_triplet="ssh-rsa|${github_rsa_key#ssh-rsa }"
+    github_rsa_triplet+="|SHA256:uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s"
+  fi
+  # Each entry is key-type|key-blob|GitHub's published SHA256 fingerprint.
+  while IFS='|' read -r key_type key_blob key_fp; do
+    [[ -n "$key_type" ]] || continue
+    # Refuse any key whose fingerprint is not GitHub's published one.
+    printf '%s %s\n' "$key_type" "$key_blob" | ssh-keygen -lf - 2>/dev/null \
+      | grep -qF -- "$key_fp" || continue
+    if ! ssh-keygen -F github.com -f "$github_known_hosts" 2>/dev/null \
+        | grep -qF -- "$key_blob"; then
+      ( mkdir -p "${HOME:-}/.ssh"
+        printf 'github.com %s %s\n' "$key_type" "$key_blob" \
+          >> "$github_known_hosts" ) 2>/dev/null || true
+    fi
+  done <<EOF
+ssh-ed25519|AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl|SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU
+ecdsa-sha2-nistp256|AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=|SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM
+${github_rsa_triplet}
+EOF
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 exec python3 "${SCRIPT_DIR}/ai_assistant.py" "$@"
