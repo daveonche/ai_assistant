@@ -852,13 +852,6 @@ def _write_merged_ignore_file(
     try:
         patterns = _merge_aiderignore(agent_file, root_file)
         serialized = "\n".join(patterns) + "\n"
-        merged_path = agent_dir / MERGED_DIR_NAME / ".aiderignore"
-        merged_path.parent.mkdir(parents=True, exist_ok=True)
-        existing = (
-            merged_path.read_text(encoding="utf-8") if merged_path.exists() else None
-        )
-        if existing != serialized:
-            merged_path.write_text(serialized, encoding="utf-8")
     except OSError:
         if debug:
             print(
@@ -867,7 +860,14 @@ def _write_merged_ignore_file(
                 file=sys.stderr,
             )
         return None
-    return merged_path
+    return _write_serialized_intermediate(
+        agent_dir,
+        ".aiderignore",
+        serialized,
+        debug,
+        "Warning: could not merge .aiderignore; using the assistant "
+        "default.",
+    )
 
 
 def _merged_config_args(
