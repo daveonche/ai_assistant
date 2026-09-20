@@ -1010,15 +1010,21 @@ def _container_passwd_home(cache_tag: str, debug: bool) -> Optional[str]:
     except OSError:
         pass
     uid = os.getuid()
+    # --user mirrors real launches: the image's default USER may not exist in
+    # /etc/passwd, which aborts the lookup ("unable to find user"). awk
+    # matches the uid field (3rd), not the username field, so the passwd home
+    # is found even when the account name differs from the uid string.
     command = [
         "docker",
         "run",
         "--rm",
+        "--user",
+        str(uid),
         "--entrypoint",
         "/bin/sh",
         AIDER_IMAGE,
         "-c",
-        f"grep '^{uid}:' /etc/passwd | cut -d: -f6",
+        f"awk -F: -v u={uid} '$3 == u {{print $6}}' /etc/passwd",
     ]
     _trace_command(command, debug)
     try:
