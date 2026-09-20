@@ -221,3 +221,53 @@ def test_buildx_state_redirected_to_writable_cache(tmp_path):
     # state at the writable cache mount so in-container builds succeed.
     env_values = _values_after(run_inv, "-e")
     assert "BUILDX_CONFIG=/home/.cache/buildx" in env_values, env_values
+
+
+def test_ssh_directory_mounted_read_only(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    # The launcher resolves ~/.ssh from its own HOME (the sandbox's home
+    # directory); create it so the conditional mount fires.
+    ssh_dir = sandbox / "home" / ".ssh"
+    ssh_dir.mkdir(parents=True)
+
+    result = run_chain(sandbox, stub_dir, [])
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+
+    # The host ~/.ssh is bind-mounted read-only at the identical path so
+    # git push/pull over SSH remotes works inside the container.
+    mounts = _values_after(run_inv, "-v")
+    assert f"{ssh_dir}:/home/.ssh:ro" in mounts, mounts
+
+
+def test_ssh_agent_socket_forwarded_when_present(tmp_path):
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+
+    ssh_dir = sandbox / "home" / ".ssh"
+    ssh_dir.mkdir(parents=True)
+
+    # The launcher only checks that the SSH_AUTH_SOCK path exists; a
+    # regular file satisfies that check, and the stub records argv only.
+    agent_sock = sandbox / "agent.sock"
+    agent_sock.touch()
+
+    result = run_chain(
+        sandbox,
+        stub_dir,
+        [],
+        extra_env={"SSH_AUTH_SOCK": str(agent_sock)},
+    )
+    assert result.returncode == 0, result.stderr
+
+    run_inv = _last_run(stub_invocations(sandbox))
+
+    # The host agent socket is mounted at its identical path and the
+    # variable is forwarded by name, so passphrase-protected keys work
+    # inside the container through the host's unlocked agent.
+    mounts = _values_after(run_inv, "-v")
+    assert f"{agent_sock}:{agent_sock}" in mounts, mounts
+    assert "SSH_AUTH_SOCK" in _values_after(run_inv, "-e"), run_inv

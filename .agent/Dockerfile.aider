@@ -47,7 +47,8 @@ RUN --mount=type=cache,target=/var/cache/apt \
         libpulse0 \
         alsa-utils \
         chromium \
-        cmark-gfm
+        cmark-gfm \
+        openssh-client
 
 # ---- Layer B: pre-bake the Python embedding model ---------------------------
 # Expensive but rarely changing: placed before anything volatile so it stays

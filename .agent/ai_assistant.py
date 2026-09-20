@@ -1340,6 +1340,25 @@ def run_container(
     if docker_config.exists():
         command.extend(["-v", f"{docker_config}:/home/.docker:ro"])
 
+    # Mounted read-only so git push/pull over SSH remotes works inside the
+    # container: keys, config, and known_hosts travel together, and the
+    # container can never modify the host's SSH state.
+    ssh_dir = Path(home) / ".ssh"
+    if ssh_dir.is_dir():
+        command.extend(["-v", f"{ssh_dir}:/home/.ssh:ro"])
+
+    # Agent-forwarded SSH: mount the host agent socket at its identical
+    # path and forward the variable by name, so passphrase-protected keys
+    # work without copying them (same pattern as the pulse socket mount).
+    ssh_auth_sock = os.environ.get("SSH_AUTH_SOCK")
+    if ssh_auth_sock and Path(ssh_auth_sock).exists():
+        command.extend([
+            "-v",
+            f"{ssh_auth_sock}:{ssh_auth_sock}",
+            "-e",
+            "SSH_AUTH_SOCK",
+        ])
+
     command.extend(["-v", f"{cache_dir}:/home/.cache"])
 
     if Path(pulse_user_dir).exists():
