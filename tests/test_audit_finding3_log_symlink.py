@@ -160,6 +160,10 @@ def test_command_log_symlink_does_not_reach_victim_file(tmp_path):
     original_mode = victim.stat().st_mode & 0o777
 
     log_path = _command_log_path(sandbox, session_id)
+    # The launcher creates ~/.cache/aider during _configure_command_log,
+    # but the symlink must be planted before the launcher runs — an
+    # attacker pre-creating the directory is part of the threat model.
+    log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.symlink_to(victim)
 
     try:
