@@ -23,6 +23,7 @@ from this design:
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import os
@@ -69,6 +70,28 @@ CREDENTIAL_ENV_VARS = (
     "COHERE_API_KEY",
     "TOGETHER_API_KEY",
     "HF_TOKEN",
+)
+
+# GitHub's published SSH host keys and their officially published SHA256
+# fingerprints. The rsa key is not pinned (too long to embed safely);
+# modern clients negotiate GitHub's ed25519 host key first. A key is
+# appended to the host known_hosts only when its computed fingerprint
+# matches the published one, so a tampered source can never inject a
+# host key (see _ensure_github_known_hosts).
+GITHUB_ED25519_KEY = (
+    "AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabg"
+    "H5C9okWi0dh2l9GKJl"
+)
+GITHUB_ECDSA_KEY = (
+    "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAA"
+    "BBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRg"
+    "g6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg="
+)
+GITHUB_ED25519_FINGERPRINT = (
+    "SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU"
+)
+GITHUB_ECDSA_FINGERPRINT = (
+    "SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM"
 )
 
 ANSI_RED = "\033[31m"
@@ -145,7 +168,16 @@ def _trace_command(command: list[str], debug: bool) -> None:
     if COMMAND_LOG_PATH is not None:
         try:
             COMMAND_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-            with COMMAND_LOG_PATH.open("a", encoding="utf-8") as log_file:
+            # 0600 on creation and afterwards: the log lives in a shared
+            # temp directory and must stay private to the launching user
+            # (chmod also tightens files created by older versions).
+            fd = os.open(
+                COMMAND_LOG_PATH,
+                os.O_WRONLY | os.O_CREAT | os.O_APPEND,
+                0o600,
+            )
+            os.chmod(COMMAND_LOG_PATH, 0o600)
+            with os.fdopen(fd, "a", encoding="utf-8") as log_file:
                 log_file.write(line + "\n")
         except OSError:
             pass
@@ -605,7 +637,7 @@ def _write_merged_value_file(
             root_doc = _yaml_load(root_file.read_text(encoding="utf-8"))
             merged_doc = _merge_value_documents(name, agent_doc, root_doc)
             serialized = _yaml_dump(merged_doc)
-    except (OSError, ValueError):
+    except (OSError, ValueError, RecursionError):
         if debug:
             print(
                 f"Warning: could not merge {name}; using the assistant default.",
@@ -895,6 +927,130 @@ def _warn_agent_dir_location(project_root: Path) -> None:
             "container.",
             file=sys.stderr,
         )
+
+
+def _ssh_fingerprint(key_blob: str) -> Optional[str]:
+    """Return the OpenSSH SHA256 fingerprint of a base64 key blob.
+
+    Mirrors `ssh-keygen -lf` output: "SHA256:" plus unpadded base64 of
+    the SHA256 digest over the decoded wire-format key blob.
+    """
+    try:
+        decoded = base64.b64decode(key_blob, validate=True)
+    except ValueError:
+        return None
+    digest = hashlib.sha256(decoded).digest()
+    return "SHA256:" + base64.b64encode(digest).decode("ascii").rstrip("=")
+
+
+def _ensure_github_known_hosts(debug: bool) -> None:
+    """Pin GitHub's published SSH host keys in the host known_hosts file.
+
+    Appends a key only when its computed SHA256 fingerprint matches the
+    published fingerprint and the blob is not already present, so the
+    file is never rewritten and a tampered source cannot inject a host
+    key. Best-effort and non-fatal: failure only means ssh may prompt on
+    the next push.
+    """
+    candidates = [
+        ("ssh-ed25519", GITHUB_ED25519_KEY, GITHUB_ED25519_FINGERPRINT),
+        ("ecdsa-sha2-nistp256", GITHUB_ECDSA_KEY, GITHUB_ECDSA_FINGERPRINT),
+    ]
+    ssh_dir = Path.home() / ".ssh"
+    known_hosts = ssh_dir / "known_hosts"
+    try:
+        ssh_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        existing = (
+            known_hosts.read_text(encoding="utf-8", errors="replace")
+            if known_hosts.exists()
+            else ""
+        )
+    except OSError as exc:
+        print(f"Warning: cannot update {known_hosts}: {exc}", file=sys.stderr)
+        return
+    additions = [
+        f"github.com {key_type} {blob}\n"
+        for key_type, blob, fingerprint in candidates
+        if _ssh_fingerprint(blob) == fingerprint and blob not in existing
+    ]
+    if not additions:
+        return
+    try:
+        with known_hosts.open("a", encoding="utf-8") as handle:
+            handle.writelines(additions)
+    except OSError as exc:
+        print(f"Warning: cannot update {known_hosts}: {exc}", file=sys.stderr)
+        return
+    if debug:
+        print(
+            f"Pinned {len(additions)} GitHub host key(s) in {known_hosts}.",
+            file=sys.stderr,
+        )
+
+
+def _container_passwd_home(cache_tag: str, debug: bool) -> Optional[str]:
+    """Return the passwd home directory of the runtime uid in the image.
+
+    OpenSSH resolves default identity and known_hosts paths from the
+    passwd home (pw_dir), not from $HOME, so the host ~/.ssh mount must
+    target pw_dir for key authentication to work without explicit -i
+    flags. The value is discovered with a one-shot container and cached
+    in the host aider cache keyed by the image cache tag. Returns None
+    when the lookup fails; the caller then keeps the legacy /home mount
+    only.
+    """
+    cache_path = Path.home() / ".cache" / "aider" / ".container-home"
+    prefix = f"{cache_tag} "
+    try:
+        cached = cache_path.read_text(encoding="utf-8").splitlines()
+        if cached and cached[0].startswith(prefix):
+            home = cached[0][len(prefix):]
+            if home.startswith("/") and home != "/":
+                return home
+    except OSError:
+        pass
+    uid = os.getuid()
+    command = [
+        "docker",
+        "run",
+        "--rm",
+        "--entrypoint",
+        "/bin/sh",
+        AIDER_IMAGE,
+        "-c",
+        f"grep '^{uid}:' /etc/passwd | cut -d: -f6",
+    ]
+    _trace_command(command, debug)
+    try:
+        result = subprocess.run(
+            command,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
+        if debug:
+            print(
+                f"Note: could not query the container home: {exc}",
+                file=sys.stderr,
+            )
+        return None
+    home = (result.stdout or "").strip()
+    if result.returncode != 0 or not home.startswith("/") or home == "/":
+        if debug:
+            print(
+                f"Note: no passwd home for uid {uid} in {AIDER_IMAGE}; "
+                "SSH keys will be mounted at /home/.ssh only.",
+                file=sys.stderr,
+            )
+        return None
+    try:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(f"{cache_tag} {home}\n", encoding="utf-8")
+    except OSError:
+        pass
+    return home
 
 
 def _resolve_session_id() -> str:
@@ -1230,6 +1386,7 @@ def run_container(
     container_name: str,
     docker_gid: Optional[int],
     agent_dir: Path,
+    container_home: Optional[str],
     debug: bool,
     assistant_args: list[str],
 ) -> int:
@@ -1241,6 +1398,9 @@ def run_container(
         container_name: Name to assign to the Docker container.
         docker_gid: Host Docker group GID to add to the container, or None.
         agent_dir: Directory containing the AI assistant helper files.
+        container_home: Passwd home of the container user, or None when
+            unknown; the host ~/.ssh directory is additionally mounted
+            under it so ssh finds the forwarded keys by default.
         debug: Whether to print the underlying Docker command to stderr.
         assistant_args: Additional arguments passed to the AI assistant.
 
@@ -1300,10 +1460,6 @@ def run_container(
         )
 
     command.extend([
-        "-e",
-        "HOME=/home",
-        "-e",
-        "PYTHONUNBUFFERED=1",
         # Docker-outside-of-Docker: the CLI and compose plugin inside the
         # container drive the host daemon through this socket, so compose
         # stacks started for debugging are siblings, not nested containers.
@@ -1342,21 +1498,27 @@ def run_container(
 
     # Mounted read-only so git push/pull over SSH remotes works inside the
     # container: keys, config, and known_hosts travel together, and the
-    # container can never modify the host's SSH state.
+    # container can never modify the host's SSH state. OpenSSH resolves
+    # default identity and known_hosts paths from the passwd home
+    # (pw_dir), not from $HOME, so when the image user's home differs
+    # from /home the same directory is mounted there as well; otherwise
+    # ssh never sees the keys (observed as "Permission denied
+    # (publickey)" despite HOME=/home).
     ssh_dir = Path(home) / ".ssh"
     if ssh_dir.is_dir():
         command.extend(["-v", f"{ssh_dir}:/home/.ssh:ro"])
+        if container_home and container_home != "/home":
+            command.extend(["-v", f"{ssh_dir}:{container_home}/.ssh:ro"])
 
     # Agent-forwarded SSH: mount the host agent socket at its identical
-    # path and forward the variable by name, so passphrase-protected keys
-    # work without copying them (same pattern as the pulse socket mount).
+    # path so passphrase-protected keys work without copying them (same
+    # pattern as the pulse socket mount). The variable is forwarded after
+    # --env-file below so a project .env cannot disarm the forwarding.
     ssh_auth_sock = os.environ.get("SSH_AUTH_SOCK")
     if ssh_auth_sock and Path(ssh_auth_sock).exists():
         command.extend([
             "-v",
             f"{ssh_auth_sock}:{ssh_auth_sock}",
-            "-e",
-            "SSH_AUTH_SOCK",
         ])
 
     command.extend(["-v", f"{cache_dir}:/home/.cache"])
@@ -1387,12 +1549,22 @@ def run_container(
     elif agent_env_file.exists():
         command.extend(["--env-file", str(agent_env_file)])
 
-    # Buildx keeps per-builder state under $HOME/.docker/buildx, but
-    # /home/.docker is mounted read-only (credentials only), which aborts
-    # in-container builds. Point buildx's mutable state at the writable
-    # cache mount instead. Placed after --env-file so a project .env cannot
-    # override it back onto the read-only mount.
-    command.extend(["-e", "BUILDX_CONFIG=/home/.cache/buildx"])
+    # Environment forwards placed after --env-file so a project .env file
+    # cannot override them (e.g. redirecting HOME or disarming SSH agent
+    # forwarding). BUILDX_CONFIG: buildx keeps per-builder state under
+    # $HOME/.docker/buildx, but /home/.docker is mounted read-only
+    # (credentials only), which aborts in-container builds; point its
+    # mutable state at the writable cache mount instead.
+    command.extend([
+        "-e",
+        "HOME=/home",
+        "-e",
+        "PYTHONUNBUFFERED=1",
+        "-e",
+        "BUILDX_CONFIG=/home/.cache/buildx",
+    ])
+    if ssh_auth_sock and Path(ssh_auth_sock).exists():
+        command.extend(["-e", "SSH_AUTH_SOCK"])
 
     # Forward host-exported credentials by name only: Docker fills the value
     # from this process's environment, so secrets never appear in the command
@@ -1481,6 +1653,13 @@ def main() -> int:
         _dump_recent_log_lines(debug)
         return 1
 
+    # Pin GitHub's published SSH host keys on the host (fingerprint-
+    # verified, append-only) so container git push/pull never stalls on a
+    # host-key prompt; the pinned file travels into the container through
+    # the read-only ~/.ssh mounts.
+    if not _running_in_container():
+        _ensure_github_known_hosts(debug=debug)
+
     container_name = (
         f"{TOOL_NAME}-{dir_name}-{workspace_hash[:8]}-{session_id}-{os.getpid()}"
     )
@@ -1561,12 +1740,19 @@ def main() -> int:
     aider_cache_dir = Path.home() / ".cache" / "aider"
     aider_cache_dir.mkdir(parents=True, exist_ok=True)
 
+    # Discover the container user's passwd home (cached per image tag) so
+    # the SSH keys are also mounted where ssh actually looks for them.
+    container_home = None
+    if not _running_in_container() and (Path.home() / ".ssh").is_dir():
+        container_home = _container_passwd_home(cache_tag, debug=debug)
+
     result = run_container(
         workspace_hash,
         session_id,
         container_name,
         docker_gid,
         AGENT_DIR,
+        container_home,
         debug,
         assistant_args,
     )
