@@ -163,8 +163,8 @@ sweep-before-request context-hygiene rules in `.agent/AGENTS.md` (commit
 af20f11), the one-line `/read-only`/`/add` file-request format with Critical
 Rule 5 in `.agent/AGENTS.md` (commit 781ac6e), and default project input
 locations baked into the implementation-analysis prompt
-`.agent/.aider.prompt/planning/implementation-analysis/SKILL.md` (commit
-70d0e84); the full suite stayed green after each change.
+`.agent/.aider.prompt/planning/implementation-analysis/SKILL.md`
+(commit 70d0e84); the full suite stayed green after each change.
 
 Priority 1 - New capability intake:
 
