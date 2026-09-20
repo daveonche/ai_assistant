@@ -6,7 +6,6 @@ import hashlib
 import os
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -218,10 +217,11 @@ def test_credential_value_absent_from_files_and_traces(tmp_path):
 
     # ...nor in the per-session command log (asserted written this session,
     # so the absence check is meaningful, not vacuous). The log path mirrors
-    # the launcher's own derivation: md5 of the workspace path + session id.
+    # the launcher's own derivation: ~/.cache/aider under the session HOME,
+    # named by md5 of the workspace path + session id.
     workspace_hash = hashlib.md5((str(sandbox) + "\n").encode()).hexdigest()
     command_log = (
-        Path(tempfile.gettempdir())
+        sandbox / "home" / ".cache" / "aider"
         / f"ai-assistant-{workspace_hash[:8]}-s1-5-5.log"
     )
     assert command_log.is_file(), command_log
