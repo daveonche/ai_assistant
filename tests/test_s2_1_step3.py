@@ -132,7 +132,7 @@ def test_dry_run_reports_update_mode_for_existing_files(sandbox, git_stub):
     assert result.returncode == 0, result.stderr
     assert (
         "dry run: would update the existing .agent/ and agent.sh"
-        " from ref v1.0.8" in result.stdout
+        " from ref v1.0.9" in result.stdout
     )
     assert "dry run complete; no changes were made" in result.stdout
     # nothing changed, and no update action was probed
@@ -209,7 +209,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "--depth",
         "1",
         "ai-assistant",
-        "v1.0.8",
+        "v1.0.9",
         "rev-parse",
         "--verify",
         "--quiet",
@@ -251,7 +251,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "commit",
         "--quiet",
         "-m",
-        "Update assistant files to v1.0.8",
+        "Update assistant files to v1.0.9",
         "--",
         ".agent",
         "agent.sh",
@@ -274,7 +274,7 @@ def test_update_noop_reports_already_up_to_date(sandbox, git_stub):
         sandbox, stub_dir, "--yes", extra_env={"DIFF_RC": "0"}
     )
     assert result.returncode == 0, result.stderr
-    assert "already up to date at ref v1.0.8" in result.stdout
+    assert "already up to date at ref v1.0.9" in result.stdout
     assert "update complete" in result.stdout
     assert "commit" not in log.read_text().splitlines()
 
@@ -296,7 +296,7 @@ def test_overwrite_warning_precedes_update_actions_and_names_scope(
     assert "WARNING" in result.stderr
     assert "replaces .agent/ and agent.sh" in result.stderr
     assert "read: list in .agent/.aider.conf.yml" in result.stderr
-    assert "failed to retrieve the assistant ref v1.0.8" in result.stderr
+    assert "failed to retrieve the assistant ref v1.0.9" in result.stderr
     # the run died at the fetch, before any mutation: the warning was
     # emitted ahead of the update actions that followed it
     lines = log.read_text().splitlines()
@@ -318,7 +318,7 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
 
 @pytest.fixture
 def release_repo(tmp_path: Path) -> Path:
-    """Local release repository tagged v1.0.8 holding the assistant files."""
+    """Local release repository tagged v1.0.9 holding the assistant files."""
     repo = tmp_path / "release"
     repo.mkdir()
     _git(repo, "init")
@@ -329,8 +329,8 @@ def release_repo(tmp_path: Path) -> Path:
     (repo / ".agent" / "ai-assistant.sh").write_text("release\n")
     (repo / "agent.sh").write_text("release\n")
     _git(repo, "add", ".agent", "agent.sh")
-    _git(repo, "commit", "-m", "release v1.0.8")
-    _git(repo, "tag", "v1.0.8")
+    _git(repo, "commit", "-m", "release v1.0.9")
+    _git(repo, "tag", "v1.0.9")
     return repo
 
 
@@ -391,7 +391,7 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     }
     assert (
         _git(consumer_repo, "log", "-1", "--format=%s").stdout.strip()
-        == "Update assistant files to v1.0.8"
+        == "Update assistant files to v1.0.9"
     )
     # the release content replaced the entry script; local customizations
     # outside the release tree survive until the user re-applies them
@@ -461,7 +461,7 @@ def test_update_on_unborn_head_records_initial_commit(unborn_consumer_repo):
     }
     assert (
         _git(unborn_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
-        == "Update assistant files to v1.0.8"
+        == "Update assistant files to v1.0.9"
     )
     # the untracked local customization survives the refresh untracked
     custom = unborn_consumer_repo / ".agent" / "custom.txt"
