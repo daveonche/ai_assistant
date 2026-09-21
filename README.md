@@ -69,11 +69,12 @@ ai-assistant
 
 ### Using in Other Projects
 
-You can use this assistant in other projects by copying the `.agent` directory and the root launcher to that project's root:
+You can use this assistant in other projects by copying the `.agent` directory, the root launcher, and `.githooks/` to that project's root:
 
 ```bash
 cp -r .agent /path/to/your/project/
 cp agent.sh /path/to/your/project/
+cp -r .githooks /path/to/your/project/
 ```
 
 The `.agent` copy already includes `.aider.conventions/`, so all
@@ -82,13 +83,18 @@ enabled per project via the `read:` setting in
 `.agent/.aider.conf.yml` — they are read on launch, never copied to
 the project root.
 
-Make the launchers executable and update the git index so you don't have to run the execute command again in that repo:
+Make the launchers and the commit-msg hook executable and update the git index so you don't have to run the execute command again in that repo:
 
 ```bash
 cd /path/to/your/project/
-chmod +x agent.sh .agent/ai-assistant.sh
-git update-index --chmod=+x agent.sh .agent/ai-assistant.sh
+chmod +x agent.sh .agent/ai-assistant.sh .githooks/commit-msg
+git update-index --chmod=+x agent.sh .agent/ai-assistant.sh .githooks/commit-msg
+git config core.hooksPath .githooks
 ```
+
+The last command enables the commit message gate in that project
+(default-on; see [Commit Message Gate](#commit-message-gate)). Remove
+it anytime with `git config --unset core.hooksPath`.
 
 Configure the environment variables for the target project. The
 launcher reads `.env` from the project root, falling back to
@@ -191,12 +197,16 @@ curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.11/scri
 
 The installer needs only the documented host prerequisites: Bash and
 git. It clones the pinned release reference into a temporary
-directory, copies `.agent/` and `agent.sh` into the project root,
-records both entry scripts as executable in the project's git index
-(`git update-index --chmod=+x`), and removes the temporary directory
-when it finishes, leaving no temporary artifacts behind. Afterwards,
-configure the environment variables as described above and run
-`./agent.sh` from the project root.
+directory, copies `.agent/`, `agent.sh`, and `.githooks/` into the
+project root, records the entry scripts and the commit-msg hook as
+executable in the project's git index (`git update-index --chmod=+x`),
+enables the commit message gate by default (`git config core.hooksPath
+.githooks` — an existing `core.hooksPath` value is left untouched with
+a warning), and removes the temporary directory when it finishes,
+leaving no temporary artifacts behind. No manual step follows: the
+hook is left executable and active, so git runs it on the project's
+next commit. Afterwards, configure the environment variables as
+described above and run `./agent.sh` from the project root.
 
 #### Updating an existing install
 
@@ -213,10 +223,12 @@ overwritten. It then shows the incoming changes and asks for
 confirmation before touching anything; pass `--yes` to skip the prompt
 in non-interactive runs. The refresh goes through the project's own
 git: it fetches the pinned reference from the `ai-assistant` remote,
-checks out `.agent` and `agent.sh`, and records the refresh as a
-single commit. The update is therefore a normal, reviewable,
-revertable project change — re-apply your local customizations after
-the update completes.
+checks out `.agent`, `agent.sh`, and — when the release ships the
+commit-msg hook — `.githooks`, enables the commit message gate after
+confirmation (unless `core.hooksPath` is already set), and records the
+refresh as a single commit whose subject conforms to that gate. The
+update is therefore a normal, reviewable, revertable project change —
+re-apply your local customizations after the update completes.
 
 #### Pinned-reference caveat
 
@@ -302,6 +314,14 @@ auto-generated subjects (`Merge …`, `fixup! …`, `squash! …`,
 the pushed tip commit, so the gate also holds on machines without the
 hook enabled.
 
+The gate is default-on in consumer projects: the one-command installer
+and the manual copy instructions both set `core.hooksPath` to
+`.githooks`. The installer only sets it when `core.hooksPath` is unset
+— an existing value (pre-commit, husky, …) is left untouched with a
+warning — and its own update commit conforms to the enforced format so
+the freshly enabled gate accepts it. Remove the gate from a project
+with `git config --unset core.hooksPath`.
+
 ## Releasing
 
 Releases exist for changes that must reach consumers of the one-command
@@ -382,6 +402,8 @@ curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.11/scri
 ├── .github/
 │   └── workflows/
 │       └── ci.yml           # GitHub Actions CI workflow
+├── .githooks/
+│   └── commit-msg           # Git commit-msg hook (subject format gate)
 ├── docs/                    # Project documentation and analysis
 ├── scripts/                 # Utility scripts
 └── src/                     # Source code
