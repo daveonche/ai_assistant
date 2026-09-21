@@ -7,9 +7,11 @@ project repository, completes with only the documented host prerequisites
 git is stubbed first on PATH to record its invocations, so prerequisite
 gating is exercised hermetically — no real repository or network needed.
 Since Step 2 the installer performs the full clean install, so the stub
-also emulates cloning a release that contains the assistant files, and
-the gate-only probe test runs with --dry-run: the install path's
-base-system tools (mktemp, cp, chmod) are covered by the Step 2 tests.
+also emulates cloning a release that contains the assistant files and the
+commit-msg hook (the install therefore enables the commit message gate,
+mirroring the pinned release), and the gate-only probe test runs with
+--dry-run: the install path's base-system tools (mktemp, cp, chmod) are
+covered by the Step 2 tests.
 """
 
 import os
@@ -32,7 +34,10 @@ def sandbox(tmp_path: Path) -> Path:
 @pytest.fixture
 def git_stub(tmp_path: Path):
     """Stub git that logs its arguments, reports a work tree, and emulates
-    cloning a release that contains the assistant files."""
+    cloning a release that contains the assistant files and the
+    commit-msg hook (.githooks/commit-msg), mirroring the pinned release.
+    Unhandled subcommands (update-index, config) fall through and exit 0,
+    so placement and gate configuration succeed."""
     stub_dir = tmp_path / "stub-bin"
     stub_dir.mkdir()
     log = stub_dir / "git.log"
@@ -47,6 +52,8 @@ def git_stub(tmp_path: Path):
         '  mkdir -p "${target}/.agent"\n'
         '  : > "${target}/.agent/ai-assistant.sh"\n'
         '  : > "${target}/agent.sh"\n'
+        '  mkdir -p "${target}/.githooks"\n'
+        '  : > "${target}/.githooks/commit-msg"\n'
         "fi\n"
     )
     stub.chmod(0o755)
