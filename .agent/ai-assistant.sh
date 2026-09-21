@@ -64,17 +64,18 @@ agent_socket_bootstrappable() {
   local sock="${1:-}"
   local dir=""
   local owner=""
-  local perms=""
+  local modes=""
   [[ -n "$sock" ]] || return 1
   [[ -e "$sock" || -L "$sock" ]] && return 1
   dir="$(dirname -- "$sock")"
   [[ -d "$dir" ]] || return 1
   owner="$(stat -c %u "$dir" 2>/dev/null || true)"
   [[ -n "$owner" && "$owner" == "$(id -u)" ]] || return 1
-  perms="$(stat -c %a "$dir" 2>/dev/null || true)"
-  [[ -n "$perms" ]] || return 1
-  # Reject group/other write bits (octal 022) in the numeric mode.
-  (( (8#$perms & 8#022) == 0 ))
+  modes="$(stat -c %A "$dir" 2>/dev/null || true)"
+  [[ -n "$modes" ]] || return 1
+  # Bootstrappable only when group and other lack the write bit ("w"
+  # at indexes 5 and 8 of the drwxrwxrwx style mode string).
+  [[ "${modes:5:1}" != "w" && "${modes:8:1}" != "w" ]]
 }
 
 if [[ -z "${SSH_AUTH_SOCK:-}" && -d "${HOME}/.ssh" && -t 0 && -t 1 ]] \
