@@ -97,9 +97,10 @@ agent_socket_bootstrappable() {
 # Returns: 0 when the fallback socket path is usable; 1 otherwise.
 agent_cache_socket_ready() {
   local dir="${HOME}/.cache/aider-agent"
-  local sock="${dir}/ssh-agent-$(id -u).sock"
+  local sock=""
   local owner=""
   local modes=""
+  sock="${dir}/ssh-agent-$(id -u).sock"
   [[ -L "$dir" ]] && return 1
   if [[ -d "$dir" ]]; then
     owner="$(stat -c %u "$dir" 2>/dev/null || true)"

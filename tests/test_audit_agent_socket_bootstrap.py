@@ -33,6 +33,7 @@ import select
 import shlex
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -132,18 +133,23 @@ def _write_stubs(stub_dir: Path) -> None:
         stub.chmod(0o755)
 
 
-def run_launcher(sandbox: Path, stub_dir: Path) -> subprocess.CompletedProcess:
+def run_launcher(
+    sandbox: Path, stub_dir: Path, home: Path | None = None
+) -> subprocess.CompletedProcess:
     """Run agent.sh attached to a pseudo-terminal.
 
     The launcher's agent setup only runs when stdin/stdout are TTYs, so
     the launch chain is attached to a pty slave. Returns the
     CompletedProcess with the terminal transcript as stdout; stdin is
-    never written to.
+    never written to. HOME defaults to the sandbox; the cache-dir
+    fallback test passes a short HOME because a deep pytest tmp_path
+    pushes the fallback socket path past the 108-byte AF_UNIX
+    sun_path limit (real HOME paths are far shorter).
     """
     master, slave = pty.openpty()
     env = os.environ.copy()
     env["PATH"] = f"{stub_dir}{os.pathsep}{env['PATH']}"
-    env["HOME"] = str(sandbox)
+    env["HOME"] = str(home) if home is not None else str(sandbox)
     env["XDG_RUNTIME_DIR"] = str(sandbox / "runtime")
     env.pop("SSH_AUTH_SOCK", None)
     env["PYTHON3_STUB_LOG"] = str(sandbox / "python3-stub.log")
@@ -242,30 +248,42 @@ def test_unbootstrappable_runtime_dir_falls_back_to_cache_dir(tmp_path: Path):
     stub_dir.mkdir()
     _write_stubs(stub_dir)
     (sandbox / "runtime").chmod(0o777)
-    cache_sock = sandbox / ".cache" / "aider-agent" / (
-        f"ssh-agent-{os.getuid()}.sock"
-    )
+    # Short HOME: a deep pytest tmp_path would push the cache socket
+    # path past the 108-byte AF_UNIX sun_path limit (111 chars in the
+    # sandbox above), and the launcher would fail the bind closed —
+    # correct behavior, but not what this test exercises.
+    with tempfile.TemporaryDirectory(prefix="aik-home-") as home_str:
+        home = Path(home_str)
+        (home / ".ssh").mkdir()
+        # The launcher never creates ~/.cache itself; the fallback
+        # gate requires it to exist.
+        (home / ".cache").mkdir()
+        cache_dir = home / ".cache" / "aider-agent"
+        cache_sock = cache_dir / f"ssh-agent-{os.getuid()}.sock"
 
-    result = run_launcher(sandbox, stub_dir)
-    transcript = result.stdout
+        result = run_launcher(sandbox, stub_dir, home=home)
+        transcript = result.stdout
 
-    assert result.returncode == 0, transcript
-    # The fallback was announced...
-    assert "not usable as an agent socket dir" in transcript, transcript
-    # ...the agent was started in the cache dir...
-    agent_log = (sandbox / "ssh-agent-stub.log").read_text()
-    assert str(cache_sock) in agent_log, agent_log
-    assert cache_sock.is_socket(), transcript
-    # ...the well-known path stayed untouched...
-    assert not _agent_sock_path(sandbox).exists(), transcript
-    # ...the keys were offered exactly once, and the fallback socket
-    # was exported to the assistant.
-    ssh_add_log = (sandbox / "ssh-add-stub.log").read_text()
-    assert ssh_add_log.count("KEYS_OFFERED") == 1, ssh_add_log
-    python_log = (sandbox / "python3-stub.log").read_text()
-    assert f"SSH_AUTH_SOCK={cache_sock}" in python_log, python_log
-    assert "SSH_AUTH_SOCK_UNSET" not in python_log, python_log
-    assert "not a trusted agent socket" not in transcript, transcript
+        assert result.returncode == 0, transcript
+        # The fallback was announced...
+        assert "not usable as an agent socket dir" in transcript, transcript
+        # ...the launcher created the cache dir fully private...
+        assert cache_dir.is_dir(), transcript
+        assert cache_dir.stat().st_mode & 0o777 == 0o700, transcript
+        # ...the agent was started in the cache dir...
+        agent_log = (sandbox / "ssh-agent-stub.log").read_text()
+        assert str(cache_sock) in agent_log, agent_log
+        assert cache_sock.is_socket(), transcript
+        # ...the well-known path stayed untouched...
+        assert not _agent_sock_path(sandbox).exists(), transcript
+        # ...the keys were offered exactly once, and the fallback
+        # socket was exported to the assistant.
+        ssh_add_log = (sandbox / "ssh-add-stub.log").read_text()
+        assert ssh_add_log.count("KEYS_OFFERED") == 1, ssh_add_log
+        python_log = (sandbox / "python3-stub.log").read_text()
+        assert f"SSH_AUTH_SOCK={cache_sock}" in python_log, python_log
+        assert "SSH_AUTH_SOCK_UNSET" not in python_log, python_log
+        assert "not a trusted agent socket" not in transcript, transcript
 
 
 def test_non_private_cache_dir_fails_closed(tmp_path: Path):
