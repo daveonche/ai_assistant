@@ -38,6 +38,13 @@ jobs:
       - name: Shellcheck shell scripts
         run: git ls-files -z '*.sh' | xargs -0 -r shellcheck
 
+      # On pull_request events the checked-out tip is a merge commit,
+      # which the hook exempts; the gate bites on direct pushes.
+      - name: Validate tip commit subject with the commit-msg hook
+        run: |
+          git --no-pager log -1 --format=%s > "$RUNNER_TEMP/subject.txt"
+          bash .githooks/commit-msg "$RUNNER_TEMP/subject.txt"
+
   docker-build:
     name: Docker image build smoke test
     runs-on: ubuntu-latest

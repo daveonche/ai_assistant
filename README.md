@@ -274,7 +274,7 @@ The `.agent` orchestration configuration supports long-running workflow sessions
 
 This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that validates the assistant's own tooling on every push or pull request touching `.agent/**`, `agent.sh`, or `.github/workflows/**`, and on manual `workflow_dispatch`:
 
-1. **Validate launcher and scripts** — Python syntax check of `.agent/ai_assistant.py`, then `shellcheck` over all tracked `*.sh` scripts.
+1. **Validate launcher and scripts** — Python syntax check of `.agent/ai_assistant.py`, then `shellcheck` over all tracked `*.sh` scripts, then the commit-msg gate (`.githooks/commit-msg`) validating the pushed tip commit's subject.
 2. **Docker image build smoke test** — builds the image from `.agent/Dockerfile.aider`.
 3. **Release tag guard** — on `v*` tag pushes, asserts the tag equals `DEFAULT_REF` in `scripts/install.sh`, so a tag cannot ship with a stale installer pin.
 
@@ -282,6 +282,25 @@ This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) tha
 > `.github/workflows/`. A `ci.yml` file inside `.agent/` will not be
 > executed automatically. Keep the active workflow at
 > `.github/workflows/ci.yml`.
+
+## Commit Message Gate
+
+A tracked `commit-msg` hook (`.githooks/commit-msg`) mechanically
+enforces the subject format the assistant's `commit-prompt` asks for:
+`type(scope): summary`, max 72 characters, plain text — no quotes or
+backticks. Enable it once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+A non-conforming subject (stray chat prose, missing type, over-length
+line) is rejected before the commit is created, so a misfiring LLM
+commit is stopped at the gate instead of landing in history. Git's
+auto-generated subjects (`Merge …`, `fixup! …`, `squash! …`,
+`Revert "…"`) are exempt. The CI `validate` job runs the same script on
+the pushed tip commit, so the gate also holds on machines without the
+hook enabled.
 
 ## Releasing
 

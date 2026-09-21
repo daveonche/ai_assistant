@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+# Git commit-msg hook: mechanically enforce the Conventional Commits
+# subject format that .agent/.aider.conf.yml's commit-prompt asks the
+# LLM for. Git invokes this as: commit-msg <message-file>. Exit 0
+# accepts the commit; exit 1 rejects it before it is created.
+# Git-generated subjects (Merge, fixup!, squash!, Revert "...") and
+# comment lines are exempt.
+
+set -euo pipefail
+
+readonly MAX_SUBJECT_LENGTH=72
+readonly SCOPE_CHARS='[a-z0-9_/-]+'
+readonly -a ALLOWED_TYPES=(
+  build chore ci docs feat fix perf refactor revert style test
+)
+
+usage() {
+  cat <<'EOF'
+Usage: commit-msg [--debug] <message-file>
+
+Git commit-msg hook validating the commit subject line.
+
+Subject format: type(scope): summary
+  - type: one of build, chore, ci, docs, feat, fix, perf, refactor,
+    revert, style, test
+  - scope: optional; lowercase letters, digits, '_', '-', '/'
+  - optional trailing '!' marks a breaking change
+  - summary: at least one character, plain text (no double quotes or
+    backticks); whole subject at most 72 characters
+Merge/fixup!/squash!/Revert "..." subjects are exempt.
+
+Examples:
+  .githooks/commit-msg .git/COMMIT_EDITMSG
+  bash .githooks/commit-msg /tmp/msg.txt
+  .githooks/commit-msg --debug .git/COMMIT_EDITMSG
+EOF
+}
+
+fail() {
+  # Print a rejection reason to STDERR and fail the commit.
+  # Globals: none
+  # Arguments: $1 = rejection reason
+  # Outputs: reason line to STDERR
+  # Returns: exits with status 1
+  printf 'commit-msg: %s\n' "$1" >&2
+  exit 1
+}
+
+subject_line() {
+  # Print the first non-empty, non-comment line of the message file.
+  # Git strips comment lines only after this hook runs, so the hook
+  # ignores them itself; harmless when they are already gone.
+  # Globals: none
+  # Arguments: $1 = commit message file
+  # Outputs: the subject line to STDOUT
+  # Returns: awk's exit status
+  awk '!/^#/ && NF { print; exit }' "$1"
+}
+
+is_exempt() {
+  # Return 0 for git-generated subjects that never follow the format.
+  # Globals: none
+  # Arguments: $1 = subject line
+  # Outputs: none
+  # Returns: 0 when exempt, 1 otherwise
+  case "$1" in
+    "Merge "*|"fixup! "*|"squash! "*|'Revert "'*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+subject_regex() {
+  # Emit the subject ERE. The type alternation is derived from
+  # ALLOWED_TYPES so the whitelist has a single source of truth.
+  # Globals: ALLOWED_TYPES, SCOPE_CHARS (read-only)
+  # Arguments: none
+  # Outputs: the ERE to STDOUT
+  # Returns: 0
+  local type_alt
+  type_alt="$(IFS='|'; printf '%s' "${ALLOWED_TYPES[*]}")"
+  printf '^(%s)(\\(%s\\))?!?: .+\n' "$type_alt" "$SCOPE_CHARS"
+}
+
+validate_subject() {
+  # Reject the commit when the subject breaks the enforced format.
+  # Globals: MAX_SUBJECT_LENGTH, ALLOWED_TYPES (read-only)
+  # Arguments: $1 = subject line
+  # Outputs: rejection reason to STDERR via fail
+  # Returns: exits 1 on violation, returns 0 otherwise
+  local subject="$1" allowed re
+  if (( ${#subject} > MAX_SUBJECT_LENGTH )); then
+    fail "subject is ${#subject} characters (max ${MAX_SUBJECT_LENGTH})"
+  fi
+  case "$subject" in
+    *'"'*|*'`'*)
+      fail "subject must be plain text: no double quotes or backticks"
+      ;;
+  esac
+  re="$(subject_regex)"
+  if [[ ! "$subject" =~ $re ]]; then
+    allowed="${ALLOWED_TYPES[*]}"
+    fail "subject must be 'type(scope): summary'; allowed types: ${allowed}"
+  fi
+}
+
+main() {
+  # Validate the message file git hands us; exit 0 accepts, exit 1
+  # rejects the commit.
+  # Globals: none modified
+  # Arguments: [--debug] <message-file>
+  # Outputs: exemption notice to STDOUT; reasons to STDERR via fail
+  # Returns: 0 accepted, 1 rejected
+  local file subject
+  if [[ "${1:-}" == "--debug" ]]; then
+    set -x
+    shift
+  fi
+  if (( $# != 1 )); then
+    usage >&2
+    exit 1
+  fi
+  file="$1"
+  if [[ ! -r "$file" ]]; then
+    fail "cannot read commit message file: ${file}"
+  fi
+  if ! subject="$(subject_line "$file")"; then
+    fail "cannot read commit message file: ${file}"
+  fi
+  if [[ -z "$subject" ]]; then
+    fail "commit message is empty (comments and blank lines only)"
+  fi
+  if is_exempt "$subject"; then
+    printf 'commit-msg: exempt git-generated subject: %s\n' "$subject"
+    exit 0
+  fi
+  validate_subject "$subject"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+fi
