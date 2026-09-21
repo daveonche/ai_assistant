@@ -21,7 +21,7 @@
 set -euo pipefail
 
 readonly DEFAULT_REPO_URL="https://github.com/daveonche/ai_assistant.git"
-readonly DEFAULT_REF="v1.0.11"
+readonly DEFAULT_REF="v1.0.12"
 
 # Globals: None
 # Arguments: Variable list of message words, joined into one message
@@ -65,8 +65,8 @@ existing value is left untouched with a warning. Unset anytime with:
   git config --unset core.hooksPath
 
 Examples:
-  curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.11/scripts/install.sh | bash
-  curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.11/scripts/install.sh | bash -s -- --ref v1.0.0
+  curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.12/scripts/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.12/scripts/install.sh | bash -s -- --ref v1.0.0
   ./scripts/install.sh --dry-run
   ./scripts/install.sh --ref v1.0.0 --debug
 EOF

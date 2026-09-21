@@ -192,7 +192,7 @@ one-command installer. From inside the target project's repository,
 run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.11/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.12/scripts/install.sh | bash
 ```
 
 The installer needs only the documented host prerequisites: Bash and
@@ -214,7 +214,7 @@ When `.agent/` or `agent.sh` already exist, the same command switches
 to update mode:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.11/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.12/scripts/install.sh | bash
 ```
 
 The installer first warns that local customizations inside `.agent/`
@@ -232,12 +232,12 @@ re-apply your local customizations after the update completes.
 
 #### Pinned-reference caveat
 
-Installs and updates always retrieve the pinned release tag `v1.0.11`,
+Installs and updates always retrieve the pinned release tag `v1.0.12`,
 never `main`, so repeated runs are reproducible. To install from a
 different reference, pass `--ref`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.11/scripts/install.sh | bash -s -- --ref v1.0.0
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.12/scripts/install.sh | bash -s -- --ref v1.0.0
 ```
 
 Three more options help before and during a run: `--dry-run` reports
@@ -379,7 +379,7 @@ After the push, wait for the `release-tag-guard` job to pass, then
 verify the served installer carries the new pin:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.11/scripts/install.sh | grep -E 'DEFAULT_REF=|no commits yet'
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.12/scripts/install.sh | grep -E 'DEFAULT_REF=|no commits yet'
 ```
 
 ## Project Structure
