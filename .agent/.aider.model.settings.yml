@@ -3,6 +3,8 @@
   edit_format: diff
   extra_params:
     extra_body:
+      # Forces maximum brilliant thinking when invoked
+      reasoning_effort: "max"
       provider:
         sort: "price"
         allow_fallbacks: false
