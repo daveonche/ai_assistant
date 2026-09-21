@@ -1693,6 +1693,100 @@ def _repo_env_keys(env_file: Path) -> set[str]:
     return keys
 
 
+def _sanitize_docker_config(host_docker_dir: Path, debug: bool) -> Optional[Path]:
+    """Return a Docker config directory that works inside the container.
+
+    Windows Docker Desktop writes "credsStore": "desktop.exe" into the host
+    ~/.docker/config.json. That helper is a Windows binary, executable on
+    the host only through WSL interop; inside the container every registry
+    operation that consults it (resolving a build frontend, pulling a base
+    image) fails with "executable file not found in $PATH". Helper entries
+    ending in .exe are therefore dropped from a copy written to the
+    launcher-private cache, and that copy is mounted at /home/.docker
+    instead of the host directory. Inline "auths" credentials are kept, and
+    the copy contains only config.json (other host-side files are not
+    carried over).
+
+    Returns the host directory unchanged when config.json is absent or
+    references no .exe helper. Returns None when the config cannot be
+    read, parsed, or copied: the caller then skips the mount entirely
+    (fail closed — anonymous public pulls still work) rather than mount a
+    config of unknown usability.
+    """
+    config_path = host_docker_dir / "config.json"
+    try:
+        doc = json.loads(config_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return host_docker_dir
+    except (OSError, ValueError) as exc:
+        print(
+            f"Warning: cannot parse {config_path} ({exc}); not mounting a "
+            "Docker config into the container.",
+            file=sys.stderr,
+        )
+        return None
+    if not isinstance(doc, dict):
+        print(
+            f"Warning: {config_path} is not a JSON object; not mounting a "
+            "Docker config into the container.",
+            file=sys.stderr,
+        )
+        return None
+
+    dropped: list[str] = []
+    creds_store = doc.get("credsStore")
+    if isinstance(creds_store, str) and creds_store.endswith(".exe"):
+        del doc["credsStore"]
+        dropped.append(creds_store)
+    cred_helpers = doc.get("credHelpers")
+    if isinstance(cred_helpers, dict):
+        filtered = {
+            registry: helper
+            for registry, helper in cred_helpers.items()
+            if not (isinstance(helper, str) and helper.endswith(".exe"))
+        }
+        dropped.extend(
+            helper
+            for helper in cred_helpers.values()
+            if isinstance(helper, str) and helper.endswith(".exe")
+        )
+        if filtered:
+            doc["credHelpers"] = filtered
+        else:
+            del doc["credHelpers"]
+    if not dropped:
+        return host_docker_dir
+
+    try:
+        cache_dir = _launcher_cache_dir()
+        cache_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        sanitized_dir = cache_dir / "docker-config"
+        sanitized_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        payload = json.dumps(doc, indent=2) + "\n"
+        target = sanitized_dir / "config.json"
+        existing = (
+            target.read_text(encoding="utf-8") if target.exists() else None
+        )
+        if existing != payload:
+            _atomic_write_text(target, payload)
+    except OSError:
+        print(
+            "Warning: could not write the sanitized Docker config; not "
+            "mounting a Docker config into the container.",
+            file=sys.stderr,
+        )
+        return None
+    print(
+        "Note: dropped Windows-only credential helper(s) "
+        f"{', '.join(sorted(set(dropped)))} from the Docker config mounted "
+        "into the container; they cannot run there.",
+        file=sys.stderr,
+    )
+    if debug:
+        print(f"Sanitized Docker config: {sanitized_dir}", file=sys.stderr)
+    return sanitized_dir
+
+
 def run_container(
     workspace_hash: str,
     session_id: str,
@@ -1804,10 +1898,18 @@ def run_container(
         command.extend(["-v", f"{gitconfig}:/home/.gitconfig:ro"])
 
     # Mounted read-only so `docker compose` inside the container can use the
-    # host's registry credentials when pulling or building images. Buildx's
-    # mutable state is redirected off this mount via BUILDX_CONFIG below.
+    # host's registry credentials when pulling or building images. The
+    # directory is sanitized first: credential helpers that cannot run
+    # inside the container (Windows .exe helpers written by Docker Desktop)
+    # are dropped, so registry operations never fail on a missing helper
+    # (see _sanitize_docker_config). Buildx's mutable state is redirected
+    # off this mount via BUILDX_CONFIG below.
     if docker_config.exists():
-        command.extend(["-v", f"{docker_config}:/home/.docker:ro"])
+        effective_docker_config = _sanitize_docker_config(docker_config, debug)
+        if effective_docker_config is not None:
+            command.extend(
+                ["-v", f"{effective_docker_config}:/home/.docker:ro"]
+            )
 
     # Mounted read-only so git push/pull over SSH remotes works inside the
     # container: keys, config, and known_hosts travel together, and the
