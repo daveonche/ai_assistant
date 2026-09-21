@@ -2,16 +2,20 @@
 
 Verifies that scripts/install.sh detects a project with no existing
 assistant files, retrieves them from a fixed, published release reference,
-places .agent/ and agent.sh into the project root, and leaves no temporary
-artifacts behind.
+places .agent/, agent.sh, and — when the release ships the commit-msg
+hook — .githooks/ into the project root, enables the commit message gate
+(core.hooksPath=.githooks) unless core.hooksPath is already set, and
+leaves no temporary artifacts behind.
 
 git is stubbed first on PATH to record its invocations and emulate cloning
-a release that contains the assistant files, so the full install path is
-exercised hermetically — no network and no real repository needed.
+a release that contains the assistant files and the commit-msg hook, so
+the full install path is exercised hermetically — no network and no real
+repository needed.
 """
 
 import os
 import shutil
+import stat
 import subprocess
 from pathlib import Path
 
@@ -30,7 +34,14 @@ def sandbox(tmp_path: Path) -> Path:
 @pytest.fixture
 def git_stub(tmp_path: Path):
     """Stub git that logs its arguments, reports a work tree, and emulates
-    cloning a release that contains the assistant files."""
+    cloning a release that contains the assistant files and the
+    commit-msg hook (.githooks/commit-msg).
+
+    Knobs read from the environment by the stub:
+    - NO_GITHOOKS=1  the cloned release predates the commit-msg gate:
+      the clone contains no .githooks/ files
+    - HOOKSPATH=<value>  core.hooksPath is already set to <value>
+    """
     stub_dir = tmp_path / "stub-bin"
     stub_dir.mkdir()
     log = stub_dir / "git.log"
@@ -45,6 +56,16 @@ def git_stub(tmp_path: Path):
         '  mkdir -p "${target}/.agent"\n'
         '  : > "${target}/.agent/ai-assistant.sh"\n'
         '  : > "${target}/agent.sh"\n'
+        '  if [[ -z "${NO_GITHOOKS:-}" ]]; then\n'
+        '    mkdir -p "${target}/.githooks"\n'
+        '    : > "${target}/.githooks/commit-msg"\n'
+        "  fi\n"
+        'elif [[ "${1:-}" == "config" && "${2:-}" == "--get" ]]; then\n'
+        '  if [[ -n "${HOOKSPATH:-}" ]]; then\n'
+        "    printf '%s\\n' \"${HOOKSPATH}\"\n"
+        "  else\n"
+        "    exit 1\n"
+        "  fi\n"
         "fi\n"
     )
     stub.chmod(0o755)
@@ -74,15 +95,22 @@ def clone_target(log: Path) -> Path:
 
 
 def run_installer(
-    sandbox: Path, stub_dir: Path, *args: str
+    sandbox: Path,
+    stub_dir: Path,
+    *args: str,
+    extra_env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess:
     """Run install.sh as one command with cwd inside the sandbox repo.
 
     bash is resolved to an absolute path so restricted-PATH variants
-    cannot break interpreter lookup via /usr/bin/env.
+    cannot break interpreter lookup via /usr/bin/env. extra_env sets
+    additional variables for the run (the git stub's knobs) on top of
+    the parent environment.
     """
     env = os.environ.copy()
     env["PATH"] = f"{stub_dir}{os.pathsep}{env.get('PATH', '')}"
+    if extra_env:
+        env.update(extra_env)
     return subprocess.run(
         [shutil.which("bash"), str(INSTALLER), *args],
         cwd=sandbox,
@@ -142,6 +170,81 @@ def test_places_assistant_dir_and_entry_script_in_root(sandbox, git_stub):
     assert (sandbox / "agent.sh").is_file()
     # contents copied through from the emulated release clone
     assert (sandbox / ".agent" / "ai-assistant.sh").is_file()
+
+
+def test_places_commit_msg_hook_and_enables_gate(sandbox, git_stub):
+    """The install places the hook and enables the commit message gate.
+
+    The emulated release ships .githooks/commit-msg; placement must copy
+    it into the project root, leave it executable on disk, record it
+    executable in the index like the entry scripts, and enable the gate
+    via core.hooksPath.
+    """
+    stub_dir, log = git_stub
+
+    result = run_installer(sandbox, stub_dir)
+    assert result.returncode == 0, result.stderr
+
+    # the hook landed in the project root, executable on disk
+    hook = sandbox / ".githooks" / "commit-msg"
+    assert hook.is_file()
+    assert hook.stat().st_mode & stat.S_IXUSR, "hook is not executable"
+    assert "commit message gate enabled (core.hooksPath=.githooks)" in (
+        result.stdout
+    )
+
+    # the hook's executability was recorded in the index (a second
+    # update-index beside the entry scripts'), and the gate configuration
+    # closed the run: query, then the enable
+    lines = log.read_text().splitlines()
+    assert lines.count("update-index") == 2
+    assert ".githooks/commit-msg" in lines
+    assert lines[-3:] == ["config", "core.hooksPath", ".githooks"]
+
+
+def test_install_preserves_existing_hooks_path(sandbox, git_stub):
+    """An existing core.hooksPath value is never clobbered on install.
+
+    A consumer running another hook framework (for example husky) keeps
+    its configuration: the installer warns and leaves the setting
+    untouched, while the hook files themselves are still placed.
+    """
+    stub_dir, log = git_stub
+
+    result = run_installer(
+        sandbox, stub_dir, extra_env={"HOOKSPATH": ".husky"}
+    )
+    assert result.returncode == 0, result.stderr
+    assert "commit message gate enabled" not in result.stdout
+    assert "core.hooksPath is already set to .husky" in result.stderr
+    assert "leaving it untouched" in result.stderr
+    # the hook files are placed regardless; only the config is preserved
+    assert (sandbox / ".githooks" / "commit-msg").is_file()
+
+    # no set-form configuration: the only core.hooksPath call is --get
+    lines = log.read_text().splitlines()
+    assert lines.count("core.hooksPath") == 1
+    assert lines[lines.index("core.hooksPath") - 1] == "--get"
+
+
+def test_install_from_ref_without_hook_skips_gate(sandbox, git_stub):
+    """A release predating the gate installs without touching config.
+
+    Older pinned references ship no .githooks/commit-msg; the installer
+    must place only the classic file set and issue no git config calls.
+    """
+    stub_dir, log = git_stub
+
+    result = run_installer(
+        sandbox, stub_dir, extra_env={"NO_GITHOOKS": "1"}
+    )
+    assert result.returncode == 0, result.stderr
+    assert "commit message gate" not in result.stdout
+    assert not (sandbox / ".githooks").exists()
+
+    lines = log.read_text().splitlines()
+    assert "config" not in lines
+    assert ".githooks" not in lines
 
 
 def test_temp_clone_removed_after_successful_install(sandbox, git_stub):
