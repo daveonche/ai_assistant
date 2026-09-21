@@ -2,9 +2,12 @@
 
 Verifies that scripts/install.sh detects existing assistant files, refreshes
 them through the consumer's own git (ai-assistant remote -> fetch -> preview
--> confirm -> checkout -> commit) so the change is recorded as one normal,
-reviewable, revertable project commit, and warns before replacing local
-customizations.
+-> confirm -> gate configuration -> checkout -> commit) so the change is
+recorded as one normal, reviewable, revertable project commit, and warns
+before replacing local customizations. When the fetched reference ships the
+commit-msg hook (.githooks/commit-msg), the update also enables the commit
+message gate (core.hooksPath=.githooks) unless core.hooksPath is already
+set; a reference predating the gate skips the gate entirely.
 
 Two layers keep the suite hermetic:
 - stub-git tests log the exact command sequence and emulate the update-path
@@ -12,9 +15,10 @@ Two layers keep the suite hermetic:
   the no-op path, and the failure ordering run without network;
 - real-git tests run fully offline against a local release repository
   (git's insteadOf rewrite redirects the canonical assistant URL there, so
-  no network is touched) and prove the recorded commit is scoped to
-  .agent/ + agent.sh and reverts cleanly, including on a repository with
-  no commits yet (unborn HEAD).
+  no network is touched) and prove the recorded commit is scoped to the
+  assistant files (.agent/, agent.sh, and .githooks/commit-msg when the
+  release ships the gate) and reverts cleanly, including on a repository
+  with no commits yet (unborn HEAD).
 """
 
 import os
@@ -39,11 +43,15 @@ def git_stub(tmp_path: Path):
     """Stub git that logs its arguments and emulates the update-path
     operations: reports a work tree, has no assistant remote yet, succeeds
     at remote add / fetch / checkout / commit, and reports index changes
-    against HEAD.
+    against HEAD. The emulated release ships .githooks/commit-msg, so the
+    installer's hook probes (cat-file) succeed and the gate is configured.
 
     Knobs read from the environment by the stub:
     - DIFF_RC=0  no-op probe reports no changes ("already up to date")
     - FAIL_FETCH=1  the fetch fails, aborting the update after the warning
+    - NO_GITHOOKS=1  the fetched reference predates the commit-msg gate:
+      the cat-file probe fails and checkout stages no .githooks/ files
+    - HOOKSPATH=<value>  core.hooksPath is already set to <value>
     """
     stub_dir = tmp_path / "stub-bin"
     stub_dir.mkdir()
@@ -76,11 +84,35 @@ def git_stub(tmp_path: Path):
         "      exit 1\n"
         "    fi\n"
         "    ;;\n"
+        "  cat-file)\n"
+        "    # hook probe: the emulated release ships the commit-msg\n"
+        "    # hook unless NO_GITHOOKS=1 (an older reference)\n"
+        '    if [[ "${2:-}" == "-e" ]]; then\n'
+        '      if [[ -n "${NO_GITHOOKS:-}" ]]; then\n'
+        "        exit 1\n"
+        "      fi\n"
+        "      exit 0\n"
+        "    fi\n"
+        "    ;;\n"
+        "  config)\n"
+        '    if [[ "${2:-}" == "--get" ]]; then\n'
+        "      # query form: report a pre-existing hooksPath, if any\n"
+        '      if [[ -n "${HOOKSPATH:-}" ]]; then\n'
+        "        printf '%s\\n' \"${HOOKSPATH}\"\n"
+        "        exit 0\n"
+        "      fi\n"
+        "      exit 1\n"
+        "    fi\n"
+        "    ;;\n"
         "  checkout)\n"
         "    # emulate staging the release content into the worktree\n"
         "    mkdir -p .agent\n"
         "    printf 'release\\n' > .agent/ai-assistant.sh\n"
         "    printf 'release\\n' > agent.sh\n"
+        '    if [[ -z "${NO_GITHOOKS:-}" ]]; then\n'
+        "      mkdir -p .githooks\n"
+        "      printf 'hook\\n' > .githooks/commit-msg\n"
+        "    fi\n"
         "    ;;\n"
         "esac\n"
         "exit 0\n"
@@ -176,12 +208,14 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
 
     The stub log must show the exact sequence: prerequisite probe, staged
     scope gate, assistant remote setup, shallow fetch of the pinned ref,
-    the incoming-change preview (HEAD resolution probe, stat against
-    HEAD..FETCH_HEAD, then the uncommitted-local-changes probe and its
-    stat), checkout of .agent + agent.sh, explicit executability recording
-    (update-index --chmod=+x), no-op probe, scoped commit, and the
-    short-hash lookup for the progress message. --yes skips the
-    confirmation prompt, which needs a terminal.
+    the incoming-change preview (HEAD resolution probe, hook probe, stat
+    against HEAD..FETCH_HEAD, then the uncommitted-local-changes probe
+    and its stat), gate configuration (hooksPath query, then the enable),
+    checkout of .agent + agent.sh + .githooks, explicit executability
+    recording for the entry scripts and the hook (update-index
+    --chmod=+x), no-op probe, scoped commit with the gate-conforming
+    subject, and the short-hash lookup for the progress message. --yes
+    skips the confirmation prompt, which needs a terminal.
     """
     stub_dir, log = git_stub
 
@@ -214,6 +248,9 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "--verify",
         "--quiet",
         "HEAD",
+        "cat-file",
+        "-e",
+        "FETCH_HEAD:.githooks/commit-msg",
         "--no-pager",
         "diff",
         "--stat",
@@ -222,43 +259,157 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "--",
         ".agent",
         "agent.sh",
+        ".githooks",
         "diff",
         "--quiet",
         "--",
         ".agent",
         "agent.sh",
+        ".githooks",
         "--no-pager",
         "diff",
         "--stat",
         "--",
         ".agent",
         "agent.sh",
+        ".githooks",
+        "cat-file",
+        "-e",
+        "FETCH_HEAD:.githooks/commit-msg",
+        "config",
+        "--get",
+        "core.hooksPath",
+        "config",
+        "core.hooksPath",
+        ".githooks",
+        "cat-file",
+        "-e",
+        "FETCH_HEAD:.githooks/commit-msg",
         "checkout",
         "FETCH_HEAD",
         "--",
         ".agent",
         "agent.sh",
+        ".githooks",
         "update-index",
         "--chmod=+x",
         "agent.sh",
         ".agent/ai-assistant.sh",
+        "cat-file",
+        "-e",
+        "FETCH_HEAD:.githooks/commit-msg",
+        "update-index",
+        "--chmod=+x",
+        ".githooks/commit-msg",
         "diff",
         "--cached",
         "--quiet",
         "--",
         ".agent",
         "agent.sh",
+        ".githooks",
         "commit",
         "--quiet",
         "-m",
-        "Update assistant files to v1.0.11",
+        "chore(agent): update assistant files to v1.0.11",
         "--",
         ".agent",
         "agent.sh",
+        ".githooks",
         "rev-parse",
         "--short",
         "HEAD",
     ]
+
+
+def test_update_enables_commit_gate_before_its_own_commit(sandbox, git_stub):
+    """The gate is enabled before the refresh commit is recorded.
+
+    The installer's own commit must pass through the gate it installs, so
+    the enable must appear in the log ahead of the commit.
+    """
+    stub_dir, log = git_stub
+
+    (sandbox / ".agent").mkdir()
+    result = run_installer(sandbox, stub_dir, "--yes")
+    assert result.returncode == 0, result.stderr
+    assert "commit message gate enabled" in result.stdout
+    assert "core.hooksPath=.githooks" in result.stdout
+
+    lines = log.read_text().splitlines()
+    assert lines.index("config") < lines.index("commit")
+
+
+def test_update_preserves_foreign_hooks_path(sandbox, git_stub):
+    """An existing core.hooksPath value is never clobbered.
+
+    A consumer running another hook framework (for example husky) keeps
+    its configuration: the installer warns and leaves the setting
+    untouched, while the hook files themselves are still shipped.
+    """
+    stub_dir, log = git_stub
+
+    (sandbox / ".agent").mkdir()
+    result = run_installer(
+        sandbox, stub_dir, "--yes", extra_env={"HOOKSPATH": ".husky"}
+    )
+    assert result.returncode == 0, result.stderr
+    assert "commit message gate enabled" not in result.stdout
+    assert "core.hooksPath is already set to .husky" in result.stderr
+    assert "leaving it untouched" in result.stderr
+    # the hook files ship regardless; only the configuration is preserved
+    assert (sandbox / ".githooks" / "commit-msg").is_file()
+
+    # no set-form configuration happened: the only core.hooksPath
+    # invocation in the log is the --get query
+    lines = log.read_text().splitlines()
+    assert lines.count("core.hooksPath") == 1
+    assert lines[lines.index("core.hooksPath") - 1] == "--get"
+
+
+def test_update_reports_gate_already_active(sandbox, git_stub):
+    """core.hooksPath already pointing at .githooks is reported, not
+    reconfigured."""
+    stub_dir, log = git_stub
+
+    (sandbox / ".agent").mkdir()
+    result = run_installer(
+        sandbox, stub_dir, "--yes", extra_env={"HOOKSPATH": ".githooks"}
+    )
+    assert result.returncode == 0, result.stderr
+    assert "commit message gate already active" in result.stdout
+    assert "commit message gate enabled" not in result.stdout
+    assert "core.hooksPath is already set" not in result.stderr
+
+    lines = log.read_text().splitlines()
+    assert lines.count("core.hooksPath") == 1
+
+
+def test_update_from_ref_without_hook_skips_gate_config(sandbox, git_stub):
+    """A fetched reference predating the gate triggers no configuration.
+
+    Older pinned references ship no .githooks/commit-msg; the installer
+    must not touch core.hooksPath and must keep the refresh scoped to the
+    classic file set.
+    """
+    stub_dir, log = git_stub
+
+    (sandbox / ".agent").mkdir()
+    result = run_installer(
+        sandbox, stub_dir, "--yes", extra_env={"NO_GITHOOKS": "1"}
+    )
+    assert result.returncode == 0, result.stderr
+    assert "commit message gate" not in result.stdout
+
+    lines = log.read_text().splitlines()
+    # no gate configuration at all: not even the query
+    assert "config" not in lines
+    # the refresh stays scoped to .agent + agent.sh
+    start = lines.index("commit")
+    end = lines.index("rev-parse", start)
+    assert ".githooks" not in lines[start:end]
+    # and no hook files were staged into the worktree
+    assert not (sandbox / ".githooks").exists()
 
 
 def test_update_noop_reports_already_up_to_date(sandbox, git_stub):
@@ -318,7 +469,9 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
 
 @pytest.fixture
 def release_repo(tmp_path: Path) -> Path:
-    """Local release repository tagged v1.0.11 holding the assistant files."""
+    """Local release repository tagged v1.0.11 holding the assistant
+    files and the real commit-msg gate, so the installer's own update
+    commit and the later revert run through the actual hook."""
     repo = tmp_path / "release"
     repo.mkdir()
     _git(repo, "init")
@@ -328,7 +481,11 @@ def release_repo(tmp_path: Path) -> Path:
     (repo / ".agent" / "release.txt").write_text("release\n")
     (repo / ".agent" / "ai-assistant.sh").write_text("release\n")
     (repo / "agent.sh").write_text("release\n")
-    _git(repo, "add", ".agent", "agent.sh")
+    hook = repo / ".githooks" / "commit-msg"
+    hook.parent.mkdir()
+    shutil.copy(PROJECT_ROOT / ".githooks" / "commit-msg", hook)
+    hook.chmod(0o755)
+    _git(repo, "add", ".agent", "agent.sh", ".githooks")
     _git(repo, "commit", "-m", "release v1.0.11")
     _git(repo, "tag", "v1.0.11")
     return repo
@@ -367,8 +524,10 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     Real git, fully offline: ensure_assistant_remote adds the canonical
     assistant remote, and git's insteadOf rewrite redirects its fetch to
     the local release repo. The update must produce exactly one commit
-    touching only .agent/ and agent.sh, and reverting it must restore the
-    prior state.
+    touching only .agent/, agent.sh, and .githooks/commit-msg, must leave
+    the commit message gate enabled, and reverting it must restore the
+    prior state — the revert itself passing the gate through the
+    Revert "..." exemption.
     """
     base = _git(consumer_repo, "rev-parse", "HEAD").stdout.strip()
 
@@ -388,20 +547,26 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
         ".agent/release.txt",
         ".agent/ai-assistant.sh",
         "agent.sh",
+        ".githooks/commit-msg",
     }
     assert (
         _git(consumer_repo, "log", "-1", "--format=%s").stdout.strip()
-        == "Update assistant files to v1.0.11"
+        == "chore(agent): update assistant files to v1.0.11"
     )
+    # the gate is live in the consumer repository after the update
+    hooks_path = _git(consumer_repo, "config", "--get", "core.hooksPath")
+    assert hooks_path.stdout.strip() == ".githooks"
     # the release content replaced the entry script; local customizations
     # outside the release tree survive until the user re-applies them
     assert (consumer_repo / "agent.sh").read_text() == "release\n"
     assert (consumer_repo / ".agent" / "custom.txt").read_text() == "keep\n"
 
-    # revertable: reverting the update commit restores the prior state
+    # revertable: reverting the update commit restores the prior state;
+    # the revert commit itself passes the gate via the Revert exemption
     _git(consumer_repo, "revert", "--no-edit", "HEAD")
     assert (consumer_repo / "agent.sh").read_text() == "local\n"
     assert not (consumer_repo / ".agent" / "release.txt").exists()
+    assert not (consumer_repo / ".githooks" / "commit-msg").exists()
 
 
 @pytest.fixture
@@ -458,11 +623,100 @@ def test_update_on_unborn_head_records_initial_commit(unborn_consumer_repo):
         ".agent/release.txt",
         ".agent/ai-assistant.sh",
         "agent.sh",
+        ".githooks/commit-msg",
     }
     assert (
         _git(unborn_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
-        == "Update assistant files to v1.0.11"
+        == "chore(agent): update assistant files to v1.0.11"
     )
     # the untracked local customization survives the refresh untracked
     custom = unborn_consumer_repo / ".agent" / "custom.txt"
     assert custom.read_text() == "keep\n"
+
+
+@pytest.fixture
+def legacy_release_repo(tmp_path: Path) -> Path:
+    """Local release repository tagged v1.0.10 that predates the
+    commit-msg gate: it holds the assistant files but no .githooks/."""
+    repo = tmp_path / "legacy-release"
+    repo.mkdir()
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "test@example.com")
+    _git(repo, "config", "user.name", "Test User")
+    (repo / ".agent").mkdir()
+    (repo / ".agent" / "release.txt").write_text("legacy\n")
+    (repo / ".agent" / "ai-assistant.sh").write_text("legacy\n")
+    (repo / "agent.sh").write_text("legacy\n")
+    _git(repo, "add", ".agent", "agent.sh")
+    _git(repo, "commit", "-m", "release v1.0.10")
+    _git(repo, "tag", "v1.0.10")
+    return repo
+
+
+@pytest.fixture
+def legacy_consumer_repo(
+    tmp_path: Path, legacy_release_repo: Path, monkeypatch
+) -> Path:
+    """Consumer project with an existing install whose assistant remote
+    resolves to the legacy (pre-gate) release repository."""
+    repo = tmp_path / "legacy-project"
+    repo.mkdir()
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "test@example.com")
+    _git(repo, "config", "user.name", "Test User")
+    (repo / "agent.sh").write_text("local\n")
+    (repo / ".agent").mkdir()
+    (repo / ".agent" / "ai-assistant.sh").write_text("local\n")
+    _git(repo, "add", ".agent", "agent.sh")
+    _git(repo, "commit", "-m", "base")
+    git_config = tmp_path / "gitconfig-legacy"
+    git_config.write_text(
+        f'[url "{legacy_release_repo}"]\n'
+        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+    )
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
+    return repo
+
+
+def test_update_from_ref_without_hook_skips_gate(legacy_consumer_repo):
+    """Updating from a reference that predates the gate leaves the
+    repository configuration untouched.
+
+    The legacy release ships no .githooks/commit-msg, so the installer
+    must not enable core.hooksPath, must not stage .githooks/ files, and
+    must still record a subject that conforms to the gate (a consumer
+    with the gate already enabled stays compatible).
+    """
+    result = run_installer(
+        legacy_consumer_repo, None, "--yes", "--ref", "v1.0.10"
+    )
+    assert result.returncode == 0, result.stderr
+    assert "recorded the refresh as commit" in result.stdout
+    assert "commit message gate" not in result.stdout
+
+    # no gate configuration was written
+    probe = subprocess.run(
+        ["git", "config", "--get", "core.hooksPath"],
+        cwd=legacy_consumer_repo,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert probe.returncode != 0  # unset
+    assert probe.stdout.strip() == ""
+
+    # the commit stays scoped to the classic file set
+    files = set(
+        _git(
+            legacy_consumer_repo, "show", "--name-only", "--format=", "HEAD"
+        ).stdout.splitlines()
+    )
+    assert files == {
+        ".agent/release.txt",
+        ".agent/ai-assistant.sh",
+        "agent.sh",
+    }
+    assert (
+        _git(legacy_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
+        == "chore(agent): update assistant files to v1.0.10"
+    )
