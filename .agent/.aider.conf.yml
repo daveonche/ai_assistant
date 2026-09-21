@@ -45,7 +45,7 @@ architect: false
 auto-accept-architect: false
 
 ## Specify the model to use for commit messages and chat history summarization (default depends on --model)
-weak-model: openrouter/inclusionai/ling-3.0-flash
+weak-model: openrouter/deepseek/deepseek-v4-flash-0731
 
 ## Specify the model to use for editor tasks (default depends on --model)
 editor-model: openrouter/deepseek/deepseek-v4-flash-0731
@@ -99,7 +99,12 @@ attribute-commit-message-committer: false
 attribute-co-authored-by: false
 
 ## Specify a custom prompt for generating commit messages
-commit-prompt: Write a concise commit message using the Conventional Commits specification. Do not include markdown formatting or quotes around the message. Suggest a matching kebab-case branch name format.
+commit-prompt: >-
+  Write one concise Conventional Commits subject line for the staged diff
+  (type(scope): summary, max 72 chars). Reply with ONLY that line — plain
+  text, no markdown, no quotes, no code fences, no branch names, no
+  explanations. Base it strictly on the diff; never continue or repeat
+  the conversation.
 
 ########################
 # Fixing and committing:
