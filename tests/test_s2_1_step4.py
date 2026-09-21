@@ -102,12 +102,25 @@ def test_source_repo_records_executable_assistant_files():
     """Requirement 3: this repository records executability for every
     file the installer records executable — the two entry scripts and
     the commit-msg hook, mode 100755 in the git index (Definition of
-    Done check: `git ls-files -s` shows 100755)."""
+    Done check: `git ls-files -s` shows 100755) and already committed to
+    HEAD (`git ls-tree HEAD` shows 100755)."""
     modes = _index_modes(PROJECT_ROOT)
     for path in RECORDED_EXECUTABLES:
         assert modes.get(path) == "100755", (
             f"{path} is recorded as {modes.get(path)!r}, not 100755; "
             f"fix with: git update-index --chmod=+x {path}"
+        )
+
+    # HEAD must already record the same modes: a mode change staged with
+    # update-index --chmod=+x but never committed leaves the index ahead
+    # of history, and a fresh clone would check the files out
+    # non-executable
+    tree_modes = _tree_modes(PROJECT_ROOT)
+    for path in RECORDED_EXECUTABLES:
+        assert tree_modes.get(path) == "100755", (
+            f"{path} is recorded as {tree_modes.get(path)!r}, not 100755, "
+            "in HEAD; a staged mode change is pending — commit it so "
+            "fresh clones get executable assistant files"
         )
 
 
