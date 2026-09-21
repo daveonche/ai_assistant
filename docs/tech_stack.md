@@ -53,8 +53,8 @@ base image, the host Python runtime, GitHub Actions, and the image-internal
 tools listed under "Image-Internal Component Pins" below. Components managed
 by their own ecosystems follow those conventions and are recorded with their
 pin nature in the same table: Debian-managed packages track the base image's
-bookworm repository, Node.js is pinned to its major line through the
-NodeSource setup script, and mermaid-cli is pinned to a caret range.
+bookworm repository, Node.js is pinned to its major line via NodeSource's
+signed apt repository, and mermaid-cli is exact-pinned.
 
 The base image is pinned to tag + manifest-list digest: `paulgauthier/aider-full:v0.86.2@sha256:ba4d51b3c846b89d0f261f88dd712b9ce62968d3844c73fe2b3353ae65b11ea4`. `v0.86.2` is the newest stable release tag; mutable references (`latest`, `dev`, `main`) are deliberately avoided so all Aider dependencies are correctly configured and builds are reproducible. Docker and Bash versions are provided by the host system and base image respectively. The host system requires Python 3.12.12 to execute the launcher script `.agent/ai_assistant.py`, which uses only the Python standard library. The exact version is the runtime verified on the development host used to build and test this project (`python3 --version` reported `Python 3.12.12`); it is pinned exactly rather than as a range so the documented host requirement is reproducible, consistent with the pin philosophy applied to the base image and GitHub Actions.
 
@@ -87,15 +87,17 @@ the pin nature each follows.
 
 | Component | Pin | Nature | Used in |
 | :--- | :--- | :--- | :--- |
-| ShellCheck | `v0.10.0` static binary | exact (GitHub release download) | `.agent/Dockerfile.aider` Layer D2 |
+| ShellCheck | `v0.10.0` static binary | exact, SHA256-gated per arch (GitHub release download) | `.agent/Dockerfile.aider` Layer D2 |
 | pytest | `8.3.5` (pip into `/venv`) | exact, matches `.agent/pyproject.toml` | `.agent/Dockerfile.aider` Layer D3 |
 | `sentence-transformers/all-MiniLM-L6-v2` | pre-baked to `/opt/hf-cache` | model name; revision resolves at build | `.agent/Dockerfile.aider` Layer B |
-| Node.js | `22.x` via NodeSource `setup_22.x` | major line | `.agent/Dockerfile.aider` Layer C |
-| `@mermaid-js/mermaid-cli` | `^11` (npm) | caret range | `.agent/Dockerfile.aider` Layer D |
+| Node.js | `22.x` via NodeSource apt repo (`node_22.x`) | major line | `.agent/Dockerfile.aider` Layer C |
+| `@mermaid-js/mermaid-cli` | `11.17.0` (npm) | exact | `.agent/Dockerfile.aider` Layer D |
 | Chromium, `cmark-gfm`, `openssh-client` | Debian bookworm packages | distro-managed | `.agent/Dockerfile.aider` Layer A |
 
 Notes:
 
+- The ShellCheck tarball is checksum-gated before extraction (Layer D2): the per-arch SHA256 ARGs are `x86_64` `6c881ab0698e4e6ea235245f22832860544f17ba386442fe7e9d629f8cbedf87`, `aarch64` `324a7e89de8fa2aed0d0c28f3dab59cf84c6d74264022c00c22af665ed1a09bb`, `armv6hf` `1c89cb51e1412b580d7ba8aac240251ffb0b829788f83d2daa4a82da42d275e4` (verified via `curl … | sha256sum` against the `v0.10.0` release assets). To upgrade: bump `SHELLCHECK_VERSION` and all three ARGs together.
+- NodeSource is configured via its signed apt repository (keyring + `sources.list`, Layer C); the remote `setup_22.x` script is no longer piped to a shell.
 - The npm `shellcheck` wrapper package is deliberately not used: it downloads the real binary on first run into a root-owned path, which fails with `EACCES` for the non-root runtime user. The official static binary is baked at build time instead, so shellcheck is offline at runtime and executable by every user.
 - The embedding model is baked at build time (`HF_HOME=/opt/hf-cache`, made world-readable with `chmod -R a+rX`) so the runtime user loads it offline instead of re-downloading roughly 100 MB on first run.
 - Puppeteer is pointed at the system Chromium (`PUPPETEER_SKIP_DOWNLOAD=true`, `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true`, `PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium`), so mermaid-cli renders diagrams without a bundled Chrome download.
