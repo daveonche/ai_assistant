@@ -59,6 +59,8 @@ def test_each_architecture_layer_has_repository_location():
 ALLOWED_TOP_LEVEL_ENTRIES = {
     # documented layers
     "agent.sh", ".agent", "docs", "scripts", "src",
+    # commit message gate layer (documented in README.md)
+    ".githooks",
     # test-suite layer established by the unit-testing workflow
     "tests",
     # recognized configuration files and directories

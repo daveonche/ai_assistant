@@ -22,6 +22,8 @@ def test_top_level_layout_contains_documented_layers():
 ALLOWED_TOP_LEVEL_ENTRIES = {
     # documented layers (Must Support item 1)
     "agent.sh", ".agent", "docs", "scripts", "src",
+    # commit message gate layer (documented in README.md)
+    ".githooks",
     # test-suite layer established by the unit-testing workflow
     "tests",
     # recognized configuration files and directories
