@@ -12,7 +12,11 @@
 # project change. Both entry scripts
 # are recorded executable in the project's git index
 # (update-index --chmod=+x) so executability survives environments that
-# do not preserve file modes.
+# do not preserve file modes. When the retrieved reference ships the
+# commit-msg hook (.githooks/commit-msg), the installer copies .githooks/
+# as well, records the hook executable, and enables the commit message
+# gate in the project (core.hooksPath=.githooks) unless core.hooksPath
+# is already set.
 
 set -euo pipefail
 
@@ -53,6 +57,12 @@ local customizations inside .agent/ (for example the read: list in
 .aider.conf.yml) are overwritten after a warning; re-apply them.
 Before applying, the incoming changes are shown and the update must be
 confirmed on the terminal; pass --yes to skip that prompt.
+
+When the retrieved reference ships the commit-msg hook, both modes
+enable the commit message gate in this repository
+(core.hooksPath=.githooks) unless core.hooksPath is already set; an
+existing value is left untouched with a warning. Unset anytime with:
+  git config --unset core.hooksPath
 
 Examples:
   curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.11/scripts/install.sh | bash
@@ -136,7 +146,52 @@ place_files() {
     die "failed to record executability in the git index"
     return 1
   fi
+  # Older pinned references predate the commit-msg gate; only install
+  # and enable it when the retrieved reference ships the hook.
+  if [[ -f "${TMP_CLONE}/.githooks/commit-msg" ]]; then
+    cp -R "${TMP_CLONE}/.githooks" .githooks
+    chmod +x .githooks/commit-msg
+    if ! git update-index --add --chmod=+x .githooks/commit-msg; then
+      die "failed to record commit-msg hook executability in the index"
+      return 1
+    fi
+    configure_commit_gate
+  fi
   printf 'installer: placed .agent/ and agent.sh into the project root\n'
+}
+
+# Globals: None
+# Arguments: None
+# Outputs: None
+# Returns: 0 when FETCH_HEAD ships .githooks/commit-msg, 1 otherwise
+fetch_has_githooks() {
+  git cat-file -e "FETCH_HEAD:.githooks/commit-msg" 2>/dev/null
+}
+
+# Globals: None
+# Arguments: None
+# Outputs: Progress to STDOUT; warnings to STDERR; errors to STDERR
+# Returns: 0 when the gate is enabled or an existing setting is kept
+configure_commit_gate() {
+  local existing
+  if existing="$(git config --get core.hooksPath 2>/dev/null)" \
+      && [[ -n "${existing}" ]]; then
+    if [[ "${existing}" == ".githooks" ]]; then
+      printf 'installer: commit message gate already active\n'
+      return 0
+    fi
+    printf 'installer: WARNING: core.hooksPath is already set to %s\n' \
+      "${existing}" >&2
+    printf 'installer:   leaving it untouched; enable the gate later\n' >&2
+    printf 'installer:   with: git config core.hooksPath .githooks\n' >&2
+    return 0
+  fi
+  if ! git config core.hooksPath .githooks; then
+    die "failed to enable the commit message gate (core.hooksPath)"
+    return 1
+  fi
+  printf 'installer: commit message gate enabled (core.hooksPath=.githooks)\n'
+  printf 'installer:   unset anytime with: git config --unset core.hooksPath\n'
 }
 
 # Globals: None
@@ -158,7 +213,7 @@ check_staged_scope() {
   local path
   while IFS= read -r path; do
     case "${path}" in
-      .agent/* | agent.sh) ;;
+      .agent/* | agent.sh | .githooks/*) ;;
       *)
         die "staged change outside the update scope: ${path}"
         die "commit or unstage it before updating"
@@ -215,11 +270,15 @@ preview_refresh() {
     base="$(git hash-object -t tree /dev/null)"
     printf 'installer: no commits yet; all assistant files are new\n'
   fi
-  git --no-pager diff --stat "${base}" FETCH_HEAD -- .agent agent.sh
-  if ! git diff --quiet -- .agent agent.sh; then
+  local paths=(.agent agent.sh)
+  if fetch_has_githooks; then
+    paths+=(.githooks)
+  fi
+  git --no-pager diff --stat "${base}" FETCH_HEAD -- "${paths[@]}"
+  if ! git diff --quiet -- "${paths[@]}"; then
     printf 'installer: WARNING: uncommitted local changes will be' >&2
     printf ' overwritten:\n' >&2
-    git --no-pager diff --stat -- .agent agent.sh
+    git --no-pager diff --stat -- "${paths[@]}"
   fi
 }
 
@@ -252,28 +311,43 @@ confirm_refresh() {
 # Outputs: Progress to STDOUT; errors to STDERR
 # Returns: 0 when the refresh was applied or is already up to date
 apply_refresh() {
-  if ! git checkout FETCH_HEAD -- .agent agent.sh; then
-    die "failed to check out .agent and agent.sh from ref ${REF}"
+  local paths=(.agent agent.sh)
+  if fetch_has_githooks; then
+    paths+=(.githooks)
+  fi
+  if ! git checkout FETCH_HEAD -- "${paths[@]}"; then
+    die "failed to check out the assistant files from ref ${REF}"
     return 1
   fi
   # Record executability explicitly before the no-op probe: the index
-  # stores 100755 for both entry scripts even with core.fileMode=false,
-  # and a mode-only difference still yields a reviewable commit.
+  # stores 100755 for the entry scripts and the commit-msg hook even
+  # with core.fileMode=false, and a mode-only difference still yields a
+  # reviewable commit.
   if ! git update-index --chmod=+x agent.sh .agent/ai-assistant.sh; then
     die "failed to record executability in the git index"
     return 1
   fi
   chmod +x agent.sh .agent/ai-assistant.sh
+  if fetch_has_githooks; then
+    if ! git update-index --chmod=+x .githooks/commit-msg; then
+      die "failed to record commit-msg hook executability in the index"
+      return 1
+    fi
+    chmod +x .githooks/commit-msg
+  fi
   # No explicit HEAD in the probe: git compares the index against HEAD
   # implicitly and treats an unborn HEAD as the empty tree, so a
   # repository with no commits reaches the commit below instead of
   # dying with "bad revision 'HEAD'".
-  if git diff --cached --quiet -- .agent agent.sh; then
+  if git diff --cached --quiet -- "${paths[@]}"; then
     printf 'installer: already up to date at ref %s\n' "${REF}"
     return 0
   fi
-  if ! git commit --quiet -m "Update assistant files to ${REF}" \
-      -- .agent agent.sh; then
+  # Subject conforms to the commit-msg gate this installer may have
+  # just enabled in the consumer's repository.
+  if ! git commit --quiet \
+      -m "chore(agent): update assistant files to ${REF}" \
+      -- "${paths[@]}"; then
     die "failed to record the refresh as a commit"
     return 1
   fi
@@ -293,6 +367,12 @@ update_files() {
   fetch_assistant_ref
   preview_refresh
   confirm_refresh
+  # Enable the gate after confirmation so an aborted update leaves the
+  # repository configuration untouched, and before the refresh commit so
+  # the installer's own commit passes through the gate it installs.
+  if fetch_has_githooks; then
+    configure_commit_gate
+  fi
   apply_refresh
   printf 'installer: update complete\n'
 }
