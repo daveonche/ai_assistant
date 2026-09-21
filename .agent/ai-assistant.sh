@@ -18,10 +18,15 @@ set -euo pipefail
 # The well-known agent socket is only used when it is owned by this uid:
 # a socket planted by another local user could pose as an agent and
 # harvest the private keys ssh-add offers below. An existing socket
-# whose owner cannot be determined is treated as untrusted. Because a
-# fake agent can be planted at the fixed path after any single check,
-# ownership is re-proven immediately before every key-offering ssh-add
-# and before the socket is finally exported into the container.
+# whose owner cannot be determined is treated as untrusted. When the
+# path does not exist in any form, a fresh agent is started there — but
+# only inside a private runtime directory (owned by this uid, not
+# group/other-writable); the world-writable /tmp fallback never
+# qualifies, so bootstrapping stays fail-closed wherever a planted
+# object could sit. Because a fake agent can be planted at the fixed
+# path after any single check, ownership is re-proven immediately
+# before every key-offering ssh-add and before the socket is finally
+# exported into the container.
 
 # agent_socket_trusted - Verify a path is a socket owned by this uid.
 #
@@ -38,11 +43,46 @@ agent_socket_trusted() {
   [[ -n "$owner" && "$owner" == "$(id -u)" ]]
 }
 
+# agent_socket_bootstrappable - Decide whether a fresh agent may be
+# started at the well-known path.
+#
+# True only when the path does not exist in any form (socket, file, or
+# dangling symlink) and its parent directory is owned by this uid and
+# not writable by group or other, so only this user can create — or
+# plant — entries there. The world-writable /tmp fallback never
+# qualifies: bootstrapping stays fail-closed outside a private runtime
+# dir. The gate is not load-bearing on its own: the stale-recovery
+# path below re-proves ownership before offering keys and before
+# export, so a path planted between this check and the bind still
+# fails closed.
+#
+# Globals: none
+# Arguments: $1 - path of the agent socket to bootstrap
+# Outputs: none
+# Returns: 0 when a fresh agent may be started at the path; 1 otherwise.
+agent_socket_bootstrappable() {
+  local sock="${1:-}"
+  local dir=""
+  local owner=""
+  local perms=""
+  [[ -n "$sock" ]] || return 1
+  [[ -e "$sock" || -L "$sock" ]] && return 1
+  dir="$(dirname -- "$sock")"
+  [[ -d "$dir" ]] || return 1
+  owner="$(stat -c %u "$dir" 2>/dev/null || true)"
+  [[ -n "$owner" && "$owner" == "$(id -u)" ]] || return 1
+  perms="$(stat -c %a "$dir" 2>/dev/null || true)"
+  [[ -n "$perms" ]] || return 1
+  # Reject group/other write bits (octal 022) in the numeric mode.
+  (( (8#$perms & 8#022) == 0 ))
+}
+
 if [[ -z "${SSH_AUTH_SOCK:-}" && -d "${HOME}/.ssh" && -t 0 && -t 1 ]] \
    && command -v ssh-agent >/dev/null 2>&1 \
    && command -v ssh-add >/dev/null 2>&1; then
   agent_sock="${XDG_RUNTIME_DIR:-/tmp}/ssh-agent-$(id -u).sock"
-  if agent_socket_trusted "$agent_sock"; then
+  if agent_socket_trusted "$agent_sock" \
+     || agent_socket_bootstrappable "$agent_sock"; then
     export SSH_AUTH_SOCK="$agent_sock"
     add_rc=0
     ssh-add -l >/dev/null 2>&1 || add_rc=$?
