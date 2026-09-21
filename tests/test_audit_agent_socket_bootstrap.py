@@ -12,9 +12,13 @@ Covered here:
 - happy path: absent socket in a private runtime dir → the launcher
   starts an agent at the well-known path, offers the default keys to
   it exactly once, and exports SSH_AUTH_SOCK to the assistant;
-- negative: a group/other-writable runtime dir must not be
-  bootstrapped — no agent started, no keys offered, no socket
-  exported, and the launch still completes with the skip warning.
+- fallback: an unbootstrappable runtime dir (group/other-writable;
+  stands in for the WSL2 root-owned case, which cannot be simulated
+  without root) → the launcher falls back to the private
+  ~/.cache/aider-agent dir, starts the agent there, and leaves the
+  well-known path untouched;
+- negative: a pre-existing non-private cache dir must fail closed —
+  no agent started anywhere, no socket exported, skip warning.
 
 The launcher runs attached to a pseudo-terminal (stdlib pty) because
 agent setup is TTY-gated; python3 and the ssh tooling are stubbed so
@@ -101,6 +105,9 @@ def _make_sandbox(tmp_path: Path) -> Path:
     (sandbox / ".agent").mkdir()
     # The launcher's agent setup is gated on $HOME/.ssh existing.
     (sandbox / ".ssh").mkdir()
+    # ~/.cache must exist for the cache-dir fallback gate (the launcher
+    # never creates ~/.cache itself, mirroring a real HOME).
+    (sandbox / ".cache").mkdir()
     (sandbox / "runtime").mkdir()
     return sandbox
 
@@ -223,15 +230,57 @@ def test_absent_socket_in_private_runtime_dir_is_bootstrapped(tmp_path: Path):
     assert "not a trusted agent socket" not in transcript, transcript
 
 
-def test_world_writable_runtime_dir_is_not_bootstrapped(tmp_path: Path):
-    """A group/other-writable runtime dir must not be bootstrapped: no
-    agent is started, no keys are offered, no socket is exported, and
-    the launch still completes with the skip warning (fail-closed)."""
+def test_unbootstrappable_runtime_dir_falls_back_to_cache_dir(tmp_path: Path):
+    """A group/other-writable runtime dir (stands in for the WSL2
+    root-owned runtime dir, which cannot be simulated without root)
+    must not be bootstrapped — but the launcher falls back to the
+    private ~/.cache/aider-agent dir, starts the agent there, offers
+    the default keys once, and exports the fallback socket. The
+    well-known path is never touched."""
     sandbox = _make_sandbox(tmp_path)
     stub_dir = tmp_path / "stubs"
     stub_dir.mkdir()
     _write_stubs(stub_dir)
     (sandbox / "runtime").chmod(0o777)
+    cache_sock = sandbox / ".cache" / "aider-agent" / (
+        f"ssh-agent-{os.getuid()}.sock"
+    )
+
+    result = run_launcher(sandbox, stub_dir)
+    transcript = result.stdout
+
+    assert result.returncode == 0, transcript
+    # The fallback was announced...
+    assert "not usable as an agent socket dir" in transcript, transcript
+    # ...the agent was started in the cache dir...
+    agent_log = (sandbox / "ssh-agent-stub.log").read_text()
+    assert str(cache_sock) in agent_log, agent_log
+    assert cache_sock.is_socket(), transcript
+    # ...the well-known path stayed untouched...
+    assert not _agent_sock_path(sandbox).exists(), transcript
+    # ...the keys were offered exactly once, and the fallback socket
+    # was exported to the assistant.
+    ssh_add_log = (sandbox / "ssh-add-stub.log").read_text()
+    assert ssh_add_log.count("KEYS_OFFERED") == 1, ssh_add_log
+    python_log = (sandbox / "python3-stub.log").read_text()
+    assert f"SSH_AUTH_SOCK={cache_sock}" in python_log, python_log
+    assert "SSH_AUTH_SOCK_UNSET" not in python_log, python_log
+    assert "not a trusted agent socket" not in transcript, transcript
+
+
+def test_non_private_cache_dir_fails_closed(tmp_path: Path):
+    """A pre-existing cache dir that is not fully private (drwx------)
+    must fail closed: no agent started anywhere, no keys offered, no
+    socket exported, and the launch still completes with the skip
+    warning."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = tmp_path / "stubs"
+    stub_dir.mkdir()
+    _write_stubs(stub_dir)
+    (sandbox / "runtime").chmod(0o777)
+    cache_dir = sandbox / ".cache" / "aider-agent"
+    cache_dir.mkdir(parents=True)
+    cache_dir.chmod(0o755)
 
     result = run_launcher(sandbox, stub_dir)
     transcript = result.stdout

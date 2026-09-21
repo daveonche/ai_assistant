@@ -78,10 +78,61 @@ agent_socket_bootstrappable() {
   [[ "${modes:5:1}" != "w" && "${modes:8:1}" != "w" ]]
 }
 
+# agent_cache_socket_ready - Ensure the private cache dir exists and
+# qualifies the fallback socket path inside it.
+#
+# ~/.cache/aider-agent is created 0700 when absent; a symlink, a
+# foreign-owned dir, or anything short of fully private (drwx------)
+# fails closed. The cache dir sits on the regular filesystem, so
+# traversable-by-others would let another local user CONNECT to the
+# agent and request signatures with the offered keys — stricter than
+# the runtime-dir gate (planting only), hence the exact-mode check.
+# ~/.cache itself must already exist as a directory; it is never
+# created or modified. Ready also when a trusted socket is already
+# bound at the fallback path (reuse).
+#
+# Globals: none
+# Arguments: none
+# Outputs: none
+# Returns: 0 when the fallback socket path is usable; 1 otherwise.
+agent_cache_socket_ready() {
+  local dir="${HOME}/.cache/aider-agent"
+  local sock="${dir}/ssh-agent-$(id -u).sock"
+  local owner=""
+  local modes=""
+  [[ -L "$dir" ]] && return 1
+  if [[ -d "$dir" ]]; then
+    owner="$(stat -c %u "$dir" 2>/dev/null || true)"
+    [[ -n "$owner" && "$owner" == "$(id -u)" ]] || return 1
+    modes="$(stat -c %A "$dir" 2>/dev/null || true)"
+    [[ "$modes" == "drwx------" ]] || return 1
+  elif [[ -e "$dir" ]]; then
+    return 1
+  else
+    [[ -d "${HOME}/.cache" ]] || return 1
+    mkdir -m 0700 "$dir" 2>/dev/null || return 1
+  fi
+  [[ ! -e "$sock" && ! -L "$sock" ]] || agent_socket_trusted "$sock"
+}
+
 if [[ -z "${SSH_AUTH_SOCK:-}" && -d "${HOME}/.ssh" && -t 0 && -t 1 ]] \
    && command -v ssh-agent >/dev/null 2>&1 \
    && command -v ssh-add >/dev/null 2>&1; then
   agent_sock="${XDG_RUNTIME_DIR:-/tmp}/ssh-agent-$(id -u).sock"
+  # Fallback selection: only when the well-known path fails BOTH gates
+  # AND nothing is planted at it (planted objects keep failing closed
+  # below) AND the private cache dir qualifies. The reuse/bootstrap/
+  # re-prove block is path-agnostic, so the TOCTOU discipline carries
+  # over to the fallback unchanged.
+  if ! agent_socket_trusted "$agent_sock" \
+     && ! agent_socket_bootstrappable "$agent_sock" \
+     && [[ ! -e "$agent_sock" && ! -L "$agent_sock" ]] \
+     && agent_cache_socket_ready; then
+    printf 'Note: %s is not usable as an agent socket dir; using %s ' \
+      "${XDG_RUNTIME_DIR:-/tmp}" "${HOME}/.cache/aider-agent" >&2
+    printf 'instead.\n' >&2
+    agent_sock="${HOME}/.cache/aider-agent/ssh-agent-$(id -u).sock"
+  fi
   if agent_socket_trusted "$agent_sock" \
      || agent_socket_bootstrappable "$agent_sock"; then
     export SSH_AUTH_SOCK="$agent_sock"
