@@ -70,7 +70,9 @@ RUN --mount=type=cache,target=/var/cache/apt \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" > /etc/apt/sources.list.d/docker.list && \
-    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    chmod a+r /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         docker-ce-cli \
@@ -80,30 +82,40 @@ RUN --mount=type=cache,target=/var/cache/apt \
 
 # ---- Layer D: global npm utilities (most volatile layer) --------------------
 # npm cache mount avoids re-downloading tarballs when this layer changes.
+# Exact-pinned (no caret): a floating ^11 would auto-pull any future 11.x —
+# including a compromised release — on the next rebuild; upgrades are manual.
 # NOTE: the npm "shellcheck" package is intentionally NOT used. It is only a
 # JS wrapper that downloads the real binary on FIRST RUN into root-owned
 # /usr/lib/node_modules, which fails with EACCES for the non-root runtime
 # user. The official static binary is baked in below instead.
 RUN --mount=type=cache,target=/root/.npm \
     npm install -g --no-audit --no-fund \
-        @mermaid-js/mermaid-cli@^11
+        @mermaid-js/mermaid-cli@11.17.0
 
 # ---- Layer D2: ShellCheck (real static binary, baked at build time) ---------
 # Version-pinned, offline at runtime, executable by every user. TARGETARCH is
 # auto-provided by BuildKit (amd64/arm64/arm). The xz check is a no-op when
 # the base image already ships it. Alternative: `apt-get install shellcheck`
 # gives Debian bookworm's v0.8.0 if you prefer zero GitHub traffic.
+# Version-pinned and checksum-gated: the tarball's SHA256 is pinned per arch
+# and verified BEFORE extraction, so a replaced release asset fails the build
+# instead of installing as root. To upgrade: bump SHELLCHECK_VERSION and all
+# three SHA256 ARGs together (sha256sum each release .tar.xz).
 ARG TARGETARCH
 ARG SHELLCHECK_VERSION=v0.10.0
+ARG SHELLCHECK_SHA256_X86_64=6c881ab0698e4e6ea235245f22832860544f17ba386442fe7e9d629f8cbedf87
+ARG SHELLCHECK_SHA256_AARCH64=324a7e89de8fa2aed0d0c28f3dab59cf84c6d74264022c00c22af665ed1a09bb
+ARG SHELLCHECK_SHA256_ARMV6HF=1c89cb51e1412b580d7ba8aac240251ffb0b829788f83d2daa4a82da42d275e4
 RUN --mount=type=cache,target=/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt \
     { command -v xz >/dev/null 2>&1 || { apt-get update && apt-get install -y --no-install-recommends xz-utils; }; } && \
     case "${TARGETARCH}" in \
-        arm64) SC_ARCH=aarch64 ;; \
-        arm) SC_ARCH=armv6hf ;; \
-        *) SC_ARCH=x86_64 ;; \
+        arm64) SC_ARCH=aarch64 ; SC_SHA256="${SHELLCHECK_SHA256_AARCH64}" ;; \
+        arm) SC_ARCH=armv6hf ; SC_SHA256="${SHELLCHECK_SHA256_ARMV6HF}" ;; \
+        *) SC_ARCH=x86_64 ; SC_SHA256="${SHELLCHECK_SHA256_X86_64}" ;; \
     esac && \
     curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.${SC_ARCH}.tar.xz" -o /tmp/shellcheck.tar.xz && \
+    echo "${SC_SHA256}  /tmp/shellcheck.tar.xz" | sha256sum -c - && \
     tar -xJf /tmp/shellcheck.tar.xz -C /tmp && \
     install -m 0755 "/tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck && \
     rm -rf "/tmp/shellcheck-${SHELLCHECK_VERSION}" /tmp/shellcheck.tar.xz
