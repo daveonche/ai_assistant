@@ -16,6 +16,7 @@ eggs/
 .env
 .env.local
 .env.*
+!.env.example
 
 # Build & Distribution
 dist/
