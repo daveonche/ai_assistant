@@ -230,6 +230,19 @@ refresh as a single commit whose subject conforms to that gate. The
 update is therefore a normal, reviewable, revertable project change —
 re-apply your local customizations after the update completes.
 
+When `raw.githubusercontent.com` is unreachable — for example a broken
+local resolver, or a network that blocks or filters the raw domain —
+the installer can be retrieved from the same repository over
+`github.com` with plain git and piped to `bash` the same way:
+
+```bash
+git fetch --depth 1 https://github.com/daveonche/ai_assistant.git v1.0.12 && git show FETCH_HEAD:scripts/install.sh | bash
+```
+
+The git-served installer behaves identically to the curl variant:
+same warning, preview, and confirmation prompt, and the same options
+after `bash -s --` (for example `bash -s -- --dry-run`).
+
 #### Pinned-reference caveat
 
 Installs and updates always retrieve the pinned release tag `v1.0.12`,
