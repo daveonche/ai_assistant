@@ -140,14 +140,46 @@ file (empty SEARCH block) at the first checkpoint.
    `Last updated` date on every write.
 7. The `Last completed` line is a one-line summary of only the most recent
    step (target ~300 characters, hard cap 400 — enforced by
-   `tests/test_workflow_state_pointer.py`). When drafting a checkpoint,
+   `tests/test_workflow_state_pointer.py` where present, otherwise per
+   rules 9-12). When drafting a checkpoint,
    replace the entire line; never prepend, append, or accumulate per-step
    history into it — per-step details live in git commit messages and the
    test files.
 8. Never describe the current context window in the state file; record only
    the prescriptive "- Reload to resume:" line listing the minimal files for
-   the next action (enforced by `tests/test_workflow_state_pointer.py`).
-   Drops and adds never require a state-file rewrite.
+   the next action (enforced by `tests/test_workflow_state_pointer.py` where
+   present, otherwise per rules 9-12). Drops and adds never require a
+   state-file rewrite.
+9. In a project where `tests/test_workflow_state_pointer.py` is absent
+   (typical for copied-in `.agent/` installs, and for projects whose
+   tests are not written in Python), offer at the first checkpoint or
+   `$session-checkpoint` to generate an equivalent test in the project's
+   own language and test framework, detected from project markers
+   (e.g., `composer.json` → PHPUnit/Pest, `Gemfile` → RSpec/Minitest);
+   if no marker identifies the language, ask the user. Follow the
+   project's own test conventions for location and naming. If the user
+   declines, rely on rule 12 and do not re-offer in the same session.
+10. The generated test must enforce exactly this constraint set, which is
+    self-contained here so it can be ported without the Python original:
+    - the state file is at most 15 lines;
+    - at most one `- Last completed:` line, at most 400 characters;
+    - no snapshot lines starting with `- Files in context:`,
+      `- droppable`, or `- summaries only:`;
+    - at most one `- Reload to resume:` line, and at least one whenever
+      a `- Command:` line is present;
+    - every check passes vacuously while the state file does not exist.
+11. Adding the generated test to the project's suite requires explicit
+    user approval. Before asking for `/code proceed`, announce a mapping
+    of each constraint in rule 10 to the generated test case that
+    enforces it, so the user can verify the coverage before approving.
+    If the constraint set in rule 10 later changes, regenerate the test
+    to match.
+12. Until the generated test exists (or if the user declines it), the
+    orchestrator is the enforcer: before drafting any checkpoint edit,
+    validate the draft against the constraint set in rule 10 and
+    announce the result with the draft (e.g., "Checkpoint validated:
+    9 lines, 312 chars, reload-only"). If the existing state file
+    violates a constraint, repair it in the same draft.
 
 ## Context Hygiene
 
