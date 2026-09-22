@@ -116,6 +116,61 @@ agent_cache_socket_ready() {
   [[ ! -e "$sock" && ! -L "$sock" ]] || agent_socket_trusted "$sock"
 }
 
+# agent_socket_report_blocker - Explain why an agent socket path failed
+# both trust gates and print commands to inspect (and, if stale, remove)
+# whatever blocks it. Purely diagnostic: nothing is removed, bound, or
+# exported here, and the launch is never failed. Distinguishes an object
+# occupying the path (type, owner, mode) from a parent directory this
+# uid does not solely control.
+#
+# Globals: none
+# Arguments: $1 - path of the agent socket that failed the gates
+# Outputs: diagnostic lines to STDERR, with suggested commands
+# Returns: 0 always (best-effort diagnostics)
+agent_socket_report_blocker() {
+  local sock="${1:-}"
+  local dir=""
+  local kind=""
+  local owner=""
+  local modes=""
+  [[ -n "$sock" ]] || return 0
+  if [[ -e "$sock" || -L "$sock" ]]; then
+    owner="$(stat -c '%u' "$sock" 2>/dev/null || true)"
+    modes="$(stat -c '%a' "$sock" 2>/dev/null || true)"
+    if [[ -L "$sock" ]]; then
+      printf '  blocker: symlink to %s (owner uid %s).\n' \
+        "$(readlink -- "$sock" 2>/dev/null || true)" \
+        "${owner:-unknown}" >&2
+    else
+      kind="$(stat -c '%F' "$sock" 2>/dev/null || true)"
+      printf '  blocker: %s owned by uid %s (mode %s).\n' \
+        "${kind:-unstatable object}" "${owner:-unknown}" \
+        "${modes:-unknown}" >&2
+    fi
+    printf '  inspect with: ls -la %q\n' "$sock" >&2
+    if [[ -d "$sock" && ! -L "$sock" ]]; then
+      # An empty dir here is often a bind-mount point auto-created by
+      # root tooling (e.g. Docker). rmdir refuses non-empty dirs and
+      # mount points, so it can never delete mounted contents.
+      printf '  if stale, remove with: rmdir %q\n' "$sock" >&2
+    else
+      printf '  if stale, remove with: rm %q\n' "$sock" >&2
+    fi
+    return 0
+  fi
+  # Nothing occupies the path, so bootstrappable failed on the parent.
+  dir="$(dirname -- "$sock")"
+  owner="$(stat -c '%u' "$dir" 2>/dev/null || true)"
+  modes="$(stat -c '%A' "$dir" 2>/dev/null || true)"
+  printf '  blocker: the path is clear, but %s is owned by uid %s ' \
+    "$dir" "${owner:-unknown}" >&2
+  printf '(mode %s), not solely controlled by this uid.\n' \
+    "${modes:-unknown}" >&2
+  printf '  fix: re-login so logind recreates the runtime dir, or ' >&2
+  printf 'unset XDG_RUNTIME_DIR so the cache fallback is used.\n' >&2
+  return 0
+}
+
 if [[ -z "${SSH_AUTH_SOCK:-}" && -d "${HOME}/.ssh" && -t 0 && -t 1 ]] \
    && command -v ssh-agent >/dev/null 2>&1 \
    && command -v ssh-add >/dev/null 2>&1; then
@@ -168,6 +223,13 @@ if [[ -z "${SSH_AUTH_SOCK:-}" && -d "${HOME}/.ssh" && -t 0 && -t 1 ]] \
       else
         printf 'Warning: %s not a trusted agent socket; skipping setup.\n' \
           "$agent_sock" >&2
+        if [[ -e "$agent_sock" || -L "$agent_sock" ]]; then
+          # Replaced between the initial check and the key offer:
+          # report what sits there now before dropping SSH_AUTH_SOCK.
+          agent_socket_report_blocker "$agent_sock"
+        else
+          printf '  blocker: the socket vanished (no agent is bound).\n' >&2
+        fi
         unset SSH_AUTH_SOCK
       fi
     fi
@@ -184,6 +246,7 @@ if [[ -z "${SSH_AUTH_SOCK:-}" && -d "${HOME}/.ssh" && -t 0 && -t 1 ]] \
   else
     printf 'Warning: %s not a trusted agent socket; skipping setup.\n' \
       "$agent_sock" >&2
+    agent_socket_report_blocker "$agent_sock"
   fi
 fi
 
