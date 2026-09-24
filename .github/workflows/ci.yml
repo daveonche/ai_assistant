@@ -29,7 +29,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
-          fetch-depth: 1
+          # Full history is genuinely required here: the commit-subject
+          # stage walks every commit a push introduces (before..after),
+          # which a shallow checkout cannot resolve.
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Python syntax check of launcher
@@ -38,12 +41,42 @@ jobs:
       - name: Shellcheck shell scripts
         run: git ls-files -z '*.sh' | xargs -0 -r shellcheck
 
+      # The gate must catch a non-conforming subject even when it is
+      # buried under later commits (e.g. committed with --no-verify), so
+      # a push validates every commit it introduces, not only the tip.
       # On pull_request events the checked-out tip is a merge commit,
-      # which the hook exempts; the gate bites on direct pushes.
-      - name: Validate tip commit subject with the commit-msg hook
+      # which the hook exempts, so only the tip is checked there.
+      - name: Validate commit subjects with the commit-msg hook
         run: |
-          git --no-pager log -1 --format=%s > "$RUNNER_TEMP/subject.txt"
-          bash .githooks/commit-msg "$RUNNER_TEMP/subject.txt"
+          set -euo pipefail
+          validate_tip() {
+            git --no-pager log -1 --format=%s > "$RUNNER_TEMP/subject.txt"
+            bash .githooks/commit-msg "$RUNNER_TEMP/subject.txt"
+          }
+          if [[ "${{ github.event_name }}" != "push" ]]; then
+            validate_tip
+            exit 0
+          fi
+          before="${{ github.event.before }}"
+          if [[ "$before" =~ ^0+$ ]]; then
+            # New branch: no base commit exists; validate the tip.
+            validate_tip
+            exit 0
+          fi
+          if ! git cat-file -e "${before}^{commit}" 2>/dev/null; then
+            echo "::error::push base ${before} is not in the checked-out history (force push?); cannot validate the pushed range"
+            exit 1
+          fi
+          commits="$(git rev-list "${before}..${{ github.event.after }}")"
+          status=0
+          while IFS= read -r commit; do
+            git --no-pager log -1 --format=%s "$commit" > "$RUNNER_TEMP/subject.txt"
+            if ! bash .githooks/commit-msg "$RUNNER_TEMP/subject.txt"; then
+              echo "::error::commit ${commit}: subject rejected by the commit-msg gate"
+              status=1
+            fi
+          done <<< "$commits"
+          exit "$status"
 
   docker-build:
     name: Docker image build smoke test

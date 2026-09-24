@@ -102,9 +102,12 @@ attribute-co-authored-by: false
 commit-prompt: >-
   Write one concise Conventional Commits subject line for the staged diff
   (type(scope): summary, max 72 chars). Reply with ONLY that line — plain
-  text, no markdown, no quotes, no code fences, no branch names, no
-  explanations. Base it strictly on the diff; never continue or repeat
-  the conversation.
+  text, no markdown, no quotes, no code fences, no branch names, no file
+  names, no SEARCH/REPLACE edit blocks, no explanations. Base it strictly
+  on the diff; never continue or repeat the conversation, and never copy
+  edit-block markers (<<<<<<< SEARCH, =======, >>>>>>> REPLACE) or raw
+  diffs into the reply. The commit-msg hook rejects messages that embed
+  edit blocks, so a reply containing them cannot be committed.
 
 ########################
 # Fixing and committing:

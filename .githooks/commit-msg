@@ -4,7 +4,9 @@
 # LLM for. Git invokes this as: commit-msg <message-file>. Exit 0
 # accepts the commit; exit 1 rejects it before it is created.
 # Git-generated subjects (Merge, fixup!, squash!, Revert "...") and
-# comment lines are exempt.
+# comment lines are exempt. Messages embedding an aider SEARCH/REPLACE
+# edit block are rejected outright: the LLM occasionally echoes the
+# edit format into the commit message instead of prose.
 
 set -euo pipefail
 
@@ -28,6 +30,7 @@ Subject format: type(scope): summary
   - summary: at least one character, plain text (no double quotes or
     backticks); whole subject at most 72 characters
 Merge/fixup!/squash!/Revert "..." subjects are exempt.
+Messages embedding a SEARCH/REPLACE edit block are rejected.
 
 Examples:
   .githooks/commit-msg .git/COMMIT_EDITMSG
@@ -67,6 +70,21 @@ is_exempt() {
     "Merge "*|"fixup! "*|"squash! "*|'Revert "'*) return 0 ;;
     *) return 1 ;;
   esac
+}
+
+reject_edit_blocks() {
+  # Reject messages that embed an aider SEARCH/REPLACE edit block. The
+  # LLM occasionally echoes the edit format into the commit message
+  # instead of a prose summary; such a message is never intentional.
+  # Only the unambiguous block anchors are matched: a lone '======='
+  # line is a common text separator and stays accepted.
+  # Globals: none
+  # Arguments: $1 = commit message file
+  # Outputs: rejection reason to STDERR via fail
+  # Returns: exits 1 on violation, returns 0 otherwise
+  if grep -qE '^<<<<<<< SEARCH|^>>>>>>> REPLACE' "$1"; then
+    fail "message embeds a SEARCH/REPLACE edit block; write a prose commit message instead"
+  fi
 }
 
 subject_regex() {
@@ -129,6 +147,7 @@ main() {
   if [[ -z "$subject" ]]; then
     fail "commit message is empty (comments and blank lines only)"
   fi
+  reject_edit_blocks "$file"
   if is_exempt "$subject"; then
     printf 'commit-msg: exempt git-generated subject: %s\n' "$subject"
     exit 0
