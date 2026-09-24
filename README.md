@@ -286,7 +286,7 @@ Spinner progress output is suppressed in debug mode so the traced commands print
 
 ### Normal Mode
 
-Without the flag, the launcher shows spinner progress feedback only while long operations run; Docker commands are still recorded to the command log file.
+Without the flag, the launcher shows spinner progress feedback only while long operations run; Docker and git commands are still recorded to the command log file.
 
 ## Agent Workflow Sessions
 

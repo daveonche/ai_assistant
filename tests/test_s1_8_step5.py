@@ -32,18 +32,19 @@ def _section(text: str, heading: str) -> str:
 
 def test_logging_section_documents_what_and_where():
     """The Logging and Debug Mode section documents what is logged (every
-    Docker command, appended per session) and where it is written (system
-    temporary directory, ai-assistant-*.log naming)."""
+    Docker and git command, appended per session) and where it is written
+    (the user's cache directory, ai-assistant-*.log naming)."""
     readme = _read_readme()
     section = _section(readme, "Logging and Debug Mode").casefold()
 
-    # What is logged: every Docker command, appended to a per-session log.
-    assert "every docker command" in section
+    # What is logged: every Docker and git command, appended to a
+    # per-session log.
+    assert "every docker and git command" in section
     assert "per-session command log" in section
     assert "appended" in section
 
-    # Where it is written: system temp directory + log file naming.
-    assert "system temporary directory" in section
+    # Where it is written: the user's cache directory + log file naming.
+    assert "user's cache directory" in section
     assert re.search(r"ai-assistant-[\w<>/ -]*\.log", section), (
         "log file naming pattern (ai-assistant-*.log) not documented"
     )
@@ -74,7 +75,7 @@ def test_debug_mode_documentation_matches_requirements():
 
     # What additional output appears: enumerated stderr output.
     assert "stderr" in enabling
-    assert "each docker command" in enabling
+    assert "each docker and git command" in enabling
     assert "command log path" in enabling
     assert "last 10" in enabling
 
