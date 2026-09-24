@@ -23,7 +23,7 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 
    ```bash
    git clone https://github.com/daveonche/ai_assistant.git
-   cd <repository-directory>
+   cd ai_assistant
    ```
 
 2. **Configure Environment Variables:**
