@@ -1261,6 +1261,78 @@ def _ensure_github_known_hosts(debug: bool) -> None:
         )
 
 
+def _ensure_commit_msg_gate(project_root: Path, debug: bool) -> None:
+    """Activate the repo's commit-msg gate when core.hooksPath is unset.
+
+    Git never runs tracked hooks on its own: core.hooksPath is a local
+    config value and deliberately not versioned, so a copied-in .githooks/
+    directory stays inert until the value is set. Every host launch
+    therefore sets it to .githooks when the project root is a git
+    worktree that ships the gate, applying the installer's policy: an
+    existing value (husky, pre-commit, another gate) is never
+    overwritten. Best-effort and non-fatal: a missing git binary or a
+    failed config write only skips the activation, never the launch.
+    """
+    hook = project_root / ".githooks" / "commit-msg"
+    if not hook.is_file() or not (project_root / ".git").exists():
+        return
+    if not os.access(hook, os.X_OK):
+        print(
+            f"Warning: {hook} is not executable, so the gate would stay "
+            "inactive; fix with chmod +x .githooks/commit-msg and git "
+            "update-index --chmod=+x .githooks/commit-msg.",
+            file=sys.stderr,
+        )
+    get_command = ["git", "-C", str(project_root), "config", "core.hooksPath"]
+    set_command = get_command + [".githooks"]
+    try:
+        _trace_command(get_command, debug)
+        current = subprocess.run(get_command, capture_output=True, text=True)
+        if current.returncode == 0:
+            existing = (current.stdout or "").strip()
+            if debug and existing != ".githooks":
+                print(
+                    f"Note: core.hooksPath is already {existing!r}; "
+                    "leaving it untouched.",
+                    file=sys.stderr,
+                )
+            return
+        if current.returncode != 1:
+            # Only "not set" (exit 1) may trigger a write; any other
+            # status is a git error (e.g. a broken repository) and must
+            # not be written to blind.
+            if debug:
+                print(
+                    "Note: cannot read core.hooksPath ("
+                    f"{(current.stderr or '').strip()}); gate not "
+                    "activated.",
+                    file=sys.stderr,
+                )
+            return
+        _trace_command(set_command, debug)
+        result = subprocess.run(set_command, capture_output=True, text=True)
+    except FileNotFoundError:
+        if debug:
+            print(
+                "Note: git is unavailable; commit-msg gate not activated.",
+                file=sys.stderr,
+            )
+        return
+    if result.returncode != 0:
+        if debug:
+            print(
+                "Note: could not set core.hooksPath ("
+                f"{(result.stderr or '').strip()}); gate not activated.",
+                file=sys.stderr,
+            )
+        return
+    print(
+        "Note: commit-msg gate activated (git config core.hooksPath "
+        ".githooks).",
+        file=sys.stderr,
+    )
+
+
 def _valid_container_home(home: str) -> bool:
     """Return True when home is safe to embed in a bind-mount spec.
 
@@ -2090,12 +2162,15 @@ def main() -> int:
         _dump_recent_log_lines(debug)
         return 1
 
-    # Pin GitHub's published SSH host keys on the host (fingerprint-
-    # verified, append-only) so container git push/pull never stalls on a
-    # host-key prompt; the pinned file travels into the container through
-    # the read-only ~/.ssh mounts.
+    # Host-side setup that must run outside any container: pin GitHub's
+    # published SSH host keys (fingerprint-verified, append-only) so
+    # container git push/pull never stalls on a host-key prompt (the
+    # pinned file travels into the container through the read-only ~/.ssh
+    # mounts), and activate the repo's commit-msg gate when core.hooksPath
+    # is unset (see _ensure_commit_msg_gate).
     if not _running_in_container():
         _ensure_github_known_hosts(debug=debug)
+        _ensure_commit_msg_gate(project_root, debug=debug)
 
     container_name = (
         f"{TOOL_NAME}-{dir_name}-{workspace_hash[:8]}-{session_id}-{os.getpid()}"

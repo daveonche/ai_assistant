@@ -92,9 +92,10 @@ git update-index --chmod=+x agent.sh .agent/ai-assistant.sh .githooks/commit-msg
 git config core.hooksPath .githooks
 ```
 
-The last command enables the commit message gate in that project
-(default-on; see [Commit Message Gate](#commit-message-gate)). Remove
-it anytime with `git config --unset core.hooksPath`.
+The last command enables the commit message gate in that project right
+away; every assistant launch sets it too when it is still unset (see
+[Commit Message Gate](#commit-message-gate)). Remove it anytime with
+`git config --unset core.hooksPath`.
 
 Configure the environment variables for the target project. The
 launcher reads `.env` from the project root, falling back to
@@ -276,7 +277,7 @@ Run the launcher with the `--debug` flag (short form `-x`):
 
 In debug mode the launcher additionally prints to stderr:
 
-- Each Docker command just before it runs
+- Each Docker and git command just before it runs
 - The command log path at startup
 - The image cache tag used for the build-or-skip decision
 - The last 10 command-log entries when the assistant fails to start
@@ -313,7 +314,11 @@ This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) tha
 A tracked `commit-msg` hook (`.githooks/commit-msg`) mechanically
 enforces the subject format the assistant's `commit-prompt` asks for:
 `type(scope): summary`, max 72 characters, plain text — no quotes or
-backticks. Enable it once per clone:
+backticks. The launcher activates it automatically: every host launch
+sets `core.hooksPath` to `.githooks` when the project is a git worktree
+that ships the gate and the setting is still unset, so the gate is live
+from the first `./agent.sh` run with no manual step. To enable it
+without launching the assistant, run:
 
 ```bash
 git config core.hooksPath .githooks
@@ -327,13 +332,15 @@ auto-generated subjects (`Merge …`, `fixup! …`, `squash! …`,
 the pushed tip commit, so the gate also holds on machines without the
 hook enabled.
 
-The gate is default-on in consumer projects: the one-command installer
-and the manual copy instructions both set `core.hooksPath` to
-`.githooks`. The installer only sets it when `core.hooksPath` is unset
-— an existing value (pre-commit, husky, …) is left untouched with a
-warning — and its own update commit conforms to the enforced format so
-the freshly enabled gate accepts it. Remove the gate from a project
-with `git config --unset core.hooksPath`.
+The gate is default-on in consumer projects: the one-command installer,
+the manual copy instructions, and every assistant launch set
+`core.hooksPath` to `.githooks` — each only when the setting is unset,
+so an existing value (pre-commit, husky, …) is never overwritten. The
+installer warns when it leaves an existing value untouched, and its own
+update commit conforms to the enforced format so the freshly enabled
+gate accepts it. Remove the gate from a project with `git config
+--unset core.hooksPath`; the next launch re-enables it unless the
+`.githooks/` directory is removed as well.
 
 ## Releasing
 
