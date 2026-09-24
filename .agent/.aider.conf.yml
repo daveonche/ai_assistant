@@ -98,10 +98,18 @@ attribute-commit-message-committer: false
 ## Attribute aider edits using the Co-authored-by trailer in the commit message (default: True). If True, this takes precedence over default --attribute-author and --attribute-committer behavior unless they are explicitly set to True.
 attribute-co-authored-by: false
 
+## Verify commits with repository hooks (default: False). Required so the
+## .githooks/commit-msg gate validates aider-generated subjects; without
+## it aider commits with --no-verify and non-conforming subjects only
+## surface as CI failures.
+git-commit-verify: true
+
 ## Specify a custom prompt for generating commit messages
 commit-prompt: >-
   Write one concise Conventional Commits subject line for the staged diff
-  (type(scope): summary, max 72 chars). Reply with ONLY that line — plain
+  (type(scope): summary, max 72 chars). The type MUST be one of: build,
+  chore, ci, docs, feat, fix, perf, refactor, revert, style, test — never
+  invent a type such as config. Reply with ONLY that line — plain
   text, no markdown, no quotes, no code fences, no branch names, no file
   names, no SEARCH/REPLACE edit blocks, no explanations. Base it strictly
   on the diff; never continue or repeat the conversation, and never copy
