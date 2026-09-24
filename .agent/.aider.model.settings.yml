@@ -20,7 +20,7 @@
       provider:
         sort: "price"
         # only: ["Reka AI"]
-        allow_fallbacks: true
+        allow_fallbacks: false
         data_collection: "deny"
 
 # Switch with /model architect
@@ -54,7 +54,7 @@
     max_tokens: 4096
 
 # Switch with /model helper
-- name: openrouter/inclusionai/ling-3.0-flash
+- name: openrouter/inclusionai/ling-3.0-flash-vl
   edit_format: diff
   extra_params:
     extra_body:
