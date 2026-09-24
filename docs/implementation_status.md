@@ -166,6 +166,18 @@ locations baked into the implementation-analysis prompt
 `.agent/.aider.prompt/planning/implementation-analysis/SKILL.md`
 (commit 70d0e84); the full suite stayed green after each change.
 
+Post-Sprint-4 launcher work (commit-msg gate auto-activation) is also
+implemented and verified: `.agent/ai_assistant.py`
+`_ensure_commit_msg_gate()` activates the repo's commit-msg gate on
+every launch, setting `core.hooksPath` to `.githooks` when the project
+is a git worktree that ships the gate and the setting is still unset,
+never overwriting an existing value (pre-commit, husky, and similar
+hook managers), and running identically inside and outside a container
+because the change is repo-local `.git/config` only (commits 8af0277,
+6dc2594, a4f73a3, and cb02cf5). It is verified by
+`tests/test_commit_msg_gate_activation.py`, and the full suite stayed
+green after the change.
+
 Priority 1 - New capability intake:
 
 - No outstanding requirements remain; the next sprint requires user-introduced features or requirements (the same pattern that produced Sprint 4's S4.1-S4.3 and S4.5-S4.7)
