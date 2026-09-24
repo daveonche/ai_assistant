@@ -265,7 +265,7 @@ If using with other projects that are built with Docker Compose, all the Docker 
 
 ## Logging and Debug Mode
 
-Every Docker command the launcher runs is appended to a per-session command log in the system temporary directory. The log file is named `ai-assistant-<workspace-hash>-<session-id>.log` (for example, `/tmp/ai-assistant-1a2b3c4d-12345.log`), and the exact path is printed when debug mode is enabled. The log is appended to across runs of the same session and never contains secret values: credentials are forwarded to the container by variable name only.
+Every Docker and git command the launcher runs is appended to a per-session command log in the user's cache directory. The log file is named `ai-assistant-<workspace-hash>-<session-id>.log` (for example, `~/.cache/aider-agent/ai-assistant-1a2b3c4d-12345.log`), and the exact path is printed when debug mode is enabled. The log is appended to across runs of the same session and never contains secret values: credentials are forwarded to the container by variable name only.
 
 ### Enabling Debug Mode
 
