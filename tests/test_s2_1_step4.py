@@ -204,7 +204,7 @@ def test_install_records_executable_and_immediately_runnable(
 
 @pytest.fixture
 def release_repo(tmp_path: Path) -> Path:
-    """Local release repository tagged v1.0.15 whose assistant files and
+    """Local release repository tagged v1.0.16 whose assistant files and
     commit-msg hook were committed as 100644 under core.fileMode=false,
     simulating a mode-insensitive source environment. The hook is the
     real gate, so the installer's own update commit runs through the
@@ -226,8 +226,8 @@ def release_repo(tmp_path: Path) -> Path:
     for path in RECORDED_EXECUTABLES:
         (repo / path).chmod(0o755)  # exec bit on disk, but ...
     _git(repo, "add", ".agent", "agent.sh", ".githooks")
-    _git(repo, "commit", "-m", "release v1.0.15")
-    _git(repo, "tag", "v1.0.15")
+    _git(repo, "commit", "-m", "release v1.0.16")
+    _git(repo, "tag", "v1.0.16")
     # ... the source records 100644, as on a mode-insensitive filesystem
     assert set(_index_modes(repo).values()) == {"100644"}
     return repo

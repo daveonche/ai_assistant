@@ -10,7 +10,7 @@ from pathlib import Path
 README = Path("README.md")
 INSTALL_COMMAND = (
     "curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/"
-    "v1.0.15/scripts/install.sh | bash"
+    "v1.0.16/scripts/install.sh | bash"
 )
 
 

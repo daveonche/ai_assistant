@@ -193,7 +193,7 @@ one-command installer. From inside the target project's repository,
 run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.15/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.16/scripts/install.sh | bash
 ```
 
 The installer needs only the documented host prerequisites: Bash and
@@ -215,7 +215,7 @@ When `.agent/` or `agent.sh` already exist, the same command switches
 to update mode:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.15/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.16/scripts/install.sh | bash
 ```
 
 The installer first warns that local customizations inside `.agent/`
@@ -237,7 +237,7 @@ the installer can be retrieved from the same repository over
 `github.com` with plain git and piped to `bash` the same way:
 
 ```bash
-git fetch --depth 1 https://github.com/daveonche/ai_assistant.git v1.0.15 && git show FETCH_HEAD:scripts/install.sh | bash
+git fetch --depth 1 https://github.com/daveonche/ai_assistant.git v1.0.16 && git show FETCH_HEAD:scripts/install.sh | bash
 ```
 
 The git-served installer behaves identically to the curl variant:
@@ -246,12 +246,12 @@ after `bash -s --` (for example `bash -s -- --dry-run`).
 
 #### Pinned-reference caveat
 
-Installs and updates always retrieve the pinned release tag `v1.0.15`,
+Installs and updates always retrieve the pinned release tag `v1.0.16`,
 never `main`, so repeated runs are reproducible. To install from a
 different reference, pass `--ref`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.15/scripts/install.sh | bash -s -- --ref v1.0.0
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.16/scripts/install.sh | bash -s -- --ref v1.0.0
 ```
 
 Three more options help before and during a run: `--dry-run` reports
@@ -404,7 +404,7 @@ After the push, wait for the `release-tag-guard` job to pass, then
 verify the served installer carries the new pin:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.15/scripts/install.sh | grep -E 'DEFAULT_REF=|no commits yet'
+curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.16/scripts/install.sh | grep -E 'DEFAULT_REF=|no commits yet'
 ```
 
 ## Project Structure
