@@ -1266,12 +1266,14 @@ def _ensure_commit_msg_gate(project_root: Path, debug: bool) -> None:
 
     Git never runs tracked hooks on its own: core.hooksPath is a local
     config value and deliberately not versioned, so a copied-in .githooks/
-    directory stays inert until the value is set. Every host launch
-    therefore sets it to .githooks when the project root is a git
-    worktree that ships the gate, applying the installer's policy: an
-    existing value (husky, pre-commit, another gate) is never
-    overwritten. Best-effort and non-fatal: a missing git binary or a
-    failed config write only skips the activation, never the launch.
+    directory stays inert until the value is set. Every launch therefore
+    sets it to .githooks when the project root is a git worktree that
+    ships the gate, applying the installer's policy: an existing value
+    (husky, pre-commit, another gate) is never overwritten. The change
+    is repo-local (.git/config only), so it applies identically inside
+    and outside a container. Best-effort and non-fatal: a missing git
+    binary or a failed config write only skips the activation, never the
+    launch.
     """
     hook = project_root / ".githooks" / "commit-msg"
     if not hook.is_file() or not (project_root / ".git").exists():
@@ -2162,15 +2164,19 @@ def main() -> int:
         _dump_recent_log_lines(debug)
         return 1
 
-    # Host-side setup that must run outside any container: pin GitHub's
-    # published SSH host keys (fingerprint-verified, append-only) so
-    # container git push/pull never stalls on a host-key prompt (the
-    # pinned file travels into the container through the read-only ~/.ssh
-    # mounts), and activate the repo's commit-msg gate when core.hooksPath
-    # is unset (see _ensure_commit_msg_gate).
+    # Pin GitHub's published SSH host keys on the host only (fingerprint-
+    # verified, append-only) so container git push/pull never stalls on a
+    # host-key prompt: the pinned file travels into the container through
+    # the read-only ~/.ssh mounts, so writing it is meaningful on the
+    # host alone.
     if not _running_in_container():
         _ensure_github_known_hosts(debug=debug)
-        _ensure_commit_msg_gate(project_root, debug=debug)
+
+    # Activate the repo's commit-msg gate when core.hooksPath is unset
+    # (see _ensure_commit_msg_gate). The change is repo-local: it only
+    # writes .git/config in the project root, so it runs on every launch,
+    # inside or outside a container.
+    _ensure_commit_msg_gate(project_root, debug=debug)
 
     container_name = (
         f"{TOOL_NAME}-{dir_name}-{workspace_hash[:8]}-{session_id}-{os.getpid()}"

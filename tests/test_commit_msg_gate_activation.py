@@ -1,4 +1,4 @@
-"""Commit-msg gate activation during launcher host-side setup.
+"""Commit-msg gate activation during launcher setup.
 
 Must Support verified:
 - A capability to activate the repo's commit-msg gate automatically when

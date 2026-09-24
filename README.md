@@ -314,11 +314,11 @@ This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) tha
 A tracked `commit-msg` hook (`.githooks/commit-msg`) mechanically
 enforces the subject format the assistant's `commit-prompt` asks for:
 `type(scope): summary`, max 72 characters, plain text — no quotes or
-backticks. The launcher activates it automatically: every host launch
-sets `core.hooksPath` to `.githooks` when the project is a git worktree
-that ships the gate and the setting is still unset, so the gate is live
-from the first `./agent.sh` run with no manual step. To enable it
-without launching the assistant, run:
+backticks. The launcher activates it automatically: every launch sets
+`core.hooksPath` to `.githooks` when the project is a git worktree that
+ships the gate and the setting is still unset, so the gate is live from
+the first `./agent.sh` run with no manual step. To enable it without
+launching the assistant, run:
 
 ```bash
 git config core.hooksPath .githooks
