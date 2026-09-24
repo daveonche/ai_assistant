@@ -300,7 +300,7 @@ The `.agent` orchestration configuration supports long-running workflow sessions
 
 This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that validates the assistant's own tooling on every push or pull request touching `.agent/**`, `agent.sh`, or `.github/workflows/**`, and on manual `workflow_dispatch`:
 
-1. **Validate launcher and scripts** — Python syntax check of `.agent/ai_assistant.py`, then `shellcheck` over all tracked `*.sh` scripts, then the commit-msg gate (`.githooks/commit-msg`) validating the pushed tip commit's subject.
+1. **Validate launcher and scripts** — Python syntax check of `.agent/ai_assistant.py`, then `shellcheck` over all tracked `*.sh` scripts, then the commit-msg gate (`.githooks/commit-msg`) validating every commit the push introduces (tip-only checks on pull requests and new-branch pushes).
 2. **Docker image build smoke test** — builds the image from `.agent/Dockerfile.aider`.
 3. **Release tag guard** — on `v*` tag pushes, asserts the tag equals `DEFAULT_REF` in `scripts/install.sh`, so a tag cannot ship with a stale installer pin.
 
@@ -326,11 +326,16 @@ git config core.hooksPath .githooks
 
 A non-conforming subject (stray chat prose, missing type, over-length
 line) is rejected before the commit is created, so a misfiring LLM
-commit is stopped at the gate instead of landing in history. Git's
-auto-generated subjects (`Merge …`, `fixup! …`, `squash! …`,
-`Revert "…"`) are exempt. The CI `validate` job runs the same script on
-the pushed tip commit, so the gate also holds on machines without the
-hook enabled.
+commit is stopped at the gate instead of landing in history. The hook
+also rejects any message that embeds an aider SEARCH/REPLACE edit block
+(the `<<<<<<< SEARCH` / `>>>>>>> REPLACE` anchor lines), in the subject
+or the body — the failure mode seen when the LLM echoes an edit block
+into the commit message instead of prose. Git's auto-generated subjects
+(`Merge …`, `fixup! …`, `squash! …`, `Revert "…"`) are exempt. The CI
+`validate` job runs the same script on every commit a push introduces,
+so the gate also holds on machines without the hook enabled and catches
+a non-conforming subject even when it was committed with `--no-verify`
+and buried under later commits.
 
 The gate is default-on in consumer projects: the one-command installer,
 the manual copy instructions, and every assistant launch set
