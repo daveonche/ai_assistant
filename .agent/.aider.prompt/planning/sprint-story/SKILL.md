@@ -32,35 +32,23 @@ Do not proceed until user replies with "ready". DO NOT proceed with STEP 1 below
 - All examples in this prompt are illustrative only. Base every analysis, technology mapping, and story on the actual documents loaded in context, never on the sample technologies, versions, or filenames shown in examples.
 - Story IDs must follow `S<sprint_number>.<story_number>`, with story numbering restarting at 1 within each sprint.
 
-[STEP 1] First, check for these essential items in the available project context:
+[STEP 1] Verify the four essential context items with the user. Do not assess the context yourself - ask the user to answer Y/N for each item:
 1. Project requirements list
 2. Previous sprint's user stories (MUST be provided as a file path or `/read-only` content - do not assume Sprint 1)
 3. Implementation status report with prioritized features
 4. Technology stack information
 
-Note: The example below is illustrative only. Validate against the actual documents and technologies found in context.
-
-Example response:
+Ask:
 ```
-I have found in the context:
-✓ Requirements list in requirements.md
-✓ Previous sprint stories in sprint_2_stories.md
-✓ Implementation status in implementation_status.md
-✓ Technology stack identified:
-  - Vue.js 3.3.4
-  - Vuetify 3.3.15
-  - Vue Router 4.2.4
-  - Pinia 2.1.6
-  - Other relevant technologies...
-
-Document format validation:
-✓ Requirements has clear feature categories
-✓ Previous sprint stories follow standard format
-✓ Implementation status contains prioritized features
+Please confirm which of these are available in context (Y/N for each):
+1. Project requirements list? (Y/N)
+2. Previous sprint's user stories, provided as a file path or `/read-only` content? (Y/N)
+3. Implementation status report with prioritized features? (Y/N)
+4. Technology stack information? (Y/N)
 ```
 
 [STOP]
-If any items are missing, list them and ask the user to add them using the `/read-only` command. Wait for user to provide them
+Wait for the user's Y/N answers. For every N, ask the user to add the missing item using the `/read-only` command, then re-ask that item's Y/N question. Do not proceed until all four items are confirmed Y.
 
 [STEP 2] Ask for sprint number:
 ```
@@ -194,3 +182,5 @@ When `#generate-sprint-stories-status` is seen, respond with:
 ☐ Remaining: [unchecked items from the Progress Checklist]
 
 Use #generate-sprint-stories to continue"
+
+<!-- sentinel: planning/sprint-story -->

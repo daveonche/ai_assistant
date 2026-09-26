@@ -73,6 +73,6 @@
 
 ## Version
 
-- Current Version: 1.2.0
-- Last Updated: 2026-08-27
+- Current Version: 1.2.1
+- Last Updated: 2026-09-26
 - Stability: Experimental
