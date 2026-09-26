@@ -40,7 +40,7 @@ IMPLEMENTATION PHASE (code mode):
 
 ## Gotchas
 
-- Context check: a file is in context if its contents appear anywhere in the conversation, including the initial read-only reference set; scan the full transcript before requesting it via /read-only.
+- Context check: never assert a file's presence or freshness from transcript recall (Critical Rule 3 in `.agent/AGENTS.md`); when unsure whether a required file is loaded or current, request it via /read-only — re-loading is cheap and idempotent.
 - New dependencies: never assume uncovered functionality is covered by existing dependencies. STOP and invoke #manage-dependencies.
 - Sequential order: never skip steps or implement them out of order; subsequent steps must be explicitly reviewed when reached.
 - Verification: always verify prerequisites before implementing a step.
@@ -53,16 +53,15 @@ IMPLEMENTATION PHASE (code mode):
 - [ ] Step 4: Transition to code mode
 - [ ] Step 5: Implement and validate
 
-[STEP 1] First, check for these essential items in the available project context:
+[STEP 1] Ask the user: "Are the story steps report, sprint story, and dependency context files currently loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). Required items:
 1. The story steps report (`docs/analysis/S<X.Y>-story-steps.md`)
 2. The sprint story (`docs/sprints/sprint_[number]_stories.md`)
 3. Approved dependencies or dependency context from the Dependency Management workflow (`docs/dependencies/S<X.Y>-dependencies.md` when a report was generated)
 
-Context availability rule: a file counts as available when its contents appear anywhere in the conversation — including files provided before the workflow started (e.g., the initial read-only reference set) — not only via a recent "/read-only" confirmation. Scan the full transcript before listing items as missing; request a `/read-only` only when the contents are absent from the transcript or there is reason to believe the on-disk copy changed since it was added.
+Fill the findings list below only from files the user named or that were added this session — never from transcript recall:
 
-Present findings exactly like this:
 ```
-I have found in the context:
+I have found in the context (per user confirmation):
 ✓ Story steps report in [filename]
 ✓ Sprint story in [filename]
 ✓ Approved dependencies in [filename]
@@ -166,3 +165,5 @@ Implementation Progress - Story S<X.Y> - Step [number]:
 
 Use #implement-step S<X.Y> [step-number] to continue
 ```
+
+<!-- sentinel: code/implementation -->

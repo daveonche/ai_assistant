@@ -83,7 +83,7 @@ Guides the implementation of a specific step from a story analysis report, enfor
 
 ## Version
 
-- Current Version: 1.1.0
-- Last Updated: 2026-08-26
+- Current Version: 1.1.1
+- Last Updated: 2026-09-26
 - Stability: Beta
 - Keep metadata synchronized with changes to SKILL.md; update version and date when SKILL.md changes
