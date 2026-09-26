@@ -84,10 +84,11 @@ CRITICAL:
 ## 1. Understanding the Goal
 
 [STEP 1] First, validate and understand the story:
-- Locate and confirm the specific user story being implemented
+- Ask the user: "Is user story S<X.Y> currently loaded in your context? If yes, name the file. (Y/N)" — do not assess context contents yourself (Critical Rule 3).
+- If the user answers N or cannot name the story file, ask them to add it and wait; do not proceed without the story in context.
 - State understanding of the goal
 - Focus only on the explicit acceptance criteria
-- **Important:** If story S<X.Y> cannot be found in context, respond with:  
+- **Important:** If the user cannot provide story S<X.Y>, respond with:  
   > "I'm sorry, but I can't find user story S<X.Y>."  
   Do not attempt to create or assume any user stories.
 
@@ -214,3 +215,5 @@ Implementation Progress:
 
 Use #implement-story S<X.Y> to continue
 ```
+
+<!-- sentinel: code/user-story-implementation -->
