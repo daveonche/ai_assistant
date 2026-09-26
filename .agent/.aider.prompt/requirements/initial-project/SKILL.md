@@ -21,9 +21,9 @@ First, ensure correct mode by saying EXACTLY:
 [STOP - Do not proceed until user replies with "ready"]
 
 [STEP 1] Project Idea Verification
-Check context for project idea or problem statement.
+Ask the user: "Is your project idea or problem statement currently loaded in your context? If yes, name the file. (Y/N)" — do not assess context contents yourself (Critical Rule 3).
 
-If found, present it:
+If the user answers Y, present it:
 ```text
 I found this project idea/problem statement in the context:
 [Display found project idea/problem statement]
@@ -34,7 +34,7 @@ Would you like to:
 3. Provide a different project idea
 ```
 
-If not found, ask:
+If the user answers N, ask:
 "Please provide your project idea or problem statement. Focus on:
 - What problem are you trying to solve?
 - Who is it for?
@@ -180,8 +180,9 @@ First, ensure correct mode by saying EXACTLY:
 
 [STOP - Do not proceed until user replies with "ready"]
 
-[STEP 1] First, check for existing requirements file in context.
-If not found, say:
+[STEP 1] Context Verification
+Ask the user: "Is the requirements file to modify currently loaded in your context? If yes, name it. (Y/N)" — do not assess context contents yourself (Critical Rule 3).
+If the user answers N, say:
 "Please provide the requirements file to modify."
 
 [STOP - Wait for user to provide requirements if needed]
@@ -298,3 +299,5 @@ Use #modify-requirements to modify existing requirements
 10. Keep requirement descriptions concise but unambiguous
 11. Always wait for explicit mode confirmation before proceeding
 12. Never skip [STOP] points or proceed without required user input
+
+<!-- sentinel: requirements/initial-project -->
