@@ -19,7 +19,6 @@
       reasoning_effort: "max"
       provider:
         sort: "price"
-        # only: ["Relace", "DeepInfra", "Parasail", "Novita", "Together", "Baseten", "Reka", "Morph", "Wafer"]
         ignore: ["OpenInference"]
         allow_fallbacks: false
         data_collection: "deny"
@@ -50,7 +49,6 @@
       reasoning_effort: "low"
       provider:
         sort: "price"
-        # only: ["Relace", "DeepInfra", "Parasail", "Novita", "Together", "Baseten", "Reka", "Morph", "Wafer"]
         ignore: ["OpenInference"]
         allow_fallbacks: true
         data_collection: "deny"
