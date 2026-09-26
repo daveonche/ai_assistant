@@ -22,7 +22,7 @@ If you are unsure whether the user is in `/ask` mode, ask them to confirm or swi
 [STEP 2] Context Verification
 Ask the user: "Which files or directories would you like me to explain? Please add them to the chat using `/read-only <filepath>` and reply 'continue' when ready."
 
-After the user replies `continue`, verify that the intended files are actually visible in the current chat context. If they are not, do not assume; re-prompt the user to add them.
+After the user replies `continue`, ask them: "Are the files you named now loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). If the user answers N or cannot name the files, re-prompt them to add the files and wait.
 
 If a directory is not supported or cannot be added, ask the user to add its individual files instead.
 
@@ -59,3 +59,5 @@ Ask: "Would you like to explore the next component, or do you have questions abo
 Ask: "Would you like to revisit any component, or end the tutorial?"
 
 [STOP - End of workflow]
+
+<!-- sentinel: learning/project-tutor -->
