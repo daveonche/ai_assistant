@@ -24,9 +24,11 @@ Say EXACTLY: "To proceed with architecture design:
 [STOP - Wait for user to confirm they are in ask mode]
 
 [STEP 1] Context Verification
-Check for essential items:
-- Requirements: usually `docs/requirements.md` or `docs/requirements/core_requirements.md`
-- Tech stack: usually `docs/tech_stack.md`
+Ask the user: "Are the requirements and tech-stack files currently loaded
+in your context? If yes, name them. (Y/N)" — do not assess context
+contents yourself (Critical Rule 3). Expected locations:
+`docs/requirements.md` or `docs/requirements/core_requirements.md`, and
+`docs/tech_stack.md`.
 
 Present EXACTLY:
 ```
@@ -35,7 +37,9 @@ I have found in the context:
 ✓/✗ Tech stack in [filename]
 ```
 
-If either file is missing or unclear, ask the user to provide the path.
+Fill ✓/✗ only from files the user named or that were added this session —
+never from transcript recall (Critical Rule 3). If either file is missing
+or unclear, ask the user to provide the path.
 
 [STOP - If items missing, wait for user to provide them]
 
@@ -180,4 +184,6 @@ CRITICAL Rules:
 9. Document all layer interactions and contracts
 10. Keep documentation precise and actionable
 11. Loop for feedback until explicit 'proceed' received at each step
+
+<!-- sentinel: architecture/design -->
 
