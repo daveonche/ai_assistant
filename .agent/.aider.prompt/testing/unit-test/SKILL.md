@@ -24,14 +24,14 @@ Read `.agent/.aider.prompt/testing/unit-test/references/gotchas.md` before start
 ## Workflow Overview
 
 ### [STEP 1] Context Check
-Check for these essential items:
+Ask the user: "Are the story steps report, implementation files, and any existing test files currently loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). Required items:
 1. Story steps report (`docs/analysis/S<X.Y>-story-steps.md`)
 2. Implementation files for step
 3. Existing test files
 
-Present findings:
+Fill the findings list below only from files the user named or that were added this session — never from transcript recall:
 ```
-I have found in the context:
+I have found in the context (per user confirmation):
 ✓ Story steps report in [filename]
 ✓ Implementation files:
   - [list]
@@ -85,7 +85,7 @@ Use $testing-unit-test S<X.Y> [next-step] when ready to test the next step that 
 [STOP - Exit if no testable items]
 
 ### [STEP 3] Test Environment Analysis
-- [ ] Detect test files, config files, test runner, framework patterns, file extensions, naming conventions
+- [ ] Detect test files, config files, test runner, framework patterns, file extensions, naming conventions — from the files loaded in context only; if none are loaded, request them before analyzing
 - [ ] Determine if environment is established
 
 Present findings:
@@ -227,3 +227,5 @@ When `$testing-unit-test-status` is seen, use status template from references.
 
 ## Consolidated Rules
 Read `.agent/.aider.prompt/testing/unit-test/references/rules.md`.
+
+<!-- sentinel: testing/unit-test -->
