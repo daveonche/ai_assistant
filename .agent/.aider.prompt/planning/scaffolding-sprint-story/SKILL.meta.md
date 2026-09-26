@@ -1,88 +1,93 @@
-# Metadata: Scaffolding Sprint Story Generation Prompt
+# Metadata: # Scaffolding Sprint Story Generation Prompt
 
 ## AI Assistant Compatibility
 
 - Tested With:
   - Aider
-  - LLM: GLM 5.3 Flash (August 27, 2026 release)
+  - GLM 5.3 Flash (August 27, 2026 release)
 - Potential Compatible Assistants:
   - Other Claude models
-  - GitHub Copilot — requires prompt reformatting
-  - GPT-4 — requires command-handoff adaptation
+  - GitHub Copilot (with modifications)
+  - GPT-4 (with command-handoff adaptations)
 
 ## SDLC Phase
 
 - Phase: Planning
 - Sub-Phase: Sprint Scaffolding
-- Workflow: Initial Project Setup
+- Workflow: Project Scaffolding Sprint Workflow Chain (story generation stage; activated via `$planning-scaffolding-sprint-story`)
 
 ## Complexity Rating
 
 - Complexity: High
 - Cognitive Load: High
-- Technical Depth: Requires comprehensive understanding of project initialization and technical dependencies
+- Technical Depth: Requires dependency-ordered sequencing of foundational
+  setup stories and exact-version tracking
 
 ## Usage Guidelines
 
-- Prerequisites (files that must exist, ideally loaded in context):
-  - Core requirements — can be generated using `$requirements-initial-project`
-  - Technology stack — can be generated using `$architecture-tech-stack`
-  - Architecture documentation — can be generated using `$architecture-design`
-- Required information (extracted from the prerequisite files):
+- Prerequisite: Core requirements, tech stack, and architecture docs in
+  context (generatable via `$requirements-initial-project`,
+  `$architecture-tech-stack`, `$architecture-design`)
+- Requires:
   - Development environment needs
   - Technical dependencies with exact versions
   - Project structure requirements
-- Mode requirements:
-  - `/ask` for story generation and review
-  - `/code` only when saving the finalized story file
+- Modes: `/ask` for story generation and review; `/code` only when saving
+  the finalized story file
 
 ## Prompt Characteristics
 
 - Input Driven: Yes
 - State Dependent: Yes
 - Requires Contextual Awareness: High
-- Command Driven: Yes (`$planning-scaffolding-sprint-story`, `$planning-scaffolding-sprint-story-status`)
-- Story Format: Standardized template in `references/story-template.md`, loaded on demand (progressive disclosure)
-- Dependency Tracking: Technical sequencing
-- Output Format: Markdown sprint stories
-- Review Checkpoints:
-  - Foundation analysis review
-  - Self-validation checklist before presenting the story set
-  - Story set review before saving
-- Saving Mode: `/code`
+- Command Driven: Yes ($planning-scaffolding-sprint-story, $planning-scaffolding-sprint-story-status)
+- Diagram Support: None
+- Story Format: Standardized template in `references/story-template.md`,
+  loaded on demand (progressive disclosure)
 
-## Best Practices
+## Command Behavior
 
-- Focus on foundational setup
-- Strict technical sequencing
-- Clear story dependencies
-- Version specification
-- Environment setup inclusion
-- Verification checkpoints
-- Core architecture focus
-- Development workflow establishment
+- `$planning-scaffolding-sprint-story`: Starts or resumes scaffolding story
+  generation — context verification, foundation analysis, story generation
+  from the template, validation, review loop, then save via `/code`.
+- `$planning-scaffolding-sprint-story-status`: Shows current progress only
+  and does NOT activate the full workflow. To resume after viewing status,
+  use `$planning-scaffolding-sprint-story`.
 
-## Challenges and Mitigations
+## Gotchas / Sync Notes
 
-| Challenge | Mitigation |
-| --- | ---: |
-| Technical dependency ordering | Clear dependency graphing |
-| Environment setup completeness | Story MUST-rule for environment setup inclusion |
-| Version compatibility | Exact-version pinning with "latest stable" flagging |
-| Story scope control | Standard story categories |
-| Infrastructure requirements | Verification checkpoints |
-| Development workflow definition | Detailed acceptance criteria |
-| Tool chain integration | Dedicated developer workflow and build pipeline story categories |
-| Configuration management | Configuration documentation |
+- Exact versions must be pinned before implementation; any version marked
+  "latest stable" must be explicitly flagged for pinning.
+- The story-analysis handoff requires
+  `.agent/.aider.prompt/planning/story-analysis/SKILL.md` to be loaded
+  first; do not assume it is already in context.
+- `/read-only` and `/drop` commands must be output inline as part of a
+  sentence; never execute them.
+- The story template lives in `references/story-template.md`; load it only
+  when needed to conserve context.
+- Keep workflow steps, story categories, and the story template
+  authoritative in SKILL.md and `references/`. Do not duplicate them here.
+- The sentinel line `<!-- sentinel: planning/scaffolding-sprint-story -->`
+  must remain the final content line of SKILL.md; the orchestrator quotes
+  it to detect truncated loads.
 
 ## Version
 
-- Current Version: 1.2.0
-- Last Updated: 2026-08-27
+- Current Version: 1.2.1
+- Last Updated: 2026-09-26
 - Stability: Experimental
 
-## Changelog
+## Purpose
 
-- 1.2.0: Aligned metadata with SKILL.md refactor (c8c97d0): documented external story template and self-validation checkpoint, clarified prerequisites vs. required information, aligned mitigations with actual skill mechanisms
-- 1.1.0: Added logging/config category, Definition of Done, version fallback, ASCII status indicators
-- 1.0.1: Initial metadata version
+This metadata file describes the scaffolding sprint story generation
+skill. Workflow steps, story categories, and the story template are
+defined in SKILL.md and `references/story-template.md`.
+
+## Sync / Validation Checklist
+
+Before considering this metadata file current, verify:
+
+- [ ] `$planning-scaffolding-sprint-story-status` description matches SKILL.md
+- [ ] Gotchas / Sync Notes reflect the current SKILL.md gotchas
+- [ ] Version and Last Updated are incremented after SKILL.md changes
+- [ ] No workflow steps, story categories, or template details are duplicated here
