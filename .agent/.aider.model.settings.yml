@@ -33,6 +33,8 @@
         sort: "price"
         # Forces OpenRouter to exclusively use this provider
         # only: ["DeepInfra"]
+        # Completely blocks this provider from handling your requests
+        ignore: ["Open Inference"]
         # Disables high-cost safety fallback routes if the cheap host fails
         allow_fallbacks: true
         # Denies providers from logging your code data for training metrics
