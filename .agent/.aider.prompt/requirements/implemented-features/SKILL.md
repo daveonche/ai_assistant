@@ -34,24 +34,24 @@ Ensure the user is in `/ask` mode. If they are not, or if you are unsure, say ex
 
 ### Step 1: Context Verification
 
-Check that the actual contents of these files are loaded in the current conversation context:
+Ask the user: "Are the requirements, user stories, and tech stack currently loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). Expected files:
 
 1. Project requirements — `docs/requirements/core_requirements.md` when present; otherwise `docs/requirements.md`. At least one of the two must be loaded.
 2. User stories — `docs/user_stories.md`
 3. Core technology stack — `docs/tech_stack.md`
 
-If any file contents are missing, list the exact missing files and ask the user to add them using the command: `/read-only <file>`. (`/add` also works if `/read-only` is unavailable.)
-
-[STOP — If any required file contents are missing, do not begin analysis until they are loaded.]
-
-Example response:
+Present EXACTLY:
 
 ```text
 Found in context:
-✓ Requirements: docs/requirements/core_requirements.md
-✓ User stories: docs/user_stories.md
-✓ Tech stack: [values from docs/tech_stack.md]
+✓/✗ Requirements: [filename]
+✓/✗ User stories: [filename]
+✓/✗ Tech stack: [filename]
 ```
+
+Fill ✓/✗ only from files the user named or that were added this session — never from transcript recall (Critical Rule 3). If any file is missing, list the exact missing files and ask the user to add them using the command: `/read-only <file>`. (`/add` also works if `/read-only` is unavailable.)
+
+[STOP — If any required file contents are missing, do not begin analysis until they are loaded.]
 
 ---
 
@@ -177,3 +177,5 @@ Do not:
 - Refactor existing code
 - Generate code snippets
 - Provide coding guidance
+
+<!-- sentinel: requirements/implemented-features -->
