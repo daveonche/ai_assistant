@@ -1,4 +1,4 @@
-# Vision Statement Generation Prompt (v1.2.0)
+# Vision Statement Generation Prompt
 
 This skill is activated with the orchestrator shorthand command:
 - `$planning-vision-statement`
