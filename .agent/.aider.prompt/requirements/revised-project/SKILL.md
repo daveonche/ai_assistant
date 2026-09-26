@@ -5,7 +5,7 @@
 When asked to revise requirements:
 
 1. Review Current Requirements
-   - If not provided, request project requirements
+   - Ask the user: "Are the project requirements currently loaded in your context? If yes, name the file. (Y/N)" — do not assess context contents yourself (Critical Rule 3). If the user answers N, ask them to provide the requirements file and wait.
 
 2. Present Current Requirements
    - Display all requirements with reference numbers
@@ -54,3 +54,5 @@ Format output as:
 - REQ-3: [Requirement]
 - REQ-4: [Requirement]
 ```
+
+<!-- sentinel: requirements/revised-project -->
