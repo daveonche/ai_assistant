@@ -19,7 +19,8 @@
       reasoning_effort: "max"
       provider:
         sort: "price"
-        # only: ["Reka AI"]
+        # only: ["Relace", "DeepInfra", "GMICloud", "NovitaAI", "Together", "Baseten", "Reka AI", "Sail Research", "Wafer"]
+        ignore: ["Open Inference"]
         allow_fallbacks: false
         data_collection: "deny"
 
@@ -32,7 +33,7 @@
         # Forces OpenRouter to strictly select the lowest-cost candidate endpoint
         sort: "price"
         # Forces OpenRouter to exclusively use this provider
-        # only: ["DeepInfra"]
+        # only: ["Relace", "DeepInfra", "GMICloud", "NovitaAI", "Together", "Baseten", "Reka AI", "Sail Research", "Wafer"]
         # Completely blocks this provider from handling your requests
         ignore: ["Open Inference"]
         # Disables high-cost safety fallback routes if the cheap host fails
@@ -49,7 +50,8 @@
       reasoning_effort: "low"
       provider:
         sort: "price"
-        # only: ["OpenInference"]
+        # only: ["Relace", "DeepInfra", "GMICloud", "NovitaAI", "Together", "Baseten", "Reka AI", "Sail Research", "Wafer"]
+        ignore: ["Open Inference"]
         allow_fallbacks: true
         data_collection: "deny"
     temperature: 0.1
