@@ -74,9 +74,12 @@ from the current context. Structural markers such as `[STEP n]` and
 Before offering coding guidance in a project session, load the detection
 procedure with
 `/read-only .agent/.aider.prompt/core/framework-detection/SKILL.md`
-(shorthand `$core-framework-detection`) and follow it. Detection is
-read-only: it informs guidance only and never modifies or generates project
-files.
+(shorthand `$core-framework-detection`) and follow it. Before following
+its steps, quote the file's sentinel line
+(`<!-- sentinel: core/framework-detection -->`); if you cannot quote it
+verbatim, the file was truncated or partially loaded — request it again
+and wait for the user to add it. Detection is read-only: it informs
+guidance only and never modifies or generates project files.
 
 ## Conventions Reference Routing
 
@@ -180,6 +183,11 @@ file (empty SEARCH block) at the first checkpoint.
     announce the result with the draft (e.g., "Checkpoint validated:
     9 lines, 312 chars, reload-only"). If the existing state file
     violates a constraint, repair it in the same draft.
+13. Before acting on the state file's recorded position (resuming,
+    comparing a checkpoint draft, or clearing), quote its `Last updated`
+    date. If you cannot quote it verbatim, the file is not reliably in
+    context: request it again with `/read-only docs/workflow_state.md`
+    and wait for the user to add it before proceeding.
 
 ## Context Hygiene
 
@@ -250,6 +258,8 @@ If the user selects the drop option, output EXACTLY:
 
 [STEP 5] Staged Execution
 Once the file is loaded and the user chooses to continue, follow the instructions in the loaded SKILL.md file stage by stage.
+
+Before executing the first step, quote the SKILL.md's sentinel line — its final content line, of the form `<!-- sentinel: <category>/<promptname> -->`. If you cannot quote it verbatim, the file was truncated or only partially loaded: request it again with `/read-only` and restart this step once the user has added it.
 
 1. Execute the current step in the SKILL.md file.
 2. When you encounter a `[STOP]` point, stop and wait for the user's input. Do not proceed to the next step until the user provides the required input.

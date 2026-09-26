@@ -263,3 +263,5 @@ Dependency Management Progress:
 
 Use #manage-dependencies S<X.Y> (or $code-dependency-management S<X.Y>) to continue
 ```
+
+<!-- sentinel: code/dependency-management -->

@@ -76,3 +76,5 @@ Each phase depends on the output of the previous phase. Use this table to choose
 
 [STOP - Wait for the user to run one of the phase commands above.]
 
+<!-- sentinel: workflows/post-scaffolding-chain -->
+

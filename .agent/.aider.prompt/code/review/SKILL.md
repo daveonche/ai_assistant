@@ -40,7 +40,7 @@ Bracketed items inside quoted output templates (e.g., `[file]`, `[convention fil
 - The target file path must come from `$code-review <file>`; do not assume a default path.
 - The user may provide conventions after the initial review. If they do, restart the review criteria from that point.
 - The user may select “all”. Implement all presented improvements, not a subset.
-- Never ask for a convention that is already in context; apply it directly (see STEP 2).
+- Never ask for a convention the user has confirmed is loaded this session; apply it directly (see STEP 2).
 
 [STEP 1] First, check for these essential items in the available project context:
 1. The target file path from `$code-review <file>`
@@ -57,13 +57,14 @@ I have found in the context:
 
 [STEP 2] Determine the coding conventions to apply, in this order:
 
-1. Check whether a conventions file is already loaded in context (e.g.,
-   any file from `.agent/.aider.conventions/` or its `references/`
-   directory), including a reference mapped to the target file type by
-   the Conventions Reference Routing table in `.agent/AGENTS.md`.
-2. If a matching reference is already in context, announce it as the
-   review criteria and continue directly to STEP 3. Do NOT ask the user
-   for conventions.
+1. Ask the user: "Is a conventions file from `.agent/.aider.conventions/`
+   (or its `references/` directory) currently loaded in your context?
+   If yes, name it. (Y/N)" — do not assess context contents yourself
+   (Critical Rule 3).
+2. If the user confirms one is loaded and it matches the target file type
+   per the Conventions Reference Routing table in `.agent/AGENTS.md`,
+   announce it as the review criteria and continue directly to STEP 3.
+   Do NOT ask the user for conventions.
 3. If the routing table maps the target file type to a reference that is
    NOT in context, output the matching `/read-only` command inline (per
    Critical Rules) and wait for the user to add it, then use it as review
@@ -139,3 +140,5 @@ CRITICAL Rules:
 5. Do not introduce new dependencies or make changes outside the target file without stopping and asking first.
 6. If user input at a [STOP] point is invalid or unexpected, re-prompt the user with the original question.
 7. If the user asks to redirect to another workflow or command, follow the `.aider.prompt/AGENTS.md` orchestration rules.
+
+<!-- sentinel: code/review -->

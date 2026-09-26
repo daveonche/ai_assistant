@@ -53,3 +53,5 @@ Project Framework Detection trigger applies.
 Before creating or editing any file, check the Conventions Reference
 Routing table in `.agent/AGENTS.md` and load every matching reference with
 `/read-only` before proceeding.
+
+<!-- sentinel: core/framework-detection -->
