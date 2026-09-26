@@ -10,7 +10,7 @@ When asked to generate initial scaffolding stories:
    - Technology stack (e.g., `docs/tech_stack.md`)
    - Component structure (e.g., the component section of `docs/architecture/architecture.md`)
 
-   *If any of these are missing from the context, output the exact command inline (e.g., `/read-only docs/requirements/core_requirements.md`), ask the user to add the missing file, and wait for confirmation. If the user declines, continue with what is available and apply the warning rule in step 2.*
+   Ask the user: "Are these files currently loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). For any file the user did not name, output the exact command inline (e.g., `/read-only docs/requirements/core_requirements.md`), ask the user to add the missing file, and wait for confirmation. If the user declines, continue with what is available and apply the warning rule in step 2.
 
 2. Summarize your understanding of the above context. If context is missing (declined in step 1) or clearly insufficient, warn the user that the scaffolding might be limited or could later require significant changes, and let them choose to proceed anyway or provide more details before continuing.
 
@@ -67,4 +67,6 @@ When asked to generate initial scaffolding stories:
 
 ## Worked example
 
-For format and level of detail, follow the real stories in `docs/sprints/sprint_1_stories.md`. If it is not in context, ask the user to add it with `/read-only docs/sprints/sprint_1_stories.md`.
+For format and level of detail, follow the real stories in `docs/sprints/sprint_1_stories.md`. Ask the user: "Is `docs/sprints/sprint_1_stories.md` currently loaded in your context? (Y/N)" — do not assess context contents yourself (Critical Rule 3). If the user answers N, ask them to add it with `/read-only docs/sprints/sprint_1_stories.md`.
+
+<!-- sentinel: requirements/scaffolding-user-stories -->
