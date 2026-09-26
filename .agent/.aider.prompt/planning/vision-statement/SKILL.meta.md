@@ -1,4 +1,4 @@
-# Metadata: Vision Statement Generation Prompt (v1.2.0)
+# Metadata: # Vision Statement Generation Prompt
 
 ## AI Assistant Compatibility
 
@@ -14,7 +14,7 @@
 
 - Phase: Planning
 - Sub-Phase: Vision Definition
-- Workflow: Initial Project Vision
+- Workflow: Initial Project Vision (part of `$workflows-project-scaffolding-chain`; also usable standalone)
 
 ## Complexity Rating
 
@@ -32,79 +32,57 @@
   - Key feature concepts
   - Future growth vision
   - Project requirements document (optional; grounds generation when available)
-- Mode Requirements:
-  - `/ask` for generation/modification
-  - `/code` for saving
-- File Dependency:
-  - Existing vision file (`docs/vision/project_vision.md`) must be loaded for `#modify-vision`
+- Modes: `/ask` for generation/modification; `/code` for saving
+- File Dependency: existing vision file (`docs/vision/project_vision.md`) must be loaded for `#modify-vision`
+- Default Output: `docs/vision/project_vision.md` (custom path on request)
+
+## Workflow Chain
+
+- Parent workflow: `$workflows-project-scaffolding-chain`
+- Related skills: `requirements/initial-project`, `architecture/design`, `planning/story-analysis`
 
 ## Prompt Characteristics
 
 - Input Driven: Yes
-- State Dependent: Yes (conversation-scoped only)
-- Persistence: None
+- State Dependent: Yes (conversation-scoped only; no persistence)
 - Requires Contextual Awareness: Moderate
 - Command Driven: Yes ($planning-vision-statement activation; #generate-vision, #modify-vision, #vision-status)
-- Modification Workflow: Yes (Interactive loop for updating specific sections)
+- Diagram Support: None
 - Example Based: Provides clear examples for each section
 - Interactive Guidance: Multi-option input approach
 
-## Best Practices
+## Command Behavior
 
-- Focus on business/user value
-- Clear section separation
-- Example-driven guidance
-- Value-oriented content
-- Future vision inclusion
-- Technical neutrality
-- Structured documentation
-- Interactive refinement
-- Require explicit user approval of full draft before saving
-- Verify `/ask` mode before beginning workflows
-- Ground generation in the project requirements document when available
-- Confirm existing file is loaded before modifying
-- Keep modifications section-scoped
-- Validate the saved file against the approved draft before announcing completion
+- `$planning-vision-statement`: Orchestrator activation command for the skill.
+- `#generate-vision`: Starts new vision statement generation — mode check, requirements grounding, staged Q&A with examples, draft approval loop, then save via `/code`.
+- `#modify-vision`: Modifies an existing saved vision statement, section by section; requires the vision file loaded in chat first.
+- `#vision-status`: Shows current progress in the vision workflow (current conversation only). To resume generation, use `#generate-vision`; to modify, use `#modify-vision`.
 
-## Challenges & Mitigations
+## Gotchas / Sync Notes
 
-| Challenge | Mitigation |
-| --- | --- |
-| Maintaining non-technical focus | Example-based guidance |
-| Balancing detail level | Structured section format |
-| Future vision clarity | Clear technical boundaries |
-| Value proposition definition | Interactive refinement process |
-| Feature abstraction level | Multiple input options |
-| Audience specificity | Value-focused questions |
-| Vision scope control | Consistent structure |
-| Technical detail avoidance | Regular alignment checks |
-| Losing generated draft when switching from `/ask` to `/code` | Output full markdown content at save time to avoid context loss |
-| Saving when the target file already exists | Require explicit overwrite or rename confirmation before mode switching |
-| Modifying a vision file that is not loaded in context | Require `/read-only` + user confirmation before modification |
-| Accidentally changing more than one section during `#modify-vision` | Restrict `#modify-vision` edits to the selected section only |
-
-Note: Keep the rows in this table aligned with the Gotchas section in `SKILL.md`; update both files together to prevent drift.
-
-## Outputs
-
-- Default File: `docs/vision/project_vision.md`
-- Format: Markdown
-- Structure: Purpose, Target Users, Value Proposition, Key Features, Future Vision
-
-## Related Skills
-
-- Parent workflow: `workflows/project-scaffolding-chain`
-- `requirements/initial-project`
-- `architecture/design`
-- `planning/story-analysis`
+- Progress is tracked in the current conversation only; it is not persisted automatically unless a separate state file is maintained.
+- `#modify-vision` requires the current vision statement file to be loaded in the chat before modifying it.
+- Saving requires switching from `/ask` to `/code`; the file is not saved while still in ask mode.
+- Vision generation must be grounded in the project's actual requirements; do not generate from generic assumptions if requirements are unavailable.
+- When saving, output the full markdown content at save time to avoid context loss across the mode switch.
+- Keep the workflow steps, section templates, and examples authoritative in SKILL.md. Do not duplicate them here.
+- The sentinel line `<!-- sentinel: planning/vision-statement -->` must remain the final content line of SKILL.md; the orchestrator quotes it to detect truncated loads.
 
 ## Version
 
-- Current Version: 1.2.0
-- Last Updated: 2026-08-27
+- Current Version: 1.2.1
+- Last Updated: 2026-09-26
 - Stability: Beta
 
-## Version History
+## Purpose
 
-- 1.2.0 (2026-08-27): Aligned metadata with the SKILL.md v1.2.0 refactor — deduplicated guidance, checkbox verification checklists, post-save validation loop, pre-mode-switch overwrite check, requirements grounding step, documented orchestrator activation command, and markdown polish.
-- 1.1.0 (2026-08-26): Initial metadata release for the vision statement generation skill.
+This metadata file describes the vision statement generation skill. Workflow steps, section templates, and examples are defined in SKILL.md.
+
+## Sync / Validation Checklist
+
+Before considering this metadata file current, verify:
+
+- [ ] `#vision-status` description matches SKILL.md
+- [ ] Gotchas / Sync Notes reflect the current SKILL.md gotchas
+- [ ] Version and Last Updated are incremented after SKILL.md changes
+- [ ] No workflow steps, section templates, or examples are duplicated here
