@@ -23,14 +23,18 @@ Say EXACTLY: "To proceed with story analysis:
 - The implementation-steps template must be reproduced with no additional formatting, headings, or commentary beyond what the template shows.
 - The mode-gate message must say "story analysis", not "test generation" (a copy-paste artifact from the unit-test skill).
 
-[STEP 1] First, check for the essential user story in the available project context:
+[STEP 1] Context Verification
+Ask the user: "Is sprint story S<X.Y> currently loaded in your context? If yes, name the file. (Y/N)" — do not assess context contents yourself (Critical Rule 3).
 
+Present EXACTLY:
 ```text
 I have found in the context:
-✓ Sprint story S<X.Y> in [filename]
+✓/✗ Sprint story S<X.Y> in [filename]
 ```
 
-[STOP - If the story is missing, list it and wait for the user to provide it]
+Fill ✓/✗ only from the file the user named or that was added this session — never from transcript recall (Critical Rule 3). If the story is missing or unclear, ask the user to provide the path.
+
+[STOP - If the story is missing, wait for the user to provide it]
 
 [STEP 2] Present the story details:
 
@@ -148,3 +152,5 @@ CRITICAL Rules:
 8. NO additional formatting or suggestions beyond the specified template
 
 Convention Check Reminder: Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference with `/read-only` before proceeding.
+
+<!-- sentinel: planning/story-analysis -->
