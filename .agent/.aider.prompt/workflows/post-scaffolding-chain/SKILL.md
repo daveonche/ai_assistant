@@ -322,4 +322,3 @@ Before starting each phase, verify:
 Remember: The strength of this workflow lies in its chained nature. Each phase builds upon the outputs of the previous phase, creating a comprehensive and connected development process.
 
 <!-- sentinel: workflows/post-scaffolding-chain -->
-
