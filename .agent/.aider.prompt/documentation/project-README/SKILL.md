@@ -19,9 +19,10 @@
 ## Workflow
 
 ### Step 0: Context setup
-1. Ensure this prompt file is loaded in context. If not, ask the user to run:
+1. Ask the user: "Is this prompt file currently loaded in your context? (Y/N)" — do not assess context contents yourself (Critical Rule 3). If the user answers N, ask them to run:
    `/read-only .agent/.aider.prompt/documentation/project-README/SKILL.md`
-2. Ask the user to add relevant project files to the chat if they are not already present. Prefer:
+   and wait until they confirm it is added.
+2. Ask the user: "Are the relevant project files currently loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). If the user answers N, ask them to add the relevant project files. Prefer:
    - package/config files
    - `README.md` if present
    - `docs/requirements.md`
@@ -102,3 +103,5 @@ Generate a comprehensive README using this structure. Use the guidance below for
    - Provide the complete markdown block.
 
 [STOP - End of workflow. Ask the user if they want to drop the prompt file from context. If yes, tell them to run `/drop .agent/.aider.prompt/documentation/project-README/SKILL.md`. Wait for the user’s response.]
+
+<!-- sentinel: documentation/project-README -->

@@ -1,44 +1,81 @@
-# PlantUML Generator Prompt
+# Metadata: # PlantUML Diagram Generator Prompt
 
-## Description
+## AI Assistant Compatibility
 
-Interactive step-by-step workflow for creating focused, readable PlantUML diagrams that effectively visualize complex systems. The assistant asks staged questions, includes a review/refine loop, and stops for user input at each step until the diagram is finalized.
+- Tested With:
+  - Aider
+  - GLM 5.3 Flash (August 27, 2026 release)
+- Potential Compatible Assistants:
+  - Other Claude models
+  - GitHub Copilot (with modifications)
+  - GPT-4
 
-## Usage
+## SDLC Phase
 
-1. Switch to `/ask` mode before using this prompt.
-2. Ensure the relevant project source files are available in context, or let the assistant ask you to add them.
-3. Use the shorthand command: `$documentation-plantUML-diagram`
+- Phase: Documentation
+- Sub-Phase: Diagram Generation
+- Workflow: On-demand diagram generation (standalone `$documentation-plantUML-diagram` command)
 
-## Best suited for
+## Complexity Rating
 
-- Architecture documentation
-- System visualization
-- Component relationship mapping
-- Process flow documentation
-- Interface design
-- Dependency analysis
+- Complexity: Medium
+- Cognitive Load: Medium
+- Technical Depth: Requires codebase analysis for component discovery and
+  PlantUML syntax validation
 
-## Output format
+## Usage Guidelines
 
-- PlantUML syntax in a fenced code block with language `plantuml`
-- Optionally saved as `*.puml` file for rendering; finalization asks the user where to save the diagram, or reply `do not save` to keep the code displayed only
+- Prerequisite: Run in `/ask` mode; no code changes required
+- Requires:
+  - Relevant project source files in context (user-provided on request)
+  - User answers for diagram type, scope, entry point, and relationship depth
+  - A PlantUML renderer or validator for syntax validation
 
-## Quality goals
+## Prompt Characteristics
 
-- Focused component selection
-- Clear relationships
-- Optimized diagram size
-- Ready-to-render code
-- Syntax/render validation before finalizing
+- Input Driven: Yes
+- State Dependent: Yes (each step builds on prior answers)
+- Requires Contextual Awareness: Medium
+- Command Driven: Yes ($documentation-plantUML-diagram)
+- Diagram Support: PlantUML (not Mermaid)
 
-## Workflow behavior
+## Command Behavior
 
-- Step-by-step guided interaction
-- Stops for user input at each step
-- Includes syntax/render validation before user review
-- Includes final review and refinement loop
+- `$documentation-plantUML-diagram`: Starts the staged diagram workflow —
+  mode check, diagram type, scope, entry point, relationship depth,
+  component selection, generation with validation, review/refine loop,
+  then optional save.
 
-## Gotchas
+## Gotchas / Sync Notes
 
-See `SKILL.md` Gotchas for PlantUML rendering/version compatibility and special-character handling.
+- PlantUML themes may not be available in all renderers; verify theme
+  support in the user's environment.
+- Rendering varies between PlantUML versions; confirm the user's version
+  if issues are reported.
+- Special characters in component, class, or actor names may need quoting
+  or escaping.
+- Keep the step-by-step workflow, templates, and gotcha details
+  authoritative in SKILL.md. Do not duplicate them here.
+- The sentinel line `<!-- sentinel: documentation/plantUML-diagram -->`
+  must remain the final content line of SKILL.md; the orchestrator quotes
+  it to detect truncated loads.
+
+## Version
+
+- Current Version: 1.0.0
+- Last Updated: 2026-09-26
+- Stability: Experimental
+
+## Purpose
+
+This metadata file describes the PlantUML diagram generator skill.
+Workflow steps, templates, and gotchas are defined in SKILL.md.
+
+## Sync / Validation Checklist
+
+Before considering this metadata file current, verify:
+
+- [ ] Command description matches SKILL.md
+- [ ] Gotchas / Sync Notes reflect the current SKILL.md gotchas
+- [ ] Version and Last Updated are incremented after SKILL.md changes
+- [ ] No workflow steps, templates, or gotcha details are duplicated here

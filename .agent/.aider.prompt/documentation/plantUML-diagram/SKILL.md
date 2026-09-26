@@ -43,7 +43,8 @@ Ask: "How many levels of relationships should we include? Choose (default is Dir
 [STOP - Wait for user response]
 
 [STEP 5] Component Selection
-- If the project code is not already in your context, ask the user to provide the relevant files or confirm that you have access before analyzing the codebase.
+- Ask the user: "Is the project code for this diagram currently loaded in your context? If yes, name the files. (Y/N)" — do not assess context contents yourself (Critical Rule 3).
+- If the user answers N, ask them to add the relevant files and wait before analyzing the codebase.
 - Analyze codebase from entry point
 - List discovered components at chosen depth
 - Ask: "I found these components. Select numbers to exclude any that aren't relevant:
@@ -91,3 +92,5 @@ If the user chooses an option:
 - PlantUML themes (e.g., `!theme plain`) may not be available in all PlantUML renderers or versions. Verify the selected theme is supported by the user's rendering environment.
 - PlantUML rendering can vary between versions. If the user reports rendering issues, ask them to confirm their PlantUML version and adjust syntax accordingly.
 - Component, class, or actor names that contain special characters may need to be quoted or escaped in PlantUML. Double-check names before finalizing.
+
+<!-- sentinel: documentation/plantUML-diagram -->

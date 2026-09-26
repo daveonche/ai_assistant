@@ -1,40 +1,82 @@
-# Project README Generator/Updater
+# Metadata: # Project README Generator Prompt
 
-## Description
+## AI Assistant Compatibility
 
-Generates a new project README or updates an existing one by analyzing codebase files, documentation, and configuration, then validates the generated README against project files. When updating, it preserves manual sections and updates only outdated or inaccurate information.
+- Tested With:
+  - Aider
+  - GLM 5.3 Flash (August 27, 2026 release)
+- Potential Compatible Assistants:
+  - Other Claude models
+  - GitHub Copilot (with modifications)
+  - GPT-4
 
-## Usage
+## SDLC Phase
 
-1. Activate the prompt with:
-   `$documentation-project-README`
-   - Or say: "Generate or update a README for this project using the README generator prompt"
-2. When prompted, add relevant project files. Preferred files:
-   - package/config files
-   - existing `README.md`
-   - `docs/requirements.md`
-   - `docs/tech_stack.md`
-   - `docs/architecture/architecture.md`
-   - `docs/user_stories.md`
-   - `src/` entry points
-3. The workflow includes context management commands:
-   - Load: `/read-only .agent/.aider.prompt/documentation/project-README/SKILL.md`
-   - Drop: `/drop .agent/.aider.prompt/documentation/project-README/SKILL.md`
-4. After generation, validate the README against project files and present it for user approval.
-5. Once approved, choose to save the README directly (requires `/code` mode) or copy it as a markdown block.
+- Phase: Documentation
+- Sub-Phase: Project README
+- Workflow: On-demand README generation/update (standalone `$documentation-project-README` command)
 
-> **Note:** See the main `SKILL.md` **Gotchas** section for important handling of manual content and context-management path conventions.
+## Complexity Rating
 
-## Best suited for
+- Complexity: Medium
+- Cognitive Load: Medium
+- Technical Depth: Requires cross-checking generated content against
+  package/config files and code structure
 
-- New projects needing initial documentation
-- Projects with outdated or missing READMEs
-- Updating an existing README without overwriting manually maintained content
-- Documenting project structure after major refactoring
+## Usage Guidelines
 
-## Works best with
+- Prerequisite: Relevant project files in context (package/config files,
+  existing `README.md`, docs)
+- Requires:
+  - Package/config files for commands and technologies
+  - Existing `README.md` if present (manual content must be preserved)
+  - `docs/requirements.md`, `docs/tech_stack.md`,
+    `docs/architecture/architecture.md`, `docs/user_stories.md` when present
+  - `/code` mode only if saving the README directly
 
-- Projects with standard package/config files
-- Codebases with clear import/dependency structures
-- Repositories with existing docs such as requirements, architecture, and user stories
-- Projects using common build, test, and run commands
+## Prompt Characteristics
+
+- Input Driven: Yes
+- State Dependent: Yes (update mode depends on existing README content)
+- Requires Contextual Awareness: High
+- Command Driven: Yes ($documentation-project-README)
+- Diagram Support: None
+
+## Command Behavior
+
+- `$documentation-project-README`: Starts the README workflow — context
+  setup, analysis, generation, validation loop, then output as a saved
+  file (requires `/code` mode) or a copyable markdown block.
+
+## Gotchas / Sync Notes
+
+- Preserve manually maintained README content (badges, team documentation,
+  custom sections) when updating an existing README.
+- `/read-only` and `/drop` commands must use the full path including
+  `.agent/`.
+- Use actual commands from package/config files, never placeholders.
+- Keep the README structure template and workflow steps authoritative in
+  SKILL.md. Do not duplicate them here.
+- The sentinel line `<!-- sentinel: documentation/project-README -->` must
+  remain the final content line of SKILL.md; the orchestrator quotes it to
+  detect truncated loads.
+
+## Version
+
+- Current Version: 1.0.0
+- Last Updated: 2026-09-26
+- Stability: Experimental
+
+## Purpose
+
+This metadata file describes the project README generator skill. Workflow
+steps, README structure, and gotchas are defined in SKILL.md.
+
+## Sync / Validation Checklist
+
+Before considering this metadata file current, verify:
+
+- [ ] Command description matches SKILL.md
+- [ ] Gotchas / Sync Notes reflect the current SKILL.md gotchas
+- [ ] Version and Last Updated are incremented after SKILL.md changes
+- [ ] No workflow steps, README structure, or gotcha details are duplicated here
