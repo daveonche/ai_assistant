@@ -405,3 +405,5 @@ If the target or context does not make these clear, ask:
 
 If you cannot get answers, state your assumptions at the top of the
 report and proceed.
+
+<!-- sentinel: code/security-audit -->
