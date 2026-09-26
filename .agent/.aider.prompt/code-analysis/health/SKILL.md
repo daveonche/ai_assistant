@@ -32,7 +32,7 @@ Ensure the user is in `/ask` mode. If they are not, or if you are unsure, say EX
 [STOP - Do not proceed until user replies with "ready"]
 
 [STEP 2] Context Verification
-Verify if the relevant source code files are in your context window. If you are unsure, ask the user: "Are the source code files you want to analyze currently loaded in your context? (Y/N)"
+Ask the user: "Are the source code files you want to analyze currently loaded in your context? (Y/N)". The user answers this; do not attempt to determine context contents yourself (Critical Rule 3).
 
 If the user answers "N" or indicates the files are not included, ask them to provide the file paths or glob patterns to add using the `/add` command. After the files have been added, ask them to confirm when they are ready to continue.
 [STOP - Wait for user confirmation]
@@ -117,3 +117,5 @@ After generating the report, say EXACTLY:
 2. Then simply say: 'save to file'
 3. After saving, enter command: /ask"
 [STOP - End of workflow]
+
+<!-- sentinel: code-analysis/health -->
