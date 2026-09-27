@@ -39,7 +39,6 @@
   edit_format: diff
   extra_params:
     extra_body:
-      # Cuts down the thinking delay
       reasoning_effort: "low"
       provider:
         sort: "throughput"
