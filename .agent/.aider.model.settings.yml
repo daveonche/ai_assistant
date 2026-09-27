@@ -6,7 +6,7 @@
       # Forces maximum brilliant thinking when invoked
       reasoning_effort: "max"
       provider:
-        sort: "throughput"
+        sort: "price"
         ignore: ["OpenInference", "InferenceNet"]
         allow_fallbacks: false
         data_collection: "deny"
@@ -18,7 +18,7 @@
     extra_body:
       reasoning_effort: "max"
       provider:
-        sort: "throughput"
+        sort: "price"
         only: ["Together", "DeepInfra", "Baseten", "Novita", "Relace", "Sail Research", "Wafer", "Reka"]
         allow_fallbacks: false
         data_collection: "deny"
@@ -29,7 +29,7 @@
   extra_params:
     extra_body:
       provider:
-        sort: "throughput"
+        sort: "price"
         only: ["Together", "DeepInfra", "Baseten", "Novita", "Relace", "Sail Research", "Wafer", "Reka"]
         allow_fallbacks: true
         data_collection: "deny"
@@ -41,7 +41,7 @@
     extra_body:
       reasoning_effort: "low"
       provider:
-        sort: "throughput"
+        sort: "price"
         only: ["Together", "DeepInfra", "Baseten", "Novita", "Relace", "Sail Research", "Wafer", "Reka"]
         allow_fallbacks: true
         data_collection: "deny"
@@ -54,7 +54,7 @@
   extra_params:
     extra_body:
       provider:
-        sort: "throughput"
+        sort: "price"
         only: ["Together", "DeepInfra", "Baseten", "Novita", "Relace", "Sail Research", "Wafer", "Reka"]
         allow_fallbacks: true
         data_collection: "deny"
