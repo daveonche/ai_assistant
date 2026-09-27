@@ -6,7 +6,8 @@
       # Forces maximum brilliant thinking when invoked
       reasoning_effort: "max"
       provider:
-        sort: "price"
+        sort: "throughput"
+        ignore: ["OpenInference", "InferenceNet"]
         allow_fallbacks: false
         data_collection: "deny"
 
@@ -15,11 +16,10 @@
   edit_format: diff
   extra_params:
     extra_body:
-      # Forces maximum brilliant thinking when invoked
       reasoning_effort: "max"
       provider:
-        sort: "price"
-        ignore: ["OpenInference"]
+        sort: "throughput"
+        only: ["Together", "DeepInfra", "Baseten", "NovitaAI", "Relace", "Sail Research", "Wafer", "Reka AI"]
         allow_fallbacks: false
         data_collection: "deny"
 
@@ -29,15 +29,9 @@
   extra_params:
     extra_body:
       provider:
-        # Forces OpenRouter to strictly select the lowest-cost candidate endpoint
-        sort: "price"
-        # Forces OpenRouter to exclusively use this provider
-        # only: ["Relace", "DeepInfra", "Parasail", "Novita", "Together", "Baseten", "Reka", "Morph", "Wafer"]
-        # Completely blocks this provider from handling your requests
-        ignore: ["OpenInference"]
-        # Disables high-cost safety fallback routes if the cheap host fails
+        sort: "throughput"
+        only: ["Together", "DeepInfra", "Baseten", "NovitaAI", "Relace", "Sail Research", "Wafer", "Reka AI"]
         allow_fallbacks: true
-        # Denies providers from logging your code data for training metrics
         data_collection: "deny"
 
 # Switch with /model editor
@@ -48,8 +42,8 @@
       # Cuts down the thinking delay
       reasoning_effort: "low"
       provider:
-        sort: "price"
-        ignore: ["OpenInference"]
+        sort: "throughput"
+        only: ["Together", "DeepInfra", "Baseten", "NovitaAI", "Relace", "Sail Research", "Wafer", "Reka AI"]
         allow_fallbacks: true
         data_collection: "deny"
     temperature: 0.1
@@ -61,6 +55,8 @@
   extra_params:
     extra_body:
       provider:
-        sort: "price"
+        sort: "throughput"
+        only: ["Together", "DeepInfra", "Baseten", "NovitaAI", "Relace", "Sail Research", "Wafer", "Reka AI"]
         allow_fallbacks: true
         data_collection: "deny"
+    temperature: 0.1
