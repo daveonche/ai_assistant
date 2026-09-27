@@ -19,7 +19,7 @@
       reasoning_effort: "max"
       provider:
         sort: "throughput"
-        only: ["Together", "DeepInfra", "Baseten", "NovitaAI", "Relace", "Sail Research", "Wafer", "Reka AI"]
+        only: ["Together", "DeepInfra", "Baseten", "Novita", "Relace", "Sail Research", "Wafer", "Reka"]
         allow_fallbacks: false
         data_collection: "deny"
 
@@ -30,7 +30,7 @@
     extra_body:
       provider:
         sort: "throughput"
-        only: ["Together", "DeepInfra", "Baseten", "NovitaAI", "Relace", "Sail Research", "Wafer", "Reka AI"]
+        only: ["Together", "DeepInfra", "Baseten", "Novita", "Relace", "Sail Research", "Wafer", "Reka"]
         allow_fallbacks: true
         data_collection: "deny"
 
@@ -43,7 +43,7 @@
       reasoning_effort: "low"
       provider:
         sort: "throughput"
-        only: ["Together", "DeepInfra", "Baseten", "NovitaAI", "Relace", "Sail Research", "Wafer", "Reka AI"]
+        only: ["Together", "DeepInfra", "Baseten", "Novita", "Relace", "Sail Research", "Wafer", "Reka"]
         allow_fallbacks: true
         data_collection: "deny"
     temperature: 0.1
@@ -56,7 +56,7 @@
     extra_body:
       provider:
         sort: "throughput"
-        only: ["Together", "DeepInfra", "Baseten", "NovitaAI", "Relace", "Sail Research", "Wafer", "Reka AI"]
+        only: ["Together", "DeepInfra", "Baseten", "Novita", "Relace", "Sail Research", "Wafer", "Reka"]
         allow_fallbacks: true
         data_collection: "deny"
     temperature: 0.1
