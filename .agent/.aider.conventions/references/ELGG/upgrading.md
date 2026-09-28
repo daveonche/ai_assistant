@@ -6,9 +6,13 @@ Load this file via `/read-only` before advising on an Elgg upgrade or planning
 work that crosses an Elgg version boundary. General upgrade discipline
 (backups, staging validation, rollback planning, plugin compatibility checks)
 is assumed from general knowledge; this file records only what that knowledge
-does not supply. Sites with custom plugins should also read the plugin
-upgrade notes for the target version
-(<https://learn.elgg.org/en/stable/appendix/upgrade-notes.html>).
+does not supply. For plugin code, load the per-transition plugin upgrade
+notes from `.agent/.aider.conventions/references/ELGG/upgrade-notes/` — one
+`<from>-to-<to>.md` file per documented transition (for example
+`1.7-to-1.8.md`, `2.x-to-3.0.md`), matching the official page slugs at
+<https://learn.elgg.org/en/stable/appendix/upgrade-notes.html>. Load every
+file covering the hops being crossed; if the file for a hop is not present
+yet, fall back to the official page for that transition.
 
 The stable page is the single upgrade reference for every site on Elgg
 `2.3.*` or later: one procedure, applied one major hop at a time. Only
