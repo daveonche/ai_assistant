@@ -12,4 +12,4 @@ Last updated: 2026-09-28
 
 ## Pending Side Task
 
-- Elgg upgrade notes: all 24 official transitions as references/ELGG/upgrade-notes/<from>-to-<to>.md, one per round; 1.7-to-1.8.md committed; next: draft 1.8-to-1.9.md (routing in references/ELGG/upgrading.md)
+- Elgg upgrade notes: all 24 official transitions as references/ELGG/upgrade-notes/<from>-to-<to>.md, one per round; 1.7-to-1.8.md committed, 1.8-to-1.9.md drafted; next: commit, then draft 1.9-to-1.10.md
