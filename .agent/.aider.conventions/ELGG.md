@@ -24,3 +24,14 @@ Version-specific guidance lives in
 detected framework version exists, load its files via `/read-only` before offering
 coding guidance. When it does not, continue without them: this file is valid on its
 own.
+
+## Upgrading
+
+Upgrade-path guidance lives in
+`.agent/.aider.conventions/references/ELGG/upgrading.md`: version-independent
+upgrade rules, the standard upgrade procedure applied one major version at a
+time from any site on Elgg `2.3.*` or later up to the latest stable version,
+the composer patch policy, and the legacy manual approach for earlier
+versions. It is distilled from the official Upgrading Elgg documentation. Load
+it via `/read-only` before advising on any Elgg upgrade or on work that crosses
+an Elgg version boundary.
