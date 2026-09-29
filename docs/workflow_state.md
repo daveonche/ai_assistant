@@ -12,4 +12,4 @@ Last updated: 2026-09-29
 
 ## Pending Side Task
 
-- Elgg upgrade notes: all 24 official transitions as references/ELGG/upgrade-notes/<from>-to-<to>.md, one per round; 1.7-to-1.8.md through 2.2-to-2.3.md committed (8 of 24, ascending order); 2.x-to-3.0 split in progress: canonical passes 1-2 (5d16a5a, 92d2c2a) + removed-views.md + removed-functions-methods.md + removed-classes-globals.md + removed-js-actions-pagehandlers.md committed; next: deprecated-changed-apis (last detail file; adds its canonical summary + index line), then final review
+- Elgg upgrade notes: all 24 official transitions as references/ELGG/upgrade-notes/<from>-to-<to>.md, one per round; 1.7-to-1.8.md through 2.2-to-2.3.md committed (8 of 24, ascending order); 2.x-to-3.0 split complete pending final review: canonical passes 1-2 (5d16a5a, 92d2c2a) + all five 2.x-to-3.0/ detail files committed; next: final review (cross-refs both ways, GFM check), then 2.x-to-3.0 counts as 9 of 24
