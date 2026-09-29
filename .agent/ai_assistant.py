@@ -1797,15 +1797,16 @@ def _check_gitdb_reads(
     Gated by the loose-object count (see LOOSE_OBJECT_PROBE_THRESHOLD) so
     ordinary launches pay nothing; the gate targets the observed failure
     mode, heavy loose-object accumulation — a stale pack index with few
-    loose objects is not detected. Skipped for nested launches and
-    non-repositories. On a failed probe the warning names the unreadable
+    loose objects is not detected. Skipped only for non-repositories:
+    unlike cleanup_containers, the probe is read-only, needs no host PID
+    space, and reaches the host daemon through the same docker.sock mount
+    a nested launcher already uses, so it behaves identically inside and
+    outside a container. On a failed probe the warning names the unreadable
     object and prints the remediation, mirroring
     agent_socket_report_blocker's diagnose-don't-mutate pattern: the
     launch continues either way, and the repair is deferred while another
     session is still live in this workspace.
     """
-    if _running_in_container():
-        return
     if not (project_root / ".git").exists():
         return
     loose = _loose_object_count(project_root, debug)
