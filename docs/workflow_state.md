@@ -12,4 +12,4 @@ Last updated: 2026-09-29
 
 ## Pending Side Task
 
-- Elgg upgrade notes: all 24 official transitions as references/ELGG/upgrade-notes/<from>-to-<to>.md, one per round; 1.7-to-1.8.md through 2.2-to-2.3.md committed (8 of 24, ascending order); 2.x-to-3.0 split complete pending final review: canonical passes 1-2 (5d16a5a, 92d2c2a) + all five 2.x-to-3.0/ detail files committed; next: final review (cross-refs both ways, GFM check), then 2.x-to-3.0 counts as 9 of 24
+- Elgg upgrade notes: all 24 official transitions as references/ELGG/upgrade-notes/<from>-to-<to>.md, one per round; 1.7-to-1.8.md through 2.x-to-3.0.md committed (9 of 24, ascending order; 2.x-to-3.0 ships with its 2.x-to-3.0/ detail directory); next: 3.0-to-3.1.md
