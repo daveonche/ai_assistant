@@ -45,6 +45,83 @@ AIDER_IMAGE = "aider-agent:latest"
 BASE_IMAGE_FALLBACK = "paulgauthier/aider-full:latest"
 SESSION_ID_ENV_VAR = "AI_ASSISTANT_SESSION_ID"
 
+# Pre-flight gitdb probe. Aider reads the repository through GitPython and
+# gitdb (pure Python), not the git binary, and gitdb can fail with
+# "BadObject" on repositories the git binary reads cleanly — observed with
+# a few thousand fragmented loose objects. When the loose-object count
+# reaches this threshold, a one-shot container re-reads the repository with
+# the image's own gitdb before launch and warns with the remediation
+# instead of letting aider fail mid-launch. Detection only: the probe
+# mounts the repository read-only, repairs nothing, and never fails the
+# launch. The gate targets the observed failure mode; a stale pack index
+# with few loose objects is not detected.
+LOOSE_OBJECT_PROBE_THRESHOLD = 1024
+
+# Seconds before the one-shot gitdb probe container is abandoned as
+# inconclusive. Container startup dominates; the probe itself only reads
+# object headers.
+GITDB_PROBE_TIMEOUT = 60
+
+# The probe program, delivered to the container's venv interpreter on
+# stdin so the traced command stays a single line. It exercises the gitdb
+# read paths aider uses: resolving HEAD, walking HEAD's tree, and
+# streaming every index entry's object. Exit codes: 0 healthy (or nothing
+# to probe), 2 gitdb could not read an object, 3 the probe itself could
+# not run.
+GITDB_PROBE_SNIPPET = """\
+import binascii
+import stat
+import sys
+
+try:
+    import git
+except Exception as exc:
+    print(f"probe-error: GitPython import failed: {exc}")
+    sys.exit(3)
+
+try:
+    repo = git.Repo(".")
+except Exception:
+    print("probe-ok: not a git repository")
+    sys.exit(0)
+
+if repo.bare:
+    print("probe-ok: bare repository")
+    sys.exit(0)
+
+try:
+    head = repo.head.commit
+except Exception:
+    print("probe-ok: no commits on HEAD")
+    sys.exit(0)
+
+errors = []
+try:
+    head.tree.traverse()
+except Exception as exc:
+    errors.append(f"HEAD tree walk: {exc!r}")
+
+EMPTY_BLOB = binascii.unhexlify(
+    "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+)
+try:
+    if repo.index.exists():
+        for entry in repo.index.entries.values():
+            if stat.S_ISGITLINK(entry.mode):
+                continue  # submodule pointers live in the submodule's odb
+            if entry.binsha == EMPTY_BLOB:
+                continue  # intent-to-add entries may be unwritten
+            repo.odb.stream(entry.binsha).close()
+except Exception as exc:
+    errors.append(f"index object read: {exc!r}")
+
+if errors:
+    for error in errors:
+        print(f"probe-bad-object: {error}")
+    sys.exit(2)
+print("probe-ok")
+"""
+
 # Per-session engine-command log. Configured once in main() from the
 # workspace hash + session ID; every traced command is appended so runs
 # stay auditable regardless of debug mode. None until configured.
@@ -1562,6 +1639,222 @@ def _running_in_container() -> bool:
     return Path("/.dockerenv").exists()
 
 
+def _loose_object_count(project_root: Path, debug: bool) -> Optional[int]:
+    """Return the repository's loose-object count, or None when unknown.
+
+    Reads only the "count:" line of git count-objects -v. The count gates
+    the gitdb probe so ordinary launches pay nothing (see
+    LOOSE_OBJECT_PROBE_THRESHOLD). Returns None when git is unavailable,
+    the command fails, or the output cannot be parsed; the caller then
+    skips the probe silently.
+    """
+    command = ["git", "-C", str(project_root), "count-objects", "-v"]
+    _trace_command(command, debug)
+    try:
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        return None
+    if result.returncode != 0:
+        return None
+    for line in (result.stdout or "").splitlines():
+        if line.startswith("count:"):
+            try:
+                return int(line.split(":", 1)[1].strip())
+            except ValueError:
+                return None
+    return None
+
+
+def _probe_gitdb_reads(
+    project_root: Path,
+    image: str,
+    debug: bool,
+) -> Optional[list[str]]:
+    """Re-read the repository with the image's gitdb, exactly as aider will.
+
+    Runs a one-shot container (same pattern as _container_passwd_home) as
+    the host uid, with the project root bind-mounted read-only at its
+    identical path and no network, and feeds GITDB_PROBE_SNIPPET to the
+    venv interpreter aider itself runs under. The probe program arrives on
+    stdin so the traced command stays a single line.
+
+    Returns an empty list when every gitdb read succeeded, the
+    "probe-bad-object:" lines naming what failed when gitdb could not read
+    an object, and None when the probe could not run or finished
+    inconclusively (the caller stays silent for None outside debug mode).
+    """
+    command = [
+        "docker",
+        "run",
+        "--rm",
+        "-i",
+        "--network",
+        "none",
+        "--user",
+        str(os.getuid()),
+        "-v",
+        f"{project_root}:{project_root}:ro",
+        "-w",
+        str(project_root),
+        "--entrypoint",
+        "/venv/bin/python3",
+        image,
+        "-",
+    ]
+    _trace_command(command, debug)
+    try:
+        result = subprocess.run(
+            command,
+            input=GITDB_PROBE_SNIPPET,
+            capture_output=True,
+            text=True,
+            timeout=GITDB_PROBE_TIMEOUT,
+        )
+    except FileNotFoundError:
+        return None
+    except subprocess.TimeoutExpired:
+        if debug:
+            print(
+                "Note: gitdb probe timed out; treating as inconclusive.",
+                file=sys.stderr,
+            )
+        return None
+    if result.returncode == 0:
+        if debug:
+            print((result.stdout or "").strip(), file=sys.stderr)
+        return []
+    if result.returncode == 2:
+        if debug:
+            if (result.stdout or "").strip():
+                print(result.stdout.strip(), file=sys.stderr)
+            if (result.stderr or "").strip():
+                print(result.stderr.strip(), file=sys.stderr)
+        problems = [
+            line
+            for line in (result.stdout or "").splitlines()
+            if line.startswith("probe-bad-object:")
+        ]
+        return problems or [
+            "probe-bad-object: gitdb could not read the repository"
+        ]
+    if debug:
+        print(
+            "Note: gitdb probe exited with status "
+            f"{result.returncode}; treating as inconclusive.",
+            file=sys.stderr,
+        )
+    return None
+
+
+def _live_session_pids(workspace_hash: str, debug: bool) -> list[int]:
+    """Return host PIDs of assistant containers still live in this workspace.
+
+    Same label query as cleanup_containers, but read-only: used only to
+    adapt the gitdb warning when the repair command would be unsafe to
+    run concurrently with a live session.
+    """
+    command = [
+        "docker",
+        "ps",
+        "--filter",
+        f"label=aider.dir={workspace_hash}",
+        "--format",
+        '{{.ID}} {{.Label "aider.hostpid"}}',
+    ]
+    _trace_command(command, debug)
+    try:
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        return []
+    if result.returncode != 0:
+        return []
+    pids: list[int] = []
+    for line in (result.stdout or "").splitlines():
+        fields = line.split()
+        if len(fields) < 2:
+            continue
+        if _pid_alive(fields[1]):
+            pids.append(int(fields[1]))
+    return pids
+
+
+def _check_gitdb_reads(
+    project_root: Path,
+    workspace_hash: str,
+    image: str,
+    debug: bool,
+) -> None:
+    """Warn when the image's gitdb cannot read this repository.
+
+    Gated by the loose-object count (see LOOSE_OBJECT_PROBE_THRESHOLD) so
+    ordinary launches pay nothing; the gate targets the observed failure
+    mode, heavy loose-object accumulation — a stale pack index with few
+    loose objects is not detected. Skipped for nested launches and
+    non-repositories. On a failed probe the warning names the unreadable
+    object and prints the remediation, mirroring
+    agent_socket_report_blocker's diagnose-don't-mutate pattern: the
+    launch continues either way, and the repair is deferred while another
+    session is still live in this workspace.
+    """
+    if _running_in_container():
+        return
+    if not (project_root / ".git").exists():
+        return
+    loose = _loose_object_count(project_root, debug)
+    if loose is None or loose < LOOSE_OBJECT_PROBE_THRESHOLD:
+        return
+    if debug:
+        print(
+            f"Note: {loose} loose objects reach the probe threshold "
+            f"({LOOSE_OBJECT_PROBE_THRESHOLD}); probing gitdb reads.",
+            file=sys.stderr,
+        )
+    problems = _probe_gitdb_reads(project_root, image, debug)
+    if not problems:
+        # Healthy ([]), inconclusive, or unrunnable (None): stay silent.
+        return
+    print(
+        "Warning: the Python object database (gitdb) inside the assistant "
+        "image could not read this repository, although the git binary "
+        'reads it fine; aider may fail with "BadObject" errors. The probe '
+        "found:",
+        file=sys.stderr,
+    )
+    for line in problems:
+        print(f"  {line}", file=sys.stderr)
+    live_pids = _live_session_pids(workspace_hash, debug)
+    if live_pids:
+        print(
+            "Note: assistant session(s) with host pid(s) "
+            f"{', '.join(str(pid) for pid in live_pids)} are still live in "
+            "this workspace; close them before repairing, because a repack "
+            "while aider reads the repository is one of the triggers this "
+            "probe guards against.",
+            file=sys.stderr,
+        )
+    else:
+        print(
+            "Fix while no assistant session is running in this workspace:",
+            file=sys.stderr,
+        )
+    print("    git gc", file=sys.stderr)
+    print(
+        "then re-run the launcher. Do not add --prune=now: it discards "
+        "objects that are still recoverable. If the warning persists "
+        "after gc, update the pinned base image (docs/tech_stack.md) and "
+        "report the sha upstream.",
+        file=sys.stderr,
+    )
+
+
 def cleanup_containers(
     workspace_hash: str,
     debug: bool = False,
@@ -2265,6 +2558,13 @@ def main() -> int:
 
     if build_code != 0:
         return build_code
+
+    # Pre-flight repository health probe: warn when the image's gitdb
+    # cannot read this repository (detection only; see _check_gitdb_reads).
+    with _spinner("Checking repository health...", debug=debug):
+        _check_gitdb_reads(
+            project_root, workspace_hash, AIDER_IMAGE, debug=debug
+        )
 
     aider_cache_dir = Path.home() / ".cache" / "aider"
     aider_cache_dir.mkdir(parents=True, exist_ok=True)
