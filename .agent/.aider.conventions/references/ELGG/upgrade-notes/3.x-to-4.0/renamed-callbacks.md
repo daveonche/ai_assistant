@@ -1,0 +1,425 @@
+# Plugin Upgrade Notes: 3.x to 4.0 — Renamed Callbacks
+
+Exhaustive enumeration of the renamed hook and event handler callbacks in
+the 3.x to 4.0 transition, distilled from
+<https://learn.elgg.org/en/stable/appendix/upgrade-notes/3.x-to-4.0.html>.
+Load this file on demand from the main `3.x-to-4.0.md` notes when auditing
+callback registrations in your plugins.
+
+Special attention is required if you unregister the callbacks in your
+plugins, as you might need to update your code.
+
+## Core
+
+- `access_friends_acl_get_name()` changed to
+  `Elgg\Friends\AclNameHandler::class`
+- `access_friends_acl_add_friend()` changed to
+  `Elgg\Friends\AddToAclHandler::class`
+- `access_friends_acl_create()` changed to
+  `Elgg\Friends\CreateAclHandler::class`
+- `access_friends_acl_remove_friend()` changed to
+  `Elgg\Friends\RemoveFromAclHandler::class`
+- `_elgg_add_admin_widgets()` changed to
+  `Elgg\Widgets\CreateAdminWidgetsHandler::class`
+- `_elgg_admin_check_admin_validation()` changed to
+  `Elgg\Users\Validation::checkAdminValidation()`
+- `_elgg_admin_header_menu()` changed to `Elgg\Menus\AdminHeader::register()`
+  and `Elgg\Menus\AdminHeader::registerMaintenance()`
+- `_elgg_admin_footer_menu()` changed to
+  `Elgg\Menus\AdminFooter::registerHelpResources()`
+- `_elgg_admin_notify_admins_pending_user_validation()` changed to
+  `Elgg\Users\Validation::notifyAdminsAboutPendingUsers()`
+- `_elgg_admin_page_menu()` changed to
+  `Elgg\Menus\Page::registerAdminAdminister()` and
+  `Elgg\Menus\Page::registerAdminConfigure()` and
+  `Elgg\Menus\Page::registerAdminInformation()`
+- `_elgg_admin_page_menu_plugin_settings()` changed to
+  `Elgg\Menus\Page::registerAdminPluginSettings()`
+- `_elgg_admin_prepare_admin_notification_make_admin()` changed to
+  `Elgg\Notifications\MakeAdminUserEventHandler`
+- `_elgg_admin_prepare_admin_notification_remove_admin()` changed to
+  `Elgg\Notifications\RemoveAdminUserEventHandler`
+- `_elgg_admin_prepare_user_notification_make_admin()` changed to
+  `Elgg\Notifications\MakeAdminUserEventHandler`
+- `_elgg_admin_prepare_user_notification_remove_admin()` changed to
+  `Elgg\Notifications\RemoveAdminUserEventHandler`
+- `_elgg_admin_save_notification_setting()` changed to
+  `Elgg\Users\Settings::setAdminValidationNotification()`
+- `_elgg_admin_set_registration_forward_url()` changed to
+  `Elgg\Users\Validation::setRegistrationForwardUrl()`
+- `_elgg_admin_user_unvalidated_bulk_menu()` changed to
+  `Elgg\Menus\UserUnvalidatedBulk::registerActions()`
+- `_elgg_admin_user_validation_login_attempt()` changed to
+  `Elgg\Users\Validation::preventUserLogin()`
+- `_elgg_admin_user_validation_notification()` changed to
+  `Elgg\Users\Validation::notifyUserAfterValidation()`
+- `_elgg_admin_upgrades_menu()` changed to
+  `Elgg\Menus\Filter::registerAdminUpgrades()`
+- `_elgg_cache_init()` actions combined in
+  `Elgg\Application\SystemEventHandlers::ready()`
+- `_elgg_clear_caches()` changed to `Elgg\Cache\EventHandlers::clear()`
+- `_elgg_comments_access_sync()` changed to
+  `Elgg\Comments\SyncContainerAccessHandler::class`
+- `_elgg_comments_container_permissions_override()` changed to
+  `Elgg\Comments\ContainerPermissionsHandler::class`
+- `_elgg_comments_permissions_override()` changed to
+  `Elgg\Comments\EditPermissionsHandler::class`
+- `_elgg_comments_prepare_content_owner_notification()` changed to
+  `Elgg\Notifications\CreateCommentEventHandler`
+- `_elgg_comments_prepare_notification()` changed to
+  `Elgg\Notifications\CreateCommentEventHandler`
+- `_elgg_comments_social_menu_setup()` changed to
+  `Elgg\Menus\Social::registerComments()`
+- `_elgg_create_default_widgets()` changed to
+  `Elgg\Widgets\CreateDefaultWidgetsHandler::class`
+- `_elgg_create_notice_of_pending_upgrade()` changed to
+  `Elgg\Upgrade\CreateAdminNoticeHandler::class`
+- `_elgg_db_register_seeds()` changed to
+  `Elgg\Database\RegisterSeedsHandler::class`
+- `_elgg_disable_caches()` changed to `Elgg\Cache\EventHandlers::disable()`
+- `_elgg_default_widgets_permissions_override()` changed to
+  `Elgg\Widgets\DefaultWidgetsContainerPermissionsHandler::class`
+- `_elgg_disable_password_autocomplete()` changed to
+  `Elgg\Input\DisablePasswordAutocompleteHandler::class`
+- `_elgg_enable_caches()` changed to `Elgg\Cache\EventHandlers::enable()`
+- `_elgg_filestore_move_icons()` changed to
+  `Elgg\Icons\MoveIconsOnOwnerChangeHandler::class`
+- `_elgg_filestore_touch_icons()` changed to
+  `Elgg\Icons\TouchIconsOnAccessChangeHandler::class`
+- `_elgg_head_manifest()` changed to
+  `Elgg\Views\AddManifestLinkHandler::class`
+- `_elgg_annotations_default_menu_items()` changed to
+  `Elgg\Menus\Annotation::registerDelete()`
+- `_elgg_walled_garden_menu()` changed to
+  `Elgg\Menus\WalledGarden::registerHome()`
+- `_elgg_site_menu_init()` changed to
+  `Elgg\Menus\Site::registerAdminConfiguredItems()`
+- `_elgg_site_menu_setup()` changed to `Elgg\Menus\Site::reorderItems()`
+- `_elgg_entity_menu_setup()` changed to `Elgg\Menus\Entity::registerEdit()`
+  and `Elgg\Menus\Entity::registerDelete()`
+- `_elgg_entity_navigation_menu_setup()` changed to
+  `Elgg\Menus\EntityNavigation::registerPreviousNext()`
+- `_elgg_enqueue_notification_event()` changed to
+  `Elgg\Notifications\EnqueueEventHandler::class`
+- `_elgg_groups_container_override()` changed to
+  `Elgg\Groups\MemberPermissionsHandler::class`
+- `_elgg_groups_comment_permissions_override()` changed to
+  `Elgg\Comments\GroupMemberPermissionsHandler::class`
+- `_elgg_htmlawed_filter_tags()` changed to
+  `Elgg\Input\ValidateInputHandler::class`
+- `_elgg_invalidate_caches()` changed to
+  `Elgg\Cache\EventHandlers::invalidate()`
+- `_elgg_widget_menu_setup()` changed to `Elgg\Menus\Widget::registerEdit()`
+  and `Elgg\Menus\Widget::registerDelete()`
+- `_elgg_login_menu_setup()` changed to
+  `Elgg\Menus\Login::registerRegistration()` and
+  `Elgg\Menus\Widget::registerResetPassword()`
+- `_elgg_nav_public_pages()` changed to
+  `Elgg\WalledGarden\ExtendPublicPagesHandler::class`
+- `_elgg_notifications_cron()` changed to
+  `Elgg\Notifications\ProcessQueueCronHandler::class`
+- `_elgg_notifications_smtp_default_message_id_header()` changed to
+  `Elgg\Email\DefaultMessageIdHeaderHandler::class`
+- `_elgg_notifications_smtp_thread_headers()` changed to
+  `Elgg\Email\ThreadHeadersHandler::class`
+- `_elgg_rebuild_public_container()` changed to
+  `Elgg\Cache\EventHandlers::rebuildPublicContainer()`
+- `_elgg_river_update_object_last_action()` changed to
+  `Elgg\River\UpdateLastActionHandler::class`
+- `_elgg_rss_menu_setup()` changed to `Elgg\Menus\Footer::registerRSS()`
+- `_elgg_plugin_entity_menu_setup()` changed to
+  `Elgg\Menus\Entity::registerPlugin()`
+- `_elgg_purge_caches()` changed to `Elgg\Cache\EventHandlers::purge()`
+- `_elgg_river_menu_setup()` changed to `Elgg\Menus\River::registerDelete()`
+- `_elgg_save_notification_user_settings()` changed to
+  `Elgg\Notifications\SaveUserSettingsHandler::class`
+- `_elgg_session_cleanup_persistent_login()` changed to
+  `Elgg\Users\CleanupPersistentLoginHandler::class`
+- `_elgg_set_lightbox_config()` changed to
+  `Elgg\Javascript\SetLightboxConfigHandler::class`
+- `_elgg_set_user_default_access()` changed to
+  `Elgg\Users\Settings::setDefaultAccess()`
+- `_elgg_set_user_email()` changed to `Elgg\Users\Settings::setEmail()`
+- `_elgg_set_user_password()` changed to `Elgg\Users\Settings::setPassword()`
+- `_elgg_set_user_language()` changed to `Elgg\Users\Settings::setLanguage()`
+- `_elgg_set_user_name()` changed to `Elgg\Users\Settings::setName()`
+- `_elgg_set_user_username()` changed to
+  `Elgg\Users\Settings::setUsername()`
+- `_elgg_send_email_notification()` changed to
+  `Elgg\Notifications\SendEmailHandler::class`
+- `_elgg_upgrade_completed()` changed to
+  `Elgg\Upgrade\UpgradeCompletedAdminNoticeHandler::class`
+- `_elgg_upgrade_entity_menu()` changed to
+  `Elgg\Menus\Entity::registerUpgrade()`
+- `_elgg_user_ban_notification()` changed to
+  `Elgg\Users\BanUserNotificationHandler::class`
+- `_elgg_user_get_subscriber_unban_action()` changed to
+  `Elgg\Notifications\UnbanUserEventHandler`
+- `_elgg_user_prepare_unban_notification()` changed to
+  `Elgg\Notifications\UnbanUserEventHandler`
+- `_elgg_user_settings_menu_register()` changed to
+  `Elgg\Menus\Page::registerUserSettings()` and
+  `Elgg\Menus\Page::registerUserSettingsPlugins()`
+- `_elgg_user_settings_menu_prepare()` changed to
+  `Elgg\Menus\Page::cleanupUserSettingsPlugins()`
+- `elgg_user_hover_menu()` changed to
+  `Elgg\Menus\UserHover::registerAvatarEdit()` and
+  `Elgg\Menus\UserHover::registerAdminActions()`
+- `_elgg_user_set_icon_file()` changed to
+  `Elgg\Icons\SetUserIconFileHandler::class`
+- `_elgg_user_title_menu()` changed to
+  `Elgg\Menus\Title::registerAvatarEdit()`
+- `_elgg_user_page_menu()` changed to `Elgg\Menus\Page::registerAvatarEdit()`
+- `_elgg_user_topbar_menu()` changed to
+  `Elgg\Menus\Topbar::registerUserLinks()`
+- `_elgg_user_unvalidated_menu()` changed to
+  `Elgg\Menus\UserUnvalidated::register()`
+- `_elgg_user_unvalidated_bulk_menu()` changed to
+  `Elgg\UserValidationByEmail\Menus\UserUnvalidatedBulk::register()`
+- `_elgg_user_unvalidated_menu()` changed to
+  `Elgg\UserValidationByEmail\Menus\UserUnvalidated::register()`
+- `_elgg_views_amd()` changed to `Elgg\Views\AddAmdModuleNameHandler::class`
+- `_elgg_views_file_help_upload_limit()` changed to
+  `Elgg\Input\AddFileHelpTextHandler::class`
+- `_elgg_views_init()` combined into
+  `Elgg\Application\SystemEventHandlers::init()`
+- `_elgg_views_minify()` changed to `Elgg\Views\MinifyHandler::class`
+- `_elgg_views_prepare_favicon_links()` changed to
+  `Elgg\Page\AddFaviconLinksHandler::class`
+- `_elgg_views_send_header_x_frame_options()` changed to
+  `Elgg\Page\SetXFrameOptionsHeaderHandler::class`
+- `_elgg_walled_garden_init()` merged into
+  `Elgg\Application\SystemEventHandlers::initLate()`
+- `_elgg_walled_garden_remove_public_access()` changed to
+  `Elgg\WalledGarden\RemovePublicAccessHandler::class`
+- `_elgg_widgets_widget_urls()` changed to
+  `Elgg\Widgets\EntityUrlHandler::class`
+- `elgg_prepare_breadcrumbs()` changed to
+  `Elgg\Page\PrepareBreadcrumbsHandler::class`
+- `Elgg\Profiler::handleOutput` changed to `Elgg\Debug\Profiler::class`
+- `users_init` combined into
+  `Elgg\Application\SystemEventHandlers::initLate()`
+
+## Plugins
+
+- `_developers_entity_menu` changed to
+  `Elgg\Developers\Menus\Entity::registerEntityExplorer`
+- `_developers_page_menu` changed to `Elgg\Developers\Menus\Page::register`
+- `_elgg_activity_owner_block_menu` changed to
+  `Elgg\Activity\Menus\OwnerBlock::registerUserItem` and
+  `Elgg\Activity\Menus\OwnerBlock::registerGroupItem`
+- `blog_archive_menu_setup` changed to `Elgg\Blog\Menus\BlogArchive::register`
+- `blog_owner_block_menu` changed to
+  `Elgg\Blog\Menus\OwnerBlock::registerUserItem` and
+  `Elgg\Blog\Menus\OwnerBlock::registerGroupItem`
+- `blog_prepare_notification` changed to
+  `Elgg\Blog\Notifications\PublishBlogEventHandler`
+- `blog_register_db_seeds` changed to `Elgg\Blog\Database::registerSeeds`
+- `bookmarks_footer_menu` changed to `Elgg\Bookmarks\Menus\Footer::register`
+- `bookmarks_owner_block_menu` changed to
+  `Elgg\Bookmarks\Menus\OwnerBlock::registerUserItem` and
+  `Elgg\Bookmarks\Menus\OwnerBlock::registerGroupItem`
+- `bookmarks_page_menu` changed to `Elgg\Bookmarks\Menus\Page::register`
+- `bookmarks_prepare_notification` changed to
+  `Elgg\Bookmarks\Notifications\CreateBookmarksEventHandler`
+- `bookmarks_register_db_seeds` changed to
+  `Elgg\Bookmarks\Database::registerSeeds`
+- `ckeditor_longtext_id` changed to
+  `Elgg\CKEditor\Views::setInputLongTextIDViewVar`
+- `ckeditor_longtext_menu` changed to
+  `Elgg\CKEditor\Menus\LongText::registerToggler`
+- `dashboard_default_widgets` changed to
+  `Elgg\Dashboard\Widgets::extendDefaultWidgetsList`
+- `developers_log_events` changed to
+  `Elgg\Developers\HandlerLogger::trackEvent` and
+  `Elgg\Developers\HandlerLogger::trackHook`
+- `diagnostics_basic_hook` changed to `Elgg\Diagnostics\Reports::getBasic`
+- `diagnostics_globals_hook` changed to
+  `Elgg\Diagnostics\Reports::getGlobals`
+- `diagnostics_phpinfo_hook` changed to
+  `Elgg\Diagnostics\Reports::getPHPInfo`
+- `diagnostics_sigs_hook` changed to `Elgg\Diagnostics\Reports::getSigs`
+- `discussion_comment_permissions` changed to
+  `Elgg\Discussions\Permissions::preventCommentOnClosedDiscussion`
+- `discussion_get_subscriptions` changed to
+  `Elgg\Discussions\Notifications::addGroupSubscribersToCommentOnDiscussionSubscriptions`
+- `discussion_owner_block_menu` changed to
+  `Elgg\Discussions\Menus\OwnerBlock::registerGroupItem`
+- `discussion_prepare_comment_notification` changed to
+  `Elgg\Discussions\Notifications::prepareCommentOnDiscussionNotification`
+- `discussion_prepare_notification` changed to
+  `Elgg\Discussions\Notifications\CreateDiscussionEventHandler`
+- `discussion_register_db_seeds` changed to
+  `Elgg\Discussions\Database::registerSeeds`
+- `Elgg\DevelopersPlugins\*` changed to `Elgg\Developers\*`
+- `Elgg\Discussions\Menus::registerSiteMenuItem` changed to
+  `Elgg\Discussions\Menus\Site::register`
+- `Elgg\Discussions\Menus::filterTabs` changed to
+  `Elgg\Discussions\Menus\Filter::filterTabsForDiscussions`
+- `embed_longtext_menu` changed to `Elgg\Embed\Menus\LongText::register`
+- `embed_select_tab` changed to `Elgg\Embed\Menus\Embed::selectCorrectTab`
+- `embed_set_thumbnail_url` changed to `Elgg\Embed\Icons::setThumbnailUrl`
+- `expages_menu_register_hook` changed to
+  `Elgg\ExternalPages\Menus\ExPages::register`
+- `file_handle_object_delete` changed to
+  `Elgg\File\Icons::deleteIconOnElggFileDelete`
+- `file_prepare_notification` changed to
+  `Elgg\File\Notifications\CreateFileEventHandler`
+- `file_register_db_seeds` changed to `Elgg\File\Database::registerSeeds`
+- `file_set_custom_icon_sizes` changed to `Elgg\File\Icons::setIconSizes`
+- `file_set_icon_file` changed to `Elgg\File\Icons::setIconFile`
+- `file_set_icon_url` changed to `Elgg\File\Icons::setIconUrl`
+- `file_owner_block_menu` changed to
+  `Elgg\File\Menus\OwnerBlock::registerUserItem` and
+  `Elgg\File\Menus\OwnerBlock::registerGroupItem`
+- `_elgg_friends_filter_tabs` changed to
+  `Elgg\Friends\Menus\Filter::registerFilterTabs`
+- `_elgg_friends_page_menu` changed to `Elgg\Friends\Menus\Page::register`
+- `_elgg_friends_register_access_type` changed to
+  `Elgg\Friends\Access::registerAccessCollectionType`
+- `_elgg_friends_setup_title_menu` changed to
+  `Elgg\Friends\Menus\Title::register`
+- `_elgg_friends_setup_user_hover_menu` changed to
+  `Elgg\Friends\Menus\UserHover::register`
+- `_elgg_friends_topbar_menu` changed to `Elgg\Friends\Menus\Topbar::register`
+- `_elgg_friends_widget_urls` changed to
+  `Elgg\Friends\Widgets::setWidgetUrl`
+- `_elgg_send_friend_notification` changed to
+  `Elgg\Friends\Notifications::sendFriendNotification`
+- `Elgg\Friends\FilterMenu::addFriendRequestTabs` changed to
+  `Elgg\Friends\Menus\Filter::addFriendRequestTabs`
+- `Elgg\Friends\RelationshipMenu::addPendingFriendRequestItems` changed to
+  `Elgg\Friends\Menus\Relationship::addPendingFriendRequestItems`
+- `Elgg\Friends\Relationships::createFriendRelationship` changed to
+  `Elgg\Friends\Relationships::removePendingFriendRequest`
+- `_groups_gatekeeper_allow_profile_page` changed to
+  `Elgg\Groups\Access::allowProfilePage`
+- `_groups_page_menu` changed to `Elgg\Groups\Menus\Page::register`
+- `_groups_page_menu_group_profile` changed to
+  `Elgg\Groups\Menus\Page::registerGroupProfile`
+- `_groups_relationship_invited_menu` changed to
+  `Elgg\Groups\Menus\Relationship::registerInvitedItems`
+- `_groups_relationship_member_menu` changed to
+  `Elgg\Groups\Menus\Relationship::registerRemoveUser`
+- `_groups_relationship_membership_request_menu` changed to
+  `Elgg\Groups\Menus\Relationship::registerMembershipRequestItems`
+- `_groups_title_menu` changed to `Elgg\Groups\Menus\Title::register`
+- `_groups_topbar_menu_setup` changed to `Elgg\Groups\Menus\Topbar::register`
+- `groups_access_default_override` changed to
+  `Elgg\Groups\Access::overrideDefaultAccess`
+- `groups_create_event_listener` changed to
+  `Elgg\Groups\Group::createAccessCollection`
+- `groups_default_page_owner_handler` changed to
+  `Elgg\Groups\PageOwner::detectPageOwner`
+- `groups_entity_menu_setup` changed to
+  `Elgg\Groups\Menus\Entity::register` and
+  `Elgg\Groups\Menus\Entity::registerFeature`
+- `groups_fields_setup` changed to `Elgg\Groups\FieldsHandler`
+- `groups_members_menu_setup` changed to
+  `Elgg\Groups\Menus\GroupsMembers::register`
+- `groups_set_access_collection_name` changed to
+  `Elgg\Groups\Access::getAccessCollectionName`
+- `groups_set_url` changed to `Elgg\Groups\Group::getEntityUrl`
+- `groups_setup_filter_tabs` changed to
+  `Elgg\Groups\Menus\Filter::registerGroupsAll`
+- `groups_update_event_listener` changed to
+  `Elgg\Groups\Group::updateGroup`
+- `groups_user_join_event_listener` changed to
+  `Elgg\Groups\Group::joinGroup`
+- `groups_user_leave_event_listener` changed to
+  `Elgg\Groups\Group::leaveGroup`
+- `groups_write_acl_plugin_hook` changed to
+  `Elgg\Groups\Access::getWriteAccess`
+- `invitefriends_add_friends` changed to
+  `Elgg\InviteFriends\Users::addFriendsOnRegister`
+- `invitefriends_register_page_menu` changed to
+  `Elgg\InviteFriends\Menus\Page::register`
+- `likes_permissions_check` changed to
+  `Elgg\Likes\Permissions::allowLikedEntityOwner`
+- `likes_permissions_check_annotate` changed to
+  `Elgg\Likes\Permissions::allowLikeOnEntity`
+- `likes_social_menu_setup` changed to `Elgg\Likes\Menus\Social::register`
+- `members_register_filter_menu` changed to
+  `Elgg\Members\Menus\Filter::register`
+- `messages_can_edit` changed to `Elgg\Messages\Permissions::canEdit`
+- `messages_can_edit_container` changed to
+  `Elgg\Messages\Permissions::canEditContainer`
+- `messages_purge` changed to `Elgg\Messages\User::purgeMessages`
+- `messages_register_topbar` changed to
+  `Elgg\Messages\Menus\Topbar::register`
+- `messages_user_hover_menu` changed to
+  `Elgg\Messages\Menus\UserHover::register` and
+  `Elgg\Messages\Menus\Title::register`
+- `notifications_update_collection_notify` changed to
+  `Elgg\Notifications\Relationships::updateUserNotificationsPreferencesOnACLChange`
+- `notifications_update_friend_notify` changed to
+  `Elgg\Friends\Relationships::applyFriendNotificationsSettings`
+- `notifications_relationship_remove` changed to
+  `Elgg\Friends\Relationships::deleteFriendNotificationSubscription` and
+  `Elgg\Groups\Relationships::removeGroupNotificationSubscriptions`
+- `_notifications_page_menu` changed to
+  `Elgg\Notifications\Menus\Page::register`
+- `_notification_groups_title_menu` changed to
+  `Elgg\Notifications\Menus\Title::register`
+- `pages_container_permission_check` changed to
+  `Elgg\Pages\Permissions::allowContainerWriteAccess`
+- `pages_entity_menu_setup` changed to `Elgg\Pages\Menus\Entity::register`
+- `pages_icon_url_override` changed to `Elgg\Pages\Icons::getIconUrl`
+- `pages_owner_block_menu` changed to
+  `Elgg\Pages\Menus\OwnerBlock::registerUserItem` and
+  `Elgg\Pages\Menus\OwnerBlock::registerGroupItem`
+- `pages_prepare_notification` changed to
+  `Elgg\Pages\Notifications\CreatePageEventHandler`
+- `pages_register_db_seeds` changed to `Elgg\Pages\Database::registerSeeds`
+- `pages_set_revision_url` changed to `Elgg\Pages\Extender::setRevisionUrl`
+- `pages_write_access_options_hook` changed to
+  `Elgg\Pages\Views::removeAccessPublic`
+- `pages_write_access_vars` changed to
+  `Elgg\Pages\Views::preventAccessPublic`
+- `pages_write_permission_check` changed to
+  `Elgg\Pages\Permissions::allowWriteAccess`
+- `Elgg\Pages\Menus::registerPageMenuItems` changed to
+  `Elgg\Pages\Menus\PagesNav::register`
+- `_profile_admin_page_menu` changed to
+  `Elgg\Profile\Menus\Page::registerAdminProfileFields`
+- `_profile_fields_setup` changed to `Elgg\Profile\FieldsHandler`
+- `_profile_title_menu` changed to `Elgg\Profile\Menus\Title::register`
+- `_profile_topbar_menu` changed to `Elgg\Profile\Menus\Topbar::register`
+- `_profile_user_hover_menu` changed to
+  `Elgg\Profile\Menus\UserHover::register`
+- `_profile_user_page_menu` changed to
+  `Elgg\Profile\Menus\Page::registerProfileEdit`
+- `profile_default_widgets_hook` changed to
+  `Elgg\Profile\Widgets::getDefaultWidgetsList`
+- `reportedcontent_user_hover_menu` changed to
+  `Elgg\ReportedContent\Menus\UserHover::register`
+- `search_exclude_robots` changed to `Elgg\Search\Site::preventSearchIndexing`
+- `search_output_tag` changed to `Elgg\Search\Views::setSearchHref`
+- `site_notifications_register_entity_menu` changed to
+  `Elgg\SiteNotifications\Menus\Entity::register`
+- `site_notifications_send` changed to
+  `Elgg\SiteNotifications\Notifications::createSiteNotifications`
+- `_uservalidationbyemail_user_unvalidated_bulk_menu` changed to
+  `Elgg\UserValidationByEmail\Menus\UserUnvalidatedBulk::register`
+- `_uservalidationbyemail_user_unvalidated_menu` changed to
+  `Elgg\UserValidationByEmail\Menus\UserUnvalidated::register`
+- `uservalidationbyemail_after_registration_url` changed to
+  `Elgg\UserValidationByEmail\Response::redirectToEmailSent`
+- `uservalidationbyemail_check_manual_login` changed to
+  `Elgg\UserValidationByEmail\User::preventLogin`
+- `uservalidationbyemail_disable_new_user` changed to
+  `Elgg\UserValidationByEmail\User::disableUserOnRegistration`
+- `system_log_archive_cron` changed to `Elgg\SystemLog\Cron::rotateLogs`
+- `system_log_default_logger` changed to `Elgg\SystemLog\Logger::log`
+- `system_log_delete_cron` changed to `Elgg\SystemLog\Cron::deleteLogs`
+- `system_log_listener` changed to `Elgg\SystemLog\Logger::listen`
+- `system_log_user_hover_menu` changed to
+  `Elgg\SystemLog\Menus\UserHover::register`
+- `thewire_add_original_poster` changed to
+  `Elgg\TheWire\Notifications\CreateTheWireEventHandler`
+- `thewire_owner_block_menu` changed to
+  `Elgg\TheWire\Menus\OwnerBlock::register`
+- `thewire_prepare_notification` changed to
+  `Elgg\TheWire\Notifications\CreateTheWireEventHandler`
+- `thewire_setup_entity_menu_items` changed to
+  `Elgg\TheWire\Menus\Entity::register`
