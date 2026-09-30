@@ -11,4 +11,4 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg upgrade notes: complete — all 24 official transitions committed as `references/ELGG/upgrade-notes/<from>-to-<to>.md` (no 4.4 release and no `5.1-to-5.2` exist — the series runs `5.0-to-5.1` then `5.x-to-6.0`; `4.x-to-5.0.md` and `3.x-to-4.0.md` split into detail dirs; final file `7.0-to-7.1.md` distilled from the official `7.0-to-7.1.rst`).
+- Elgg developer-guide distillation: in progress — topic map committed (2aed703), ELGG.md wiring added, baseline listing kept as `source-listing-7.1.json`; next: distill `docs/guides/*.rst` topics one per commit, starting with `services.rst`; flip `index.md` status per topic.

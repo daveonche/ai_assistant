@@ -10,7 +10,7 @@ Entries here are delta guidance only:
 
 - Local deviations from Elgg defaults and conventions
 - Project- or environment-specific constraints the assistant cannot infer
-- Pointers to version-specific conventions under
+- Pointers to distilled references under
   `.agent/.aider.conventions/references/`
 
 Do not add general Elgg practices, API references, or tutorials; the assistant
@@ -24,6 +24,18 @@ Version-specific guidance lives in
 detected framework version exists, load its files via `/read-only` before offering
 coding guidance. When it does not, continue without them: this file is valid on its
 own.
+
+## Developer guide
+
+Current-state subsystem and API guidance lives in
+`.agent/.aider.conventions/references/ELGG/developer-guide/`: distilled topic
+files tracking the stable manual at
+<https://learn.elgg.org/en/stable/guides/index.html> and updated in place as
+it changes; the per-version change list that drives those updates lives in
+`references/ELGG/upgrade-notes/`. Load `developer-guide/index.md` via
+`/read-only` for the topic map, then load only the topic files the current
+task touches. When a matching topic file is still `pending`, continue on
+general knowledge and flag the gap rather than guessing current API details.
 
 ## Upgrading
 
