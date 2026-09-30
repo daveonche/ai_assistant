@@ -20,7 +20,7 @@ authoritative. Status: `pending` = not yet distilled.
 | Topic file | Source page | Scope (provisional) | Status |
 | :--- | :--- | :--- | :--- |
 | `access.md` | `access.rst` | access system: read/write controls | done |
-| `accessibility.md` | `accessibility.rst` | accessibility practices | pending |
+| `accessibility.md` | `accessibility.rst` | accessibility practices | done |
 | `actions.md` | `actions.rst` | actions: form submission handlers | pending |
 | `ajax.md` | `ajax.rst` | Ajax API | pending |
 | `authentication.md` | `authentication.rst` | authentication handlers and APIs | pending |
