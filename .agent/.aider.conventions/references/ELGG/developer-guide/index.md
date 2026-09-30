@@ -41,7 +41,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `menus.md` | `menus.rst` | menu system | done |
 | `notifications.md` | `notifications.rst` | notification system | done |
 | `page-owner.md` | `page-owner.rst` | page owner detection | done |
-| `permissions-check.md` | `permissions-check.rst` | permission callbacks | pending |
+| `permissions-check.md` | `permissions-check.rst` | write-permission override via `permissions_check` event | done |
 | `plugins.md` | `plugins.rst` | plugin structure and lifecycle | pending |
 | `restore.md` | `restore.rst` | restore procedures | pending |
 | `river.md` | `river.rst` | activity river | pending |
