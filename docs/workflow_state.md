@@ -11,4 +11,5 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: in progress — 12 of 36 topics done (`services`, `context`, `access`, `accessibility`, `actions`, `ajax`, `authentication`, `capabilities`, `cron`, `database`, `dont-modify-core`, `email`); next: `errors.rst`, one topic per commit, flip `index.md` row per topic.
+- Elgg developer-guide distillation: 13 of 36 topics done (`services`, `context`, `access`, `accessibility`, `actions`, `ajax`, `authentication`, `capabilities`, `cron`, `database`, `dont-modify-core`, `email`, `errors`); next: `events-list.rst` (~58 KB — distill as compact lookup or split, see `index.md` notes); fetch it: `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/events-list.rst" -o events-list.rst` (later topics: swap the filename in URL and `-o`).
+- Per topic: `/read-only` `developer-guide/index.md` (topic map) plus the newest done topic (now `errors.md`) as format exemplar; distill the fetched `.rst` into `developer-guide/<topic>.md`, flip its `index.md` row to `done`, one commit per topic with only those two files (keep the fetched `.rst` uncommitted).

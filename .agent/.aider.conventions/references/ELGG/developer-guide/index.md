@@ -30,7 +30,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `database.md` | `database.rst` | database layer and queries | done |
 | `dont-modify-core.md` | `dont-modify-core.rst` | policy: never modify core | done |
 | `email.md` | `email.rst` | email sending and handling | done |
-| `errors.md` | `errors.rst` | error pages and handling | pending |
+| `errors.md` | `errors.rst` | error logging via Monolog and custom handlers | done |
 | `events-list.md` | `events-list.rst` | reference list of events and hooks | pending |
 | `file-system.md` | `file-system.rst` | file storage | pending |
 | `group-tools.md` | `group-tools.rst` | group tool options | pending |
