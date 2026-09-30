@@ -25,7 +25,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `ajax.md` | `ajax.rst` | Ajax API | pending |
 | `authentication.md` | `authentication.rst` | authentication handlers and APIs | pending |
 | `capabilities.md` | `capabilities.rst` | capability checks | pending |
-| `context.md` | `context.rst` | page context stack | pending |
+| `context.md` | `context.rst` | page context stack | done |
 | `cron.md` | `cron.rst` | cron periods and jobs | pending |
 | `database.md` | `database.rst` | database layer and queries | pending |
 | `dont-modify-core.md` | `dont-modify-core.rst` | policy: never modify core | pending |
