@@ -39,7 +39,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `i18n.md` | `i18n.rst` | translations and languages | done |
 | `javascript.md` | `javascript.rst` | JS modules and `elgg` JS API | done |
 | `menus.md` | `menus.rst` | menu system | done |
-| `notifications.md` | `notifications.rst` | notification system | pending |
+| `notifications.md` | `notifications.rst` | notification system | done |
 | `page-owner.md` | `page-owner.rst` | page owner detection | pending |
 | `permissions-check.md` | `permissions-check.rst` | permission callbacks | pending |
 | `plugins.md` | `plugins.rst` | plugin structure and lifecycle | pending |
