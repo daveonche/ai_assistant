@@ -28,7 +28,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `context.md` | `context.rst` | page context stack | done |
 | `cron.md` | `cron.rst` | cron periods and jobs | done |
 | `database.md` | `database.rst` | database layer and queries | done |
-| `dont-modify-core.md` | `dont-modify-core.rst` | policy: never modify core | pending |
+| `dont-modify-core.md` | `dont-modify-core.rst` | policy: never modify core | done |
 | `email.md` | `email.rst` | email sending and handling | pending |
 | `errors.md` | `errors.rst` | error pages and handling | pending |
 | `events-list.md` | `events-list.rst` | reference list of events and hooks | pending |
