@@ -11,4 +11,4 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: in progress — 5 of 36 topics done (`services`, `context`, `access`, `accessibility`, `actions`); next: `ajax.rst`, one topic per commit, flip `index.md` row per topic.
+- Elgg developer-guide distillation: in progress — 6 of 36 topics done (`services`, `context`, `access`, `accessibility`, `actions`, `ajax`); next: `authentication.rst`, one topic per commit, flip `index.md` row per topic.
