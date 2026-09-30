@@ -43,7 +43,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `page-owner.md` | `page-owner.rst` | page owner detection | done |
 | `permissions-check.md` | `permissions-check.rst` | write-permission override via `permissions_check` event | done |
 | `plugins.md` | `plugins.rst` | static config (`elgg-plugin.php`), bootstrap, DI services, composer, tests | done |
-| `restore.md` | `restore.rst` | restore procedures | pending |
+| `restore.md` | `restore.rst` | trash/restore via `restorable` capability, deletion functions, cleanup cron | done |
 | `river.md` | `river.rst` | activity river | pending |
 | `routing.md` | `routing.rst` | routes and page handlers | pending |
 | `search.md` | `search.rst` | search API | pending |
