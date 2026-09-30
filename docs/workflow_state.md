@@ -11,5 +11,5 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 16 of 36 topics done; `file-system.md` (8e97862) and `group-tools.md` distilled and committed; next topic: `guidelines.md`.
-- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, one commit per topic, keep the fetched `.rst` uncommitted. Next topic: `guidelines.rst` — `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/guidelines.rst" -o guidelines.rst` (later topics: swap the filename in URL and `-o`).
+- Elgg developer-guide distillation: 17 of 36 topics done; `file-system.md` (8e97862), `group-tools.md` (8f6f756), and `guidelines.md` distilled and committed; next topic: `helpers.md`.
+- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, one commit per topic, keep the fetched `.rst` uncommitted. Next topic: `helpers.rst` — `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/helpers.rst" -o helpers.rst` (later topics: swap the filename in URL and `-o`).

@@ -34,7 +34,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `events-list.md` | `events-list.rst` | reference list of events and hooks | done |
 | `file-system.md` | `file-system.rst` | file storage | done |
 | `group-tools.md` | `group-tools.rst` | group tool options | done |
-| `guidelines.md` | `guidelines.rst` | coding guidelines | pending |
+| `guidelines.md` | `guidelines.rst` | coding guidelines | done |
 | `helpers.md` | `helpers.rst` | helper functions | pending |
 | `i18n.md` | `i18n.rst` | translations and languages | pending |
 | `javascript.md` | `javascript.rst` | JS modules and `elgg` JS API | pending |
