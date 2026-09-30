@@ -40,7 +40,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `javascript.md` | `javascript.rst` | JS modules and `elgg` JS API | done |
 | `menus.md` | `menus.rst` | menu system | done |
 | `notifications.md` | `notifications.rst` | notification system | done |
-| `page-owner.md` | `page-owner.rst` | page owner detection | pending |
+| `page-owner.md` | `page-owner.rst` | page owner detection | done |
 | `permissions-check.md` | `permissions-check.rst` | permission callbacks | pending |
 | `plugins.md` | `plugins.rst` | plugin structure and lifecycle | pending |
 | `restore.md` | `restore.rst` | restore procedures | pending |

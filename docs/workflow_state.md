@@ -11,5 +11,5 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 22 of 36 topics done (latest: `notifications.md`); per-topic commits in git history; next topic: `page-owner.md`.
-- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, one commit per topic, keep the fetched `.rst` uncommitted. Next topic: `page-owner.rst` — `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/page-owner.rst" -o page-owner.rst` (later topics: swap the filename in URL and `-o`).
+- Elgg developer-guide distillation: 23 of 36 topics done (latest: `page-owner.md`); per-topic commits in git history; next topic: `permissions-check.md`.
+- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, one commit per topic, keep the fetched `.rst` uncommitted. Next topic: `permissions-check.rst` — `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/permissions-check.rst" -o permissions-check.rst` (later topics: swap the filename in URL and `-o`).
