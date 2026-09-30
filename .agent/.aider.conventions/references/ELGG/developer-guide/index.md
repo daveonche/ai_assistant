@@ -22,7 +22,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `access.md` | `access.rst` | access system: read/write controls | done |
 | `accessibility.md` | `accessibility.rst` | accessibility practices | done |
 | `actions.md` | `actions.rst` | actions: form submission handlers | done |
-| `ajax.md` | `ajax.rst` | Ajax API | pending |
+| `ajax.md` | `ajax.rst` | Ajax API | done |
 | `authentication.md` | `authentication.rst` | authentication handlers and APIs | pending |
 | `capabilities.md` | `capabilities.rst` | capability checks | pending |
 | `context.md` | `context.rst` | page context stack | done |
