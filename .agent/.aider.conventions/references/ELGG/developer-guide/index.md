@@ -26,7 +26,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `authentication.md` | `authentication.rst` | authentication handlers and APIs | done |
 | `capabilities.md` | `capabilities.rst` | capability checks | done |
 | `context.md` | `context.rst` | page context stack | done |
-| `cron.md` | `cron.rst` | cron periods and jobs | pending |
+| `cron.md` | `cron.rst` | cron periods and jobs | done |
 | `database.md` | `database.rst` | database layer and queries | pending |
 | `dont-modify-core.md` | `dont-modify-core.rst` | policy: never modify core | pending |
 | `email.md` | `email.rst` | email sending and handling | pending |
