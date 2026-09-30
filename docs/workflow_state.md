@@ -11,4 +11,4 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: in progress — commits 2aed703, 47e850e, 11f16ad (baseline tracked); `services.md` + `context.md` distilled; next: one topic per commit in index order (`access.rst` next), flip `index.md` status per topic.
+- Elgg developer-guide distillation: in progress — 3 of 36 topics done (`services`, `context`, `access`); next: `accessibility.rst`, one topic per commit, flip `index.md` row per topic.
