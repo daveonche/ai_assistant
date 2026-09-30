@@ -37,7 +37,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `guidelines.md` | `guidelines.rst` | coding guidelines | done |
 | `helpers.md` | `helpers.rst` | helper functions | done |
 | `i18n.md` | `i18n.rst` | translations and languages | done |
-| `javascript.md` | `javascript.rst` | JS modules and `elgg` JS API | pending |
+| `javascript.md` | `javascript.rst` | JS modules and `elgg` JS API | done |
 | `menus.md` | `menus.rst` | menu system | pending |
 | `notifications.md` | `notifications.rst` | notification system | pending |
 | `page-owner.md` | `page-owner.rst` | page owner detection | pending |
