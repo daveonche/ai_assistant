@@ -11,5 +11,5 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 13 of 36 topics done; current: `events-list` split (main `events-list.md` + 12 category files under `events-list/`, one per commit, `index.md` row flips to `done` in the final commit); done: main, `system.md`; next: `events-list/users.md` (step 3 of 13).
+- Elgg developer-guide distillation: 13 of 36 topics done; current: `events-list` split (main `events-list.md` + 12 category files under `events-list/`, one per commit, `index.md` row flips to `done` in the final commit); done: main, `system.md`, `users.md`, `entities.md`; next: `events-list/access.md` (step 5 of 13).
 - Per topic: `/read-only` `developer-guide/index.md` plus the newest done topic as format exemplar; distill the fetched `.rst`, flip the `index.md` row, one commit per topic, keep the fetched `.rst` uncommitted. Next after the split: `file-system.rst` — `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/file-system.rst" -o file-system.rst` (later topics: swap the filename in URL and `-o`).
