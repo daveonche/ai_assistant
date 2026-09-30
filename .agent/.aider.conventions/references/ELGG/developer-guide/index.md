@@ -29,7 +29,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `cron.md` | `cron.rst` | cron periods and jobs | done |
 | `database.md` | `database.rst` | database layer and queries | done |
 | `dont-modify-core.md` | `dont-modify-core.rst` | policy: never modify core | done |
-| `email.md` | `email.rst` | email sending and handling | pending |
+| `email.md` | `email.rst` | email sending and handling | done |
 | `errors.md` | `errors.rst` | error pages and handling | pending |
 | `events-list.md` | `events-list.rst` | reference list of events and hooks | pending |
 | `file-system.md` | `file-system.rst` | file storage | pending |
