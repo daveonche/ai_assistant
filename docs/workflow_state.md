@@ -11,4 +11,4 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: in progress — topic map committed (2aed703), ELGG.md wiring added, baseline listing kept as `source-listing-7.1.json`; next: distill `docs/guides/*.rst` topics one per commit, starting with `services.rst`; flip `index.md` status per topic.
+- Elgg developer-guide distillation: in progress — topic map + wiring committed (2aed703, 47e850e), baseline kept as `source-listing-7.1.json`; `services.md` distilled; next: one topic per commit (`context.rst` next), flip `index.md` status per topic.

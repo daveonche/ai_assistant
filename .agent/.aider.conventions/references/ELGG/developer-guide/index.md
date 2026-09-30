@@ -47,7 +47,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `river.md` | `river.rst` | activity river | pending |
 | `routing.md` | `routing.rst` | routes and page handlers | pending |
 | `search.md` | `search.rst` | search API | pending |
-| `services.md` | `services.rst` | service providers | pending |
+| `services.md` | `services.rst` | service providers | done |
 | `settings.md` | `settings.rst` | plugin and user settings | pending |
 | `themes.md` | `themes.rst` | theming | pending |
 | `upgrading-data.md` | `upgrading-data.rst` | plugin data upgrades | pending |
