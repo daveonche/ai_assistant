@@ -66,7 +66,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `views/page-structure.md` | `docs/guides/views/page-structure.rst` | page structure | done |
 | `views/simplecache.md` | `docs/guides/views/simplecache.rst` | simplecache | done |
 | `web-services/` | `docs/guides/web-services/` | enumerated 2026-09-30 — 2 subpages below |
-| `web-services/hmac.md` | `docs/guides/web-services/hmac.rst` | HMAC signature authentication | pending |
+| `web-services/hmac.md` | `docs/guides/web-services/hmac.rst` | HMAC signature authentication | done |
 | `web-services/result.md` | `docs/guides/web-services/result.rst` | API result format | pending |
 
 Enumerate each with the same contents-API call used for `docs/guides/`
