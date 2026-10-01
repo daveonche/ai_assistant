@@ -11,5 +11,5 @@ Last updated: 2026-10-01
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 40 of 41 topics done (all 36 main + 3 views subpages + `web-services/hmac.md`); remaining: `web-services/result.md`.
-- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, aider auto-commits each `/code proceed` batch (topic + index + this state file), keep the fetched `.rst` uncommitted. Next fetch: `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/web-services/result.rst" -o result.rst` (later topics: swap the filename in URL and `-o`).
+- Elgg developer-guide distillation: 41 of 41 topics done — topic loop complete (all 36 main + 3 views subpages + 2 web-services subpages); `plugins/` subpage enumeration remains a pending subdirectory row in the index.
+- Next: [STEP 7] final verification — every topic row `done`, no fetched raw sources staged/committed, baseline listing matches ref `7.1`, subpage dirs enumerated as pending rows; then report completion and offer `#framework-docs-status`.

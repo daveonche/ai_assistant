@@ -67,7 +67,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `views/simplecache.md` | `docs/guides/views/simplecache.rst` | simplecache | done |
 | `web-services/` | `docs/guides/web-services/` | enumerated 2026-09-30 — 2 subpages below |
 | `web-services/hmac.md` | `docs/guides/web-services/hmac.rst` | HMAC signature authentication | done |
-| `web-services/result.md` | `docs/guides/web-services/result.rst` | API result format | pending |
+| `web-services/result.md` | `docs/guides/web-services/result.rst` | API result format | done |
 
 Enumerate each with the same contents-API call used for `docs/guides/`
 (`?ref=7.1`, path substituted) when its topics are distilled.
