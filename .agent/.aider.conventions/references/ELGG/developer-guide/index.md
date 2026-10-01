@@ -58,17 +58,17 @@ authoritative. Status: `pending` = not yet distilled.
 
 ## Subdirectories (subpages)
 
-| Directory / subpage | Source | Status |
-| :--- | :--- | :--- |
-| `plugins/` | `docs/guides/plugins/` | enumerated 2026-10-01 — 3 subpages below |
+| Directory / subpage | Source | Scope / note | Status |
+| :--- | :--- | :--- | :--- |
+| `plugins/` | `docs/guides/plugins/` | enumerated 2026-10-01 — 3 subpages below | — |
 | `plugins/bootstrap.md` | `docs/guides/plugins/bootstrap.rst` | plugin bootstrap | done |
 | `plugins/dependencies.md` | `docs/guides/plugins/dependencies.rst` | plugin dependencies | done |
 | `plugins/plugin-skeleton.md` | `docs/guides/plugins/plugin-skeleton.rst` | plugin file skeleton | done |
-| `views/` | `docs/guides/views/` | enumerated 2026-09-30 — 3 subpages below |
+| `views/` | `docs/guides/views/` | enumerated 2026-09-30 — 3 subpages below | — |
 | `views/foot-vs-footer.md` | `docs/guides/views/foot-vs-footer.rst` | foot vs footer views | done |
 | `views/page-structure.md` | `docs/guides/views/page-structure.rst` | page structure | done |
 | `views/simplecache.md` | `docs/guides/views/simplecache.rst` | simplecache | done |
-| `web-services/` | `docs/guides/web-services/` | enumerated 2026-09-30 — 2 subpages below |
+| `web-services/` | `docs/guides/web-services/` | enumerated 2026-09-30 — 2 subpages below | — |
 | `web-services/hmac.md` | `docs/guides/web-services/hmac.rst` | HMAC signature authentication | done |
 | `web-services/result.md` | `docs/guides/web-services/result.rst` | API result format | done |
 
