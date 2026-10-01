@@ -54,7 +54,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `views.md` | `views.rst` | `elgg_view()`, `$vars`, cacheable assets, viewtypes, override/extend, view events, entity listing, icons | done |
 | `walled-garden.md` | `walled-garden.rst` | walled garden mode: admin toggle, `'walled' => false` routes, `public_pages` event | done |
 | `web-services.md` | `web-services.rst` | exposing methods, param types, API/user auth, PAM setup | done |
-| `widgets.md` | `widgets.rst` | widget system | pending |
+| `widgets.md` | `widgets.rst` | widget registration (`elgg-plugin.php`/`elgg_register_widget_type()`), edit/content views, default widgets | done |
 
 ## Subdirectories (subpages)
 
