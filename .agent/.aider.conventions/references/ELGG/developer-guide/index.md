@@ -63,7 +63,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `plugins/` | `docs/guides/plugins/` | pending |
 | `views/` | `docs/guides/views/` | enumerated 2026-09-30 — 3 subpages below |
 | `views/foot-vs-footer.md` | `docs/guides/views/foot-vs-footer.rst` | foot vs footer views | done |
-| `views/page-structure.md` | `docs/guides/views/page-structure.rst` | page structure | pending |
+| `views/page-structure.md` | `docs/guides/views/page-structure.rst` | page structure | done |
 | `views/simplecache.md` | `docs/guides/views/simplecache.rst` | simplecache | pending |
 | `web-services/` | `docs/guides/web-services/` | enumerated 2026-09-30 — 2 subpages below |
 | `web-services/hmac.md` | `docs/guides/web-services/hmac.rst` | HMAC signature authentication | pending |
