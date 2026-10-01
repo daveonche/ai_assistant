@@ -62,7 +62,7 @@ authoritative. Status: `pending` = not yet distilled.
 | :--- | :--- | :--- |
 | `plugins/` | `docs/guides/plugins/` | pending |
 | `views/` | `docs/guides/views/` | enumerated 2026-09-30 — 3 subpages below |
-| `views/foot-vs-footer.md` | `docs/guides/views/foot-vs-footer.rst` | foot vs footer views | pending |
+| `views/foot-vs-footer.md` | `docs/guides/views/foot-vs-footer.rst` | foot vs footer views | done |
 | `views/page-structure.md` | `docs/guides/views/page-structure.rst` | page structure | pending |
 | `views/simplecache.md` | `docs/guides/views/simplecache.rst` | simplecache | pending |
 | `web-services/` | `docs/guides/web-services/` | enumerated 2026-09-30 — 2 subpages below |
