@@ -44,7 +44,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `permissions-check.md` | `permissions-check.rst` | write-permission override via `permissions_check` event | done |
 | `plugins.md` | `plugins.rst` | static config (`elgg-plugin.php`), bootstrap, DI services, composer, tests | done |
 | `restore.md` | `restore.rst` | trash/restore via `restorable` capability, deletion functions, cleanup cron | done |
-| `river.md` | `river.rst` | activity river | pending |
+| `river.md` | `river.rst` | activity stream: `elgg_create_river_item()`, view/summary fallback chains, `river_emittable` | done |
 | `routing.md` | `routing.rst` | routes and page handlers | pending |
 | `search.md` | `search.rst` | search API | pending |
 | `services.md` | `services.rst` | service providers | done |
