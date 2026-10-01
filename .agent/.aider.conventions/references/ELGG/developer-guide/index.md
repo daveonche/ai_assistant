@@ -53,7 +53,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `upgrading-data.md` | `upgrading-data.rst` | async plugin upgrades: `AsynchronousUpgrade` contract, `Result` API, admin panel | done |
 | `views.md` | `views.rst` | `elgg_view()`, `$vars`, cacheable assets, viewtypes, override/extend, view events, entity listing, icons | done |
 | `walled-garden.md` | `walled-garden.rst` | walled garden mode: admin toggle, `'walled' => false` routes, `public_pages` event | done |
-| `web-services.md` | `web-services.rst` | web services API | pending |
+| `web-services.md` | `web-services.rst` | exposing methods, param types, API/user auth, PAM setup | done |
 | `widgets.md` | `widgets.rst` | widget system | pending |
 
 ## Subdirectories (subpages)
@@ -65,7 +65,9 @@ authoritative. Status: `pending` = not yet distilled.
 | `views/foot-vs-footer.md` | `docs/guides/views/foot-vs-footer.rst` | foot vs footer views | pending |
 | `views/page-structure.md` | `docs/guides/views/page-structure.rst` | page structure | pending |
 | `views/simplecache.md` | `docs/guides/views/simplecache.rst` | simplecache | pending |
-| `web-services/` | `docs/guides/web-services/` | pending |
+| `web-services/` | `docs/guides/web-services/` | enumerated 2026-09-30 — 2 subpages below |
+| `web-services/hmac.md` | `docs/guides/web-services/hmac.rst` | HMAC signature authentication | pending |
+| `web-services/result.md` | `docs/guides/web-services/result.rst` | API result format | pending |
 
 Enumerate each with the same contents-API call used for `docs/guides/`
 (`?ref=7.1`, path substituted) when its topics are distilled.
