@@ -11,5 +11,5 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 31 of 36 topics done (latest: `themes.md`); per-topic commits in git history; next topic: `upgrading-data.md`.
-- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, one commit per topic, keep the fetched `.rst` uncommitted. Next topic: `upgrading-data.rst` — `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/upgrading-data.rst" -o upgrading-data.rst` (later topics: swap the filename in URL and `-o`).
+- Elgg developer-guide distillation: 32 of 36 topics done (latest: `upgrading-data.md`); per-topic commits in git history; next topic: `views.md`.
+- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, one commit per topic, keep the fetched `.rst` uncommitted. Next topic: `views.rst` — `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/views.rst" -o views.rst` (later topics: swap the filename in URL and `-o`).

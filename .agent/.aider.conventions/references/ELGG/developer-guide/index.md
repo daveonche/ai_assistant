@@ -50,7 +50,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `services.md` | `services.rst` | service providers | done |
 | `settings.md` | `settings.rst` | plugin/user/group settings forms, get/set APIs, defaults | done |
 | `themes.md` | `themes.rst` | theming principles, CSS view map, variables/dark mode, view extension/overload, icons | done |
-| `upgrading-data.md` | `upgrading-data.rst` | plugin data upgrades | pending |
+| `upgrading-data.md` | `upgrading-data.rst` | async plugin upgrades: `AsynchronousUpgrade` contract, `Result` API, admin panel | done |
 | `views.md` | `views.rst` | view system | pending |
 | `walled-garden.md` | `walled-garden.rst` | walled garden mode | pending |
 | `web-services.md` | `web-services.rst` | web services API | pending |
