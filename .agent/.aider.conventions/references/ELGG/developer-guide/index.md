@@ -49,7 +49,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `search.md` | `search.rst` | `elgg_search()` params, `search:fields`/`search:config` events, livesearch endpoints | done |
 | `services.md` | `services.rst` | service providers | done |
 | `settings.md` | `settings.rst` | plugin/user/group settings forms, get/set APIs, defaults | done |
-| `themes.md` | `themes.rst` | theming | pending |
+| `themes.md` | `themes.rst` | theming principles, CSS view map, variables/dark mode, view extension/overload, icons | done |
 | `upgrading-data.md` | `upgrading-data.rst` | plugin data upgrades | pending |
 | `views.md` | `views.rst` | view system | pending |
 | `walled-garden.md` | `walled-garden.rst` | walled garden mode | pending |
