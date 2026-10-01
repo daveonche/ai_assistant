@@ -11,5 +11,5 @@ Last updated: 2026-10-01
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 43 of 44 topics done; remaining plugins subpage: `plugin-skeleton.md`.
-- Next: atomic topic loop per subpage (fetch raw `.rst` → verify → distill → index flip); then re-run [STEP 7] and offer `#framework-docs-status`. Next fetch: `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/plugins/plugin-skeleton.rst" -o plugin-skeleton.rst`.
+- Elgg developer-guide distillation: 44 of 44 topics done — topic loop complete (36 main + 3 views + 2 web-services + 3 plugins subpages); no pending index rows.
+- Next: [STEP 7] final verification — no fetched raw sources staged/committed, baseline listing matches ref `7.1`; then report completion and offer `#framework-docs-status`.
