@@ -51,17 +51,20 @@ authoritative. Status: `pending` = not yet distilled.
 | `settings.md` | `settings.rst` | plugin/user/group settings forms, get/set APIs, defaults | done |
 | `themes.md` | `themes.rst` | theming principles, CSS view map, variables/dark mode, view extension/overload, icons | done |
 | `upgrading-data.md` | `upgrading-data.rst` | async plugin upgrades: `AsynchronousUpgrade` contract, `Result` API, admin panel | done |
-| `views.md` | `views.rst` | view system | pending |
+| `views.md` | `views.rst` | `elgg_view()`, `$vars`, cacheable assets, viewtypes, override/extend, view events, entity listing, icons | done |
 | `walled-garden.md` | `walled-garden.rst` | walled garden mode | pending |
 | `web-services.md` | `web-services.rst` | web services API | pending |
 | `widgets.md` | `widgets.rst` | widget system | pending |
 
-## Subdirectories (subpages not yet enumerated)
+## Subdirectories (subpages)
 
-| Directory | Source | Status |
+| Directory / subpage | Source | Status |
 | :--- | :--- | :--- |
 | `plugins/` | `docs/guides/plugins/` | pending |
-| `views/` | `docs/guides/views/` | pending |
+| `views/` | `docs/guides/views/` | enumerated 2026-09-30 — 3 subpages below |
+| `views/foot-vs-footer.md` | `docs/guides/views/foot-vs-footer.rst` | foot vs footer views | pending |
+| `views/page-structure.md` | `docs/guides/views/page-structure.rst` | page structure | pending |
+| `views/simplecache.md` | `docs/guides/views/simplecache.rst` | simplecache | pending |
 | `web-services/` | `docs/guides/web-services/` | pending |
 
 Enumerate each with the same contents-API call used for `docs/guides/`
