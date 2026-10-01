@@ -48,7 +48,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `routing.md` | `routing.rst` | route registration/names, middleware gatekeepers, generic controllers, `route:rewrite` | done |
 | `search.md` | `search.rst` | `elgg_search()` params, `search:fields`/`search:config` events, livesearch endpoints | done |
 | `services.md` | `services.rst` | service providers | done |
-| `settings.md` | `settings.rst` | plugin and user settings | pending |
+| `settings.md` | `settings.rst` | plugin/user/group settings forms, get/set APIs, defaults | done |
 | `themes.md` | `themes.rst` | theming | pending |
 | `upgrading-data.md` | `upgrading-data.rst` | plugin data upgrades | pending |
 | `views.md` | `views.rst` | view system | pending |
