@@ -1,6 +1,6 @@
 # Workflow Session State
 
-Last updated: 2026-09-30
+Last updated: 2026-10-01
 
 ## Active Workflow
 
@@ -11,5 +11,5 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 38 of 41 topics done (all 36 main + `views/foot-vs-footer.md` + `views/page-structure.md`); remaining: `views/simplecache.md`, `web-services/hmac.md`, `web-services/result.md`.
-- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, aider auto-commits each `/code proceed` batch (topic + index + this state file), keep the fetched `.rst` uncommitted. Next fetch: `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/views/simplecache.rst" -o simplecache.rst` (later topics: swap the filename in URL and `-o`).
+- Elgg developer-guide distillation: 39 of 41 topics done (all 36 main + `views/foot-vs-footer.md` + `views/page-structure.md` + `views/simplecache.md`); remaining: `web-services/hmac.md`, `web-services/result.md`.
+- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, aider auto-commits each `/code proceed` batch (topic + index + this state file), keep the fetched `.rst` uncommitted. Next fetch: `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/web-services/hmac.rst" -o hmac.rst` (later topics: swap the filename in URL and `-o`).
