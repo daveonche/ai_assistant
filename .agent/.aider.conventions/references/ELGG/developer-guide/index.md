@@ -52,7 +52,7 @@ authoritative. Status: `pending` = not yet distilled.
 | `themes.md` | `themes.rst` | theming principles, CSS view map, variables/dark mode, view extension/overload, icons | done |
 | `upgrading-data.md` | `upgrading-data.rst` | async plugin upgrades: `AsynchronousUpgrade` contract, `Result` API, admin panel | done |
 | `views.md` | `views.rst` | `elgg_view()`, `$vars`, cacheable assets, viewtypes, override/extend, view events, entity listing, icons | done |
-| `walled-garden.md` | `walled-garden.rst` | walled garden mode | pending |
+| `walled-garden.md` | `walled-garden.rst` | walled garden mode: admin toggle, `'walled' => false` routes, `public_pages` event | done |
 | `web-services.md` | `web-services.rst` | web services API | pending |
 | `widgets.md` | `widgets.rst` | widget system | pending |
 

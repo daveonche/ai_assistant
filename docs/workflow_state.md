@@ -11,5 +11,5 @@ Last updated: 2026-09-30
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 33 of 36 topics done (latest: `views.md`); per-topic commits in git history; next topic: `walled-garden.md`.
-- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, one commit per topic, keep the fetched `.rst` uncommitted. Next topic: `walled-garden.rst` — `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/walled-garden.rst" -o walled-garden.rst` (later topics: swap the filename in URL and `-o`).
+- Elgg developer-guide distillation: 34 of 39 topics done (36 main + 3 views subpages; latest: `walled-garden.md`); per-topic commits in git history; next topic: `web-services.md`.
+- Per topic: `/read-only` `developer-guide/index.md` plus a done single-topic file as format exemplar (not an `events-list/` category file); distill the fetched `.rst`, flip the `index.md` row, one commit per topic, keep the fetched `.rst` uncommitted. Next topic: `web-services.rst` — `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/web-services.rst" -o web-services.rst` plus the `web-services/` contents-API listing (later topics: swap the filename in URL and `-o`).
