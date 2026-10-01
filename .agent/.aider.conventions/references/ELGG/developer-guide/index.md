@@ -62,7 +62,7 @@ authoritative. Status: `pending` = not yet distilled.
 | :--- | :--- | :--- |
 | `plugins/` | `docs/guides/plugins/` | enumerated 2026-10-01 — 3 subpages below |
 | `plugins/bootstrap.md` | `docs/guides/plugins/bootstrap.rst` | plugin bootstrap | done |
-| `plugins/dependencies.md` | `docs/guides/plugins/dependencies.rst` | plugin dependencies | pending |
+| `plugins/dependencies.md` | `docs/guides/plugins/dependencies.rst` | plugin dependencies | done |
 | `plugins/plugin-skeleton.md` | `docs/guides/plugins/plugin-skeleton.rst` | plugin file skeleton | pending |
 | `views/` | `docs/guides/views/` | enumerated 2026-09-30 — 3 subpages below |
 | `views/foot-vs-footer.md` | `docs/guides/views/foot-vs-footer.rst` | foot vs footer views | done |

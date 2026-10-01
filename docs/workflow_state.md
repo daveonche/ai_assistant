@@ -11,5 +11,5 @@ Last updated: 2026-10-01
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 42 of 44 topics done; remaining plugins subpages: `dependencies.md`, `plugin-skeleton.md`.
-- Next: atomic topic loop per subpage (fetch raw `.rst` → verify → distill → index flip); then re-run [STEP 7] and offer `#framework-docs-status`. Next fetch: `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/plugins/dependencies.rst" -o dependencies.rst`.
+- Elgg developer-guide distillation: 43 of 44 topics done; remaining plugins subpage: `plugin-skeleton.md`.
+- Next: atomic topic loop per subpage (fetch raw `.rst` → verify → distill → index flip); then re-run [STEP 7] and offer `#framework-docs-status`. Next fetch: `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/plugins/plugin-skeleton.rst" -o plugin-skeleton.rst`.
