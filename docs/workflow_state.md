@@ -11,5 +11,5 @@ Last updated: 2026-10-01
 
 ## Pending Side Task
 
-- Elgg developer-guide distillation: 41 of 41 topics done — topic loop complete (all 36 main + 3 views subpages + 2 web-services subpages); `plugins/` subpage enumeration remains a pending subdirectory row in the index.
-- Next: [STEP 7] final verification — every topic row `done`, no fetched raw sources staged/committed, baseline listing matches ref `7.1`, subpage dirs enumerated as pending rows; then report completion and offer `#framework-docs-status`.
+- Elgg developer-guide distillation: 41 topic files done; `plugins/` enumerated 2026-10-01 — 3 subpages pending: `bootstrap.md`, `dependencies.md`, `plugin-skeleton.md`.
+- Next: atomic topic loop per subpage (fetch raw `.rst` → verify → distill → index flip); then re-run [STEP 7] and offer `#framework-docs-status`. First fetch: `curl -sL "https://raw.githubusercontent.com/Elgg/Elgg/7.1/docs/guides/plugins/bootstrap.rst" -o bootstrap.rst`.
