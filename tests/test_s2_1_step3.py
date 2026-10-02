@@ -211,11 +211,13 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
     the incoming-change preview (HEAD resolution probe, hook probe, stat
     against HEAD..FETCH_HEAD, then the uncommitted-local-changes probe
     and its stat), gate configuration (hooksPath query, then the enable),
-    checkout of .agent + agent.sh + .githooks, explicit executability
-    recording for the entry scripts and the hook (update-index
-    --chmod=+x), no-op probe, scoped commit with the gate-conforming
-    subject, and the short-hash lookup for the progress message. --yes
-    skips the confirmation prompt, which needs a terminal.
+    clearing of the managed paths (rm -r -f --ignore-unmatch) so upstream
+    renames and deletions stage in the same commit, checkout of .agent +
+    agent.sh + .githooks, explicit executability recording for the entry
+    scripts and the hook (update-index --chmod=+x), no-op probe, scoped
+    commit with the gate-conforming subject, and the short-hash lookup
+    for the progress message. --yes skips the confirmation prompt, which
+    needs a terminal.
     """
     stub_dir, log = git_stub
 
@@ -285,6 +287,15 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "cat-file",
         "-e",
         "FETCH_HEAD:.githooks/commit-msg",
+        "rm",
+        "-r",
+        "-f",
+        "--quiet",
+        "--ignore-unmatch",
+        "--",
+        ".agent",
+        "agent.sh",
+        ".githooks",
         "checkout",
         "FETCH_HEAD",
         "--",
@@ -543,11 +554,14 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
             consumer_repo, "show", "--name-only", "--format=", "HEAD"
         ).stdout.splitlines()
     )
+    # the tracked local-only customization inside .agent/ is removed by
+    # the replacement, so its deletion is part of the scoped commit
     assert files == {
         ".agent/release.txt",
         ".agent/ai-assistant.sh",
         "agent.sh",
         ".githooks/commit-msg",
+        ".agent/custom.txt",
     }
     assert (
         _git(consumer_repo, "log", "-1", "--format=%s").stdout.strip()
@@ -556,10 +570,11 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     # the gate is live in the consumer repository after the update
     hooks_path = _git(consumer_repo, "config", "--get", "core.hooksPath")
     assert hooks_path.stdout.strip() == ".githooks"
-    # the release content replaced the entry script; local customizations
-    # outside the release tree survive until the user re-applies them
+    # the release content replaced the entry script; the tracked
+    # local-only customization inside .agent/ is removed by the
+    # replacement and must be re-applied after the update
     assert (consumer_repo / "agent.sh").read_text() == "release\n"
-    assert (consumer_repo / ".agent" / "custom.txt").read_text() == "keep\n"
+    assert not (consumer_repo / ".agent" / "custom.txt").exists()
 
     # revertable: reverting the update commit restores the prior state;
     # the revert commit itself passes the gate via the Revert exemption
@@ -567,6 +582,8 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     assert (consumer_repo / "agent.sh").read_text() == "local\n"
     assert not (consumer_repo / ".agent" / "release.txt").exists()
     assert not (consumer_repo / ".githooks" / "commit-msg").exists()
+    # the revert restores the removed customization as well
+    assert (consumer_repo / ".agent" / "custom.txt").read_text() == "keep\n"
 
 
 @pytest.fixture
@@ -720,3 +737,95 @@ def test_update_from_ref_without_hook_skips_gate(legacy_consumer_repo):
         _git(legacy_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
         == "chore(agent): update assistant files to v1.0.10"
     )
+
+
+@pytest.fixture
+def renamed_release_repo(tmp_path: Path) -> Path:
+    """Release repository tagged v1.0.23 in which a directory inside
+    .agent/ was renamed (prompts/ -> workflows/): upstream records the
+    rename as a deletion plus an addition."""
+    repo = tmp_path / "renamed-release"
+    repo.mkdir()
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "test@example.com")
+    _git(repo, "config", "user.name", "Test User")
+    (repo / ".agent" / "workflows").mkdir(parents=True)
+    (repo / ".agent" / "workflows" / "skill.md").write_text("release\n")
+    (repo / ".agent" / "ai-assistant.sh").write_text("release\n")
+    (repo / "agent.sh").write_text("release\n")
+    hook = repo / ".githooks" / "commit-msg"
+    hook.parent.mkdir()
+    shutil.copy(PROJECT_ROOT / ".githooks" / "commit-msg", hook)
+    hook.chmod(0o755)
+    _git(repo, "add", ".agent", "agent.sh", ".githooks")
+    _git(repo, "commit", "-m", "release v1.0.23")
+    _git(repo, "tag", "v1.0.23")
+    return repo
+
+
+@pytest.fixture
+def renamed_consumer_repo(
+    tmp_path: Path, renamed_release_repo: Path, monkeypatch
+) -> Path:
+    """Consumer project still tracking the pre-rename layout, with the
+    old .agent/prompts/ directory in its history; the canonical assistant
+    URL is rewritten to the renamed release repo as in consumer_repo."""
+    repo = tmp_path / "renamed-project"
+    repo.mkdir()
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "test@example.com")
+    _git(repo, "config", "user.name", "Test User")
+    (repo / "agent.sh").write_text("local\n")
+    (repo / ".agent" / "prompts").mkdir(parents=True)
+    (repo / ".agent" / "prompts" / "skill.md").write_text("local\n")
+    (repo / ".agent" / "ai-assistant.sh").write_text("local\n")
+    _git(repo, "add", ".agent", "agent.sh")
+    _git(repo, "commit", "-m", "base")
+    git_config = tmp_path / "gitconfig-renamed"
+    git_config.write_text(
+        f'[url "{renamed_release_repo}"]\n'
+        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+    )
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
+    return repo
+
+
+def test_update_applies_upstream_directory_rename(renamed_consumer_repo):
+    """Regression: an upstream directory rename inside .agent/ is applied
+    as a rename, not as an addition beside the stale old directory.
+
+    The refresh must clear the managed paths from the index and worktree
+    before checking out FETCH_HEAD, so the recorded commit carries both
+    halves of the rename and the worktree ends up in the upstream layout.
+    """
+    result = run_installer(
+        renamed_consumer_repo, None, "--yes", "--ref", "v1.0.23"
+    )
+    assert result.returncode == 0, result.stderr
+    assert "recorded the refresh as commit" in result.stdout
+
+    # the worktree mirrors the upstream layout: the renamed-in directory
+    # exists, the renamed-away directory is gone
+    assert (
+        renamed_consumer_repo / ".agent" / "workflows" / "skill.md"
+    ).is_file()
+    assert not (renamed_consumer_repo / ".agent" / "prompts").exists()
+
+    # the commit carries both halves of the rename (the contents differ,
+    # so git records an addition and a deletion, not a rename entry)
+    changes = set(
+        _git(
+            renamed_consumer_repo,
+            "show",
+            "--name-status",
+            "--format=",
+            "HEAD",
+        ).stdout.splitlines()
+    )
+    assert changes == {
+        "A\t.agent/workflows/skill.md",
+        "D\t.agent/prompts/skill.md",
+        "M\t.agent/ai-assistant.sh",
+        "M\tagent.sh",
+        "A\t.githooks/commit-msg",
+    }
