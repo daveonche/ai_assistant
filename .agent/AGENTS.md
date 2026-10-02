@@ -96,6 +96,7 @@ task touches. Before creating or editing any file, check this mapping:
 | `SKILL.md` prompt files | `.agent/specs/references/agent-skills.md` |
 | `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/specs/references/docker-best-practices.md` |
 | `compose.yml`, `compose.yaml`, `docker-compose*.yml`/`*.yaml`, or any Compose file | `.agent/specs/references/compose-file-spec.md` |
+| Docker/Compose project layout or command execution: compose file placement, `docker/<service>/` build contexts, `.log/<service>.log` logs, in-container commands | `.agent/specs/references/docker-project-layout.md` |
 | A framework identified by Project Framework Detection | The matching framework-named file in `.agent/specs/` (e.g., `ELGG.md`, `RAILS.md`) |
 
 Routing rules:
