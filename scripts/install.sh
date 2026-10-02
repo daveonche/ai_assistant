@@ -315,6 +315,17 @@ apply_refresh() {
   if fetch_has_githooks; then
     paths+=(.githooks)
   fi
+  # A path-limited checkout only copies paths present in FETCH_HEAD and
+  # never removes paths that upstream renamed away, so clear the managed
+  # paths from the index and worktree first: the refresh becomes a true
+  # replacement and upstream deletions are staged in the same commit.
+  # --ignore-unmatch keeps the removal safe when a path is untracked,
+  # and the command does not reference HEAD, preserving the unborn-HEAD
+  # handling of the no-op probe below.
+  if ! git rm -r -f --quiet --ignore-unmatch -- "${paths[@]}"; then
+    die "failed to clear the existing assistant files"
+    return 1
+  fi
   if ! git checkout FETCH_HEAD -- "${paths[@]}"; then
     die "failed to check out the assistant files from ref ${REF}"
     return 1
