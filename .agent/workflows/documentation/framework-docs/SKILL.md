@@ -144,18 +144,18 @@ curl -sL "https://raw.githubusercontent.com/<org>/<repo>/<ref>/<docs-path>/index
 
 ```text
 .agent/specs/references/<FRAMEWORK>/
-  upgrading.md                 # version-independent upgrade rules; load before
-                               #   any work crossing a version boundary
-  upgrade-notes/               # per-version transition deltas that DRIVE the
-    <from>-to-<to>.md          #   topic updates; one file per documented
-    <from>-to-<to>/            #   transition, named after official page slugs;
-                               #   large transitions split into detail files
-  developer-guide/             # <- this skill's output
-    index.md                   # topic map: file, source page, scope, status
-    source-listing-<ref>.json  # baseline contents listing (per-file sha/size)
-    <topic>.md                 # one distilled file per source page
-    <topic>/                   # only for large source pages
-      <category>.md            # split files, one per logical category
+├── upgrading.md                   # version-independent upgrade rules; load before
+│                                  #   any work crossing a version boundary
+├── upgrade-notes/                 # per-version transition deltas that DRIVE the
+│   ├── <from>-to-<to>.md          #   topic updates; one file per documented
+│   └── <from>-to-<to>/            #   transition, named after official page slugs;
+│                                  #   large transitions split into detail files
+└── developer-guide/               # <- this skill's output
+    ├── index.md                   # topic map: file, source page, scope, status
+    ├── source-listing-<ref>.json  # baseline contents listing (per-file sha/size)
+    ├── <topic>.md                 # one distilled file per source page
+    └── <topic>/                   # only for large source pages
+        └── <category>.md          # split files, one per logical category
 ```
 
 4. State the division of labor: `developer-guide/` tracks the stable manual
