@@ -1,7 +1,7 @@
 """Step 3 tests for Story S3.3.
 
 Verifies convention conformance (GFM rules from
-.agent/.aider.conventions/references/github-flavored-markdown.md) for
+.agent/specs/references/github-flavored-markdown.md) for
 both updated documents together: each test maps to one Step 3 Must
 Support item. Content assertions live in the Step 1/Step 2 suites,
 not here.

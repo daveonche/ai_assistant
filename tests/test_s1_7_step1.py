@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-PROMPT_DIR = Path(".agent/.aider.prompt")
+PROMPT_DIR = Path(".agent/workflows")
 
 
 def test_prompt_directory_exists():
@@ -12,7 +12,7 @@ def test_prompt_directory_exists():
 
 
 def test_core_category_subdirectories_exist():
-    for category in ("code", "testing", "workflows"):
+    for category in ("code", "testing", "phases"):
         category_dir = PROMPT_DIR / category
         assert category_dir.is_dir(), (
             f"{category_dir} does not exist or is not a directory"

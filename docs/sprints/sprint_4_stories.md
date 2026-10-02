@@ -23,14 +23,14 @@ Developer Notes:
 
 ## Story S4.2: Framework Detection and Conventions Recommendation
 
-As a developer, I want the assistant to detect the framework used in the `src/` directory and recommend the matching conventions file from `.agent/.aider.conventions/` (e.g., `ELGG.md`, `RAILS.md`), so that coding guidance automatically follows the detected framework's conventions.
+As a developer, I want the assistant to detect the framework used in the `src/` directory and recommend the matching conventions file from `.agent/specs/` (e.g., `ELGG.md`, `RAILS.md`), so that coding guidance automatically follows the detected framework's conventions.
 
 Acceptance Criteria:
 
 - The assistant inspects the project (framework indicators under `src/` and root manifests/config files) to identify the framework in use
-- When a detected framework has a matching conventions file in `.agent/.aider.conventions/`, the assistant recommends loading it via `/read-only`, following the routing conventions in `.agent/AGENTS.md`
+- When a detected framework has a matching conventions file in `.agent/specs/`, the assistant recommends loading it via `/read-only`, following the routing conventions in `.agent/AGENTS.md`
 - When no matching conventions file exists for the detected framework, no recommendation is made
-- Seed convention files `ELGG.md` and `RAILS.md` are added to `.agent/.aider.conventions/` with meaningful starter content and pass the markdown conventions
+- Seed convention files `ELGG.md` and `RAILS.md` are added to `.agent/specs/` with meaningful starter content and pass the markdown conventions
 - The framework-based routing rule is documented in the conventions routing table in `.agent/AGENTS.md`
 
 Dependencies: None

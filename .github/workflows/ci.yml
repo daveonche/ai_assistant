@@ -2,7 +2,7 @@
 # build, and release-tag consistency.
 #
 # Local validation: actionlint is the preferred validator (see
-# .agent/.aider.conventions/references/ci-cd-best-practices.md). When it is
+# .agent/specs/references/ci-cd-best-practices.md). When it is
 # not installed, validate YAML syntax with PyYAML:
 #   python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print('YAML OK')"
 

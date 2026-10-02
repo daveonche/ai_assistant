@@ -135,7 +135,7 @@ def test_empty_artifacts_removed_after_session(tmp_path: Path):
     # scan is scoped to the launcher's managed artifact names: the
     # cleanup is conservative by design (own artifact paths only), so
     # unrelated pre-existing repo content — e.g. a zero-byte file under
-    # .aider.conventions/ copied in with the sandbox — is correctly left
+    # specs/ copied in with the sandbox — is correctly left
     # untouched and must not fail this test.
     empty_leftovers = [
         p

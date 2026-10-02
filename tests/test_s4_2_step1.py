@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-CONVENTIONS_DIR = Path(".agent", ".aider.conventions")
+CONVENTIONS_DIR = Path(".agent", "specs")
 SEEDED_FILES = (
     CONVENTIONS_DIR / "ELGG.md",
     CONVENTIONS_DIR / "RAILS.md",
@@ -147,7 +147,7 @@ def _table_blocks(lines: list[str], fenced: set[int]) -> list[list[str]]:
 def test_files_follow_markdown_conventions():
     """Must Support: both files follow the project's documentation
     conventions (GFM rules from
-    .agent/.aider.conventions/references/github-flavored-markdown.md):
+    .agent/specs/references/github-flavored-markdown.md):
     single ordered ATX headings, '-' list markers, blank lines around
     headings/lists/tables, no tabs or 4+ leading spaces, GFM table
     rules, single final newline, no trailing whitespace. Indented

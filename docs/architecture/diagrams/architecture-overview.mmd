@@ -6,7 +6,7 @@ flowchart TD
     PY -->|docker run + bind mount| CT["Docker Container<br>(Aider Runtime)"]
     PROJ[("Host Project Root<br>incl. .agent/")] -->|mounted into| CT
     CT --> ORCH[".agent/AGENTS.md<br>(Workflow Orchestration)"]
-    ORCH -->|loads on demand| PL[".agent/.aider.prompt/**/SKILL.md<br>(Prompt Library)"]
-    ORCH -->|loads on demand| CV[".agent/.aider.conventions/**<br>(Conventions)"]
+    ORCH -->|loads on demand| PL[".agent/workflows/**/SKILL.md<br>(Prompt Library)"]
+    ORCH -->|loads on demand| CV[".agent/specs/**<br>(Conventions)"]
     PL <-->|reads/writes| DOCS[("docs/<br>(SDLC Artifacts)")]
     CT -->|LLM API| LLM([LLM Provider])

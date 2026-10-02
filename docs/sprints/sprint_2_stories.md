@@ -13,7 +13,7 @@ Acceptance Criteria:
 - Entry scripts in this repo are committed with mode `100755` so the update path preserves executability
 - Update mode warns that local customizations inside `.agent/` (e.g., the `read:` list in `.aider.conf.yml`) will be overwritten
 - README documents the one-command install and update flow, including the pinned-ref caveat
-- Script passes shellcheck per `.agent/.aider.conventions/references/bash-scripts.md`
+- Script passes shellcheck per `.agent/specs/references/bash-scripts.md`
 
 Dependencies: S1.1, S1.2, S1.5
 

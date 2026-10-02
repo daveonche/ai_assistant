@@ -23,8 +23,8 @@ secrets/
 !.aiderignore
 !.aider.model.settings.yml
 !.aider.model.metadata.json
-!.aider.conventions/
-!.aider.prompt/
+!specs/
+!workflows/
 
 # OS files
 .DS_Store

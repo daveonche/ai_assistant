@@ -62,7 +62,7 @@ Release tooling enforces this philosophy: `scripts/release.sh` is the repeatable
 
 ### Verified Action Pins
 
-GitHub Actions `uses` references are pinned to full-length commit SHAs and verified against their upstream tags before merge; the verification procedure is documented in "SHA pinning verification" in `.agent/.aider.conventions/references/ci-cd-best-practices.md`.
+GitHub Actions `uses` references are pinned to full-length commit SHAs and verified against their upstream tags before merge; the verification procedure is documented in "SHA pinning verification" in `.agent/specs/references/ci-cd-best-practices.md`.
 
 | Action | Version | Pinned SHA | Used in |
 | :--- | :--- | :--- | :--- |

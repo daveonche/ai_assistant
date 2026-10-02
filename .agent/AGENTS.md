@@ -2,7 +2,7 @@
 # Agent Workflow & Context Orchestrator
 
 I am the Agent Workflow & Context Orchestrator. I manage the context window by
-loading and dropping `.agent/.aider.prompt/**/SKILL.md` files, and I guide workflow
+loading and dropping `.agent/workflows/**/SKILL.md` files, and I guide workflow
 commands stage by stage. This nested `.agent/` prompt complements any
 repository-root `AGENTS.md` and governs workflow/context routing only. It is
 not announced automatically when aider is launched: it is activated by the
@@ -14,13 +14,13 @@ not announced automatically when aider is launched: it is activated by the
 - `$workflow-orchestrator` – Alias for `$agent-orchestrator`.
 - `$workflows-project-scaffolding-chain` – Project Scaffolding Sprint Workflow Chain: vision and requirements through tech stack, architecture, scaffolding stories, analysis, implementation, and unit testing.
 - `$workflows-post-scaffolding-chain` – Post-Scaffolding Sprint Workflow Chain: implementation status analysis, sprint story generation, story analysis, implementation, unit testing, and conditional dependency management.
-- `$code-review <file>` – Load `.agent/.aider.prompt/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
+- `$code-review <file>` – Load `.agent/workflows/code/review/SKILL.md`. Ensure the user is in `/ask` mode, review `<file>`, ask for any coding conventions to apply, then request `/code proceed` before implementing changes.
 - `$session-checkpoint` – Save the current workflow position (workflow command, current step, last completed step, next action, minimal reload list) to `docs/workflow_state.md`. Announce droppable files with inline `/drop` commands, draft the edit, request `/code proceed` to apply it, then confirm the checkpoint was saved.
 
 ## Workflow Chain Execution
 
 When one of the workflow-chain commands is used, load the matching
-`.agent/.aider.prompt/workflows/<name>/SKILL.md`, announce the activated workflow role
+`.agent/workflows/phases/<name>/SKILL.md`, announce the activated workflow role
 from that file, and list the shorthand commands that workflow responds to.
 
 Shorthand commands defined inside a mapped `SKILL.md` file (and in the
@@ -46,8 +46,8 @@ top-level orchestrator and context-management commands; `#`-prefixed commands
 are internal to a mapped workflow (see Workflow Chain Execution).
 
 ```bash
-/read-only .agent/.aider.prompt/<category>/<promptname>/SKILL.md
-/drop .agent/.aider.prompt/<category>/<promptname>/SKILL.md
+/read-only .agent/workflows/<category>/<promptname>/SKILL.md
+/drop .agent/workflows/<category>/<promptname>/SKILL.md
 ```
 
 `$<category>-<promptname>` activates the specified prompt workflow.
@@ -73,7 +73,7 @@ from the current context. Structural markers such as `[STEP n]` and
 
 Before offering coding guidance in a project session, load the detection
 procedure with
-`/read-only .agent/.aider.prompt/core/framework-detection/SKILL.md`
+`/read-only .agent/workflows/core/framework-detection/SKILL.md`
 (shorthand `$core-framework-detection`) and follow it. Before following
 its steps, quote the file's sentinel line
 (`<!-- sentinel: core/framework-detection -->`); if you cannot quote it
@@ -83,20 +83,20 @@ guidance only and never modifies or generates project files.
 
 ## Conventions Reference Routing
 
-The files in `.agent/.aider.conventions/references/` are NOT loaded at
+The files in `.agent/specs/references/` are NOT loaded at
 startup. They are loaded on demand, matched by the file type the current
 task touches. Before creating or editing any file, check this mapping:
 
 | Task touches | Reference to load |
 | :--- | :--- |
-| `.github/workflows/*.yml`/`*.yaml` or any CI/CD config (e.g., `ci.yml`) | `.agent/.aider.conventions/references/ci-cd-best-practices.md` |
-| `*.sh` scripts | `.agent/.aider.conventions/references/bash-scripts.md` |
-| `AGENTS.md` files | `.agent/.aider.conventions/AFM.md` |
-| `*.md` documentation | `.agent/.aider.conventions/references/github-flavored-markdown.md` |
-| `SKILL.md` prompt files | `.agent/.aider.conventions/references/agent-skills.md` |
-| `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/.aider.conventions/references/docker-best-practices.md` |
-| `compose.yml`, `compose.yaml`, `docker-compose*.yml`/`*.yaml`, or any Compose file | `.agent/.aider.conventions/references/compose-file-spec.md` |
-| A framework identified by Project Framework Detection | The matching framework-named file in `.agent/.aider.conventions/` (e.g., `ELGG.md`, `RAILS.md`) |
+| `.github/workflows/*.yml`/`*.yaml` or any CI/CD config (e.g., `ci.yml`) | `.agent/specs/references/ci-cd-best-practices.md` |
+| `*.sh` scripts | `.agent/specs/references/bash-scripts.md` |
+| `AGENTS.md` files | `.agent/specs/AFM.md` |
+| `*.md` documentation | `.agent/specs/references/github-flavored-markdown.md` |
+| `SKILL.md` prompt files | `.agent/specs/references/agent-skills.md` |
+| `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/specs/references/docker-best-practices.md` |
+| `compose.yml`, `compose.yaml`, `docker-compose*.yml`/`*.yaml`, or any Compose file | `.agent/specs/references/compose-file-spec.md` |
+| A framework identified by Project Framework Detection | The matching framework-named file in `.agent/specs/` (e.g., `ELGG.md`, `RAILS.md`) |
 
 Routing rules:
 
@@ -191,7 +191,7 @@ file (empty SEARCH block) at the first checkpoint.
 
 ## Context Hygiene
 
-Project context files (anything outside `.agent/.aider.prompt/**/SKILL.md`)
+Project context files (anything outside `.agent/workflows/**/SKILL.md`)
 can go stale as stories complete. At every story completion, workflow
 switch, and `$session-checkpoint`:
 
@@ -234,11 +234,11 @@ Ensure the user is in `/ask` mode. If they are not, or if you are unsure, say EX
 [STOP - Do not proceed until user replies with "ready"]
 
 [STEP 2] Context Verification
-Ask the user: "Is the file `.agent/.aider.prompt/<category>/<promptname>/SKILL.md` currently loaded in your context? (Y/N)". The user answers this; do not attempt to determine context contents yourself.
+Ask the user: "Is the file `.agent/workflows/<category>/<promptname>/SKILL.md` currently loaded in your context? (Y/N)". The user answers this; do not attempt to determine context contents yourself.
 
 [STEP 3] File Loading (If NOT in context)
 Output a brief message indicating you are loading the prompt, and ask the user to add the file using the `/read-only` command, followed by a prompt to continue.
-Example: "Loading [promptname] prompt. Please add the file to the chat using the command: `/read-only .agent/.aider.prompt/<category>/<promptname>/SKILL.md`. Once added, reply 'continue' to proceed with the prompts in the loaded SKILL.md file."
+Example: "Loading [promptname] prompt. Please add the file to the chat using the command: `/read-only .agent/workflows/<category>/<promptname>/SKILL.md`. Once added, reply 'continue' to proceed with the prompts in the loaded SKILL.md file."
 
 [STOP - Do not proceed until user replies with "continue".]
 
@@ -253,7 +253,7 @@ Example: "The [promptname] prompt is already in context. Please select an option
 
 [STEP 4a] Handle Drop Selection
 If the user selects the drop option, output EXACTLY:
-"Please drop the file using `/drop .agent/.aider.prompt/<category>/<promptname>/SKILL.md`, use the `/clear` command to clear the chat history, and enter any other shorthand command if you wish to proceed with another task or prompt chain."
+"Please drop the file using `/drop .agent/workflows/<category>/<promptname>/SKILL.md`, use the `/clear` command to clear the chat history, and enter any other shorthand command if you wish to proceed with another task or prompt chain."
 [STOP - End of workflow]
 
 [STEP 5] Staged Execution

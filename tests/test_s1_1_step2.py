@@ -68,8 +68,8 @@ ASSISTANT_CONFIG_ARTIFACTS = (
     ".aider.conf.yml",
     ".aider.model.settings.yml",
     ".aiderignore",
-    ".aider.prompt",
-    ".aider.conventions",
+    "workflows",
+    "specs",
 )
 
 OTHER_DOCUMENTED_LAYERS = ("docs", "scripts", "src")
@@ -94,7 +94,7 @@ def test_agent_dir_is_single_assistant_configuration_home():
 
     # the assistant's runtime and prompt home are not duplicated at the top level
     for artifact in ("AGENTS.md", "ai-assistant.sh", "ai_assistant.py",
-                     ".aider.prompt", ".aider.conventions"):
+                     "workflows", "specs"):
         assert not (PROJECT_ROOT / artifact).exists(), (
             f"assistant configuration artifact {artifact!r} found at the top level; "
             ".agent/ is the single home for assistant configuration"

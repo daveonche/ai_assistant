@@ -2,14 +2,14 @@
 
 The framework-conventions bullets live in the Framework Conventions
 Routing section of
-.agent/.aider.prompt/core/framework-detection/SKILL.md; the routing
+.agent/workflows/core/framework-detection/SKILL.md; the routing
 table and routing rules remain in .agent/AGENTS.md."""
 
 from pathlib import Path
 
 AGENTS_MD = Path(".agent", "AGENTS.md")
 SKILL_MD = Path(
-    ".agent", ".aider.prompt", "core", "framework-detection", "SKILL.md"
+    ".agent", "workflows", "core", "framework-detection", "SKILL.md"
 )
 FRAMEWORK_CONVENTIONS_HEADING = "## Framework Conventions Routing"
 
@@ -58,12 +58,12 @@ def _normalized(text: str) -> str:
 def test_framework_conventions_discovered_by_scanning():
     """Must Support: the assistant discovers available framework
     conventions by scanning the framework-named files in
-    .agent/.aider.conventions/, rather than relying on a fixed
+    .agent/specs/, rather than relying on a fixed
     framework-to-file mapping, so adding a new framework requires only
     adding its conventions file."""
     section = _normalized(_framework_conventions_bullets())
     assert "discovered by scanning the framework-named files" in section
-    assert ".agent/.aider.conventions/" in section
+    assert ".agent/specs/" in section
     assert "adding a new framework requires only adding its conventions file" in section
     assert "never a table edit" in section
 
@@ -88,7 +88,7 @@ def test_version_specific_reference_recommended_when_identifiable():
     version-specific reference."""
     section = _normalized(_framework_conventions_bullets())
     assert "points at version-specific conventions under" in section
-    assert ".agent/.aider.conventions/references/<framework>/<version>/" in section
+    assert ".agent/specs/references/<framework>/<version>/" in section
     assert "the detected version is identifiable" in section
     assert "a matching directory exists" in section
     assert "recommend loading that reference too" in section
@@ -114,7 +114,7 @@ def test_routing_table_has_framework_name_matching_rule():
     name-matching rule alongside the existing file-type rules."""
     table = _normalized(_routing_table())
     assert "a framework identified by project framework detection" in table
-    assert "the matching framework-named file in .agent/.aider.conventions/" in table
+    assert "the matching framework-named file in .agent/specs/" in table
     assert "elgg.md" in table
     assert "rails.md" in table
     # Placed in the same table as the existing file-type rules.

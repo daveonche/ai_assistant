@@ -18,7 +18,7 @@ def test_shorthand_commands_map_to_skill_md_files():
     content = AGENTS_MD.read_text(encoding="utf-8")
     for command in ("/read-only", "/drop"):
         mapping = (
-            f"{command} .agent/.aider.prompt/<category>/<promptname>/SKILL.md"
+            f"{command} .agent/workflows/<category>/<promptname>/SKILL.md"
         )
         assert mapping in content, (
             f"{AGENTS_MD} does not map shorthand commands to SKILL.md files "

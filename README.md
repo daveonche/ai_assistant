@@ -77,7 +77,7 @@ cp agent.sh /path/to/your/project/
 cp -r .githooks /path/to/your/project/
 ```
 
-The `.agent` copy already includes `.aider.conventions/`, so all
+The `.agent` copy already includes `specs/`, so all
 convention files stay in that directory. Framework conventions are
 enabled per project via the `read:` setting in
 `.agent/.aider.conf.yml` — they are read on launch, never copied to
@@ -421,8 +421,8 @@ curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.21/scri
 │   ├── .aider.conf.yml      # Aider configuration
 │   ├── .aider.model.settings.yml
 │   ├── .aiderignore         # Context exclusion rules for aider
-│   ├── .aider.prompt/       # Aider prompt library
-│   ├── .aider.conventions/  # Project-specific coding conventions
+│   ├── workflows/       # Aider prompt library
+│   ├── specs/  # Project-specific coding conventions
 │   └── pyproject.toml       # Optional packaging for the `ai-assistant` command
 ├── .github/
 │   └── workflows/

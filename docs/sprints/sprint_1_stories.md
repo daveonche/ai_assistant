@@ -35,7 +35,7 @@ Acceptance Criteria:
 - `agent.sh` delegates all lifecycle logic to `.agent/ai_assistant.py` via `.agent/ai-assistant.sh` (REQ-FR-ENV-2, REQ-FR-ENV-5)
 - `agent.sh` forwards the debug flag and assistant arguments to the launcher
 - Prerequisites documented: Docker (CLI & Compose Plugin), Bash, Python >=3.8 (host)
-- Script is executable and passes shellcheck per `.agent/.aider.conventions/references/bash-scripts.md`
+- Script is executable and passes shellcheck per `.agent/specs/references/bash-scripts.md`
 - Supports both standalone clone use and copy-into-project use (REQ-FR-ENV-3, REQ-FR-ENV-5)
 
 Dependencies: S1.1
@@ -134,7 +134,7 @@ As a developer, I want a CI pipeline validating the launcher, scripts, and image
 Acceptance Criteria:
 
 - `.github/workflows/ci.yml` validates: Python syntax/lint of `.agent/ai_assistant.py`, shellcheck of `*.sh` scripts, Docker image build
-- CI config follows `.agent/.aider.conventions/references/ci-cid-best-practices.md`
+- CI config follows `.agent/specs/references/ci-cid-best-practices.md`
 - Pipeline fails on any validation error; passes on a clean tree
 - All actions pinned to exact versions — ✓ SATISFIED: `actions/checkout` pinned to full SHA `11bd71901bbe5b1630ceea73d27597364c9af683` (v4.2.2), verified per `docs/tech_stack.md`
 
@@ -156,9 +156,9 @@ As a developer, I want `AGENTS.md` orchestration, the SDLC prompt library, and c
 
 Acceptance Criteria:
 
-- `.agent/AGENTS.md` routes `$` commands to `.agent/.aider.prompt/**/SKILL.md` via `/read-only` and `/drop` (REQ-FR-WF-2)
+- `.agent/AGENTS.md` routes `$` commands to `.agent/workflows/**/SKILL.md` via `/read-only` and `/drop` (REQ-FR-WF-2)
 - Prompt library covers SDLC phases: planning, requirements, architecture, code, testing, documentation, workflows (REQ-FR-WF-1)
-- Conventions in `.agent/.aider.conventions/` routed by file type per the routing table (REQ-FR-WF-3)
+- Conventions in `.agent/specs/` routed by file type per the routing table (REQ-FR-WF-3)
 - Prompts loaded via `/read-only` only; nothing auto-loaded at startup (REQ-FR-TM-2, REQ-NFR-PERF-1)
 - Every `SKILL.md` contains the Convention Check Reminder line
 

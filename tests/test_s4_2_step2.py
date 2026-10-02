@@ -1,7 +1,7 @@
 """Tests for Story S4.2 Step 2: project framework detection guidance.
 
 The detection guidance lives in
-.agent/.aider.prompt/core/framework-detection/SKILL.md;
+.agent/workflows/core/framework-detection/SKILL.md;
 .agent/AGENTS.md keeps a pointer stub that loads it (guarded by the
 last test in this file)."""
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 AGENTS_MD = Path(".agent", "AGENTS.md")
 SKILL_MD = Path(
-    ".agent", ".aider.prompt", "core", "framework-detection", "SKILL.md"
+    ".agent", "workflows", "core", "framework-detection", "SKILL.md"
 )
 
 
@@ -95,6 +95,6 @@ def test_agents_md_stub_loads_the_detection_skill():
     command."""
     section = _agents_stub_section()
     assert (
-        "/read-only .agent/.aider.prompt/core/framework-detection/SKILL.md"
+        "/read-only .agent/workflows/core/framework-detection/SKILL.md"
         in section
     )
