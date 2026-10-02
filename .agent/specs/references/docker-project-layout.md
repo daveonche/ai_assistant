@@ -81,15 +81,15 @@ services:
   Linux, which can block non-root container users from writing.
 - Capture a service's output (errors included) into its log file:
 
-```bash
-docker compose logs -f --tail=0 <service> >> .log/<service>.log 2>&1
-```
+  ```bash
+  docker compose logs -f --tail=0 <service> >> .log/<service>.log 2>&1
+  ```
 
 - Error-only capture, appending into the same per-service log file:
 
-```bash
-docker compose logs <service> 2>&1 | grep -iE 'error|fatal|exception' >> .log/<service>.log
-```
+  ```bash
+  docker compose logs <service> 2>&1 | grep -iE 'error|fatal|exception' >> .log/<service>.log
+  ```
 
   Use a distinct `.log/<service>.errors.log` instead if error-only lines
   must not interleave with the full log.
