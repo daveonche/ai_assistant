@@ -140,3 +140,22 @@ def test_every_analysis_step_title_appears_verbatim_in_order():
             f"step {number} entry does not carry the analysis title "
             f"{title!r}: {remainder!r}"
         )
+
+
+def test_every_entry_cites_suites_that_exist_on_disk():
+    """Every completed-step entry cites at least one tests/ suite, and
+    every cited suite exists on disk — so the record cannot cite
+    retired suites."""
+    section = _section(_status_text(), "Sprint 5")
+    entries = _record_entries(section)
+    assert entries, "no completed-step entries found"
+    suite_pattern = re.compile(r"tests/test_[A-Za-z0-9_]+\.py")
+    for number, remainder in entries:
+        cited = suite_pattern.findall(remainder)
+        assert cited, (
+            f"step {number} entry cites no verification suite: {remainder!r}"
+        )
+        for suite in cited:
+            assert (PROJECT_ROOT / suite).is_file(), (
+                f"step {number} entry cites a missing suite: {suite}"
+            )
