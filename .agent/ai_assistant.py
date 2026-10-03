@@ -452,6 +452,48 @@ def _aider_config_args(agent_dir: Path) -> list[str]:
     return args
 
 
+# Per-project args files live under ~/.config/aider-agent/projects/:
+# user-authored configuration in the home config area — outside any
+# repository and outside the launcher cache — so repository content can
+# never create or alter them, and they survive assistant updates (see
+# _project_args_path and _load_project_args).
+PROJECT_ARGS_DIR_NAME = "aider-agent"
+
+
+def _project_args_path(project_root: Path, workspace_hash: str) -> Path:
+    """Return the per-project args-file path for this project.
+
+    Keyed to the project's identity with the same workspace-hash formula
+    as the command log (md5 of the project path plus a newline, first 8
+    hex characters; see main()), so the path is stable across launches
+    from the same project directory.
+    """
+    file_name = f"{project_root.name}-{workspace_hash[:8]}.args"
+    return Path.home() / ".config" / PROJECT_ARGS_DIR_NAME / "projects" / file_name
+
+
+def _load_project_args(path: Path) -> list[str]:
+    """Return the assistant argument tokens stored in a project args file.
+
+    One token per line: surrounding whitespace is stripped, blank lines
+    and lines starting with '#' are ignored, and every remaining line is
+    taken verbatim — no quote removal, no variable expansion, no command-
+    interpreter interpretation — so entries stay predictable. An
+    unreadable file yields no tokens; the launch continues without them.
+    """
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    tokens: list[str] = []
+    for line in lines:
+        entry = line.strip()
+        if not entry or entry.startswith("#"):
+            continue
+        tokens.append(entry)
+    return tokens
+
+
 def _base_repo_digests(image: str, debug: bool = False) -> str:
     """Return local repo digests for an image, or "" when unknown."""
     command = [
@@ -1788,6 +1830,27 @@ def main() -> int:
     command_log = _configure_command_log(workspace_hash, session_id)
     if debug:
         print(f"Command log: {command_log}", file=sys.stderr)
+
+    # Per-project args file: host-side, outside any repository, keyed to
+    # the project identity (same hash formula as the command log). Its
+    # tokens are prepended so explicitly typed CLI arguments, which appear
+    # later in the final assistant command, win over file entries. The
+    # launcher's own -x/--debug flags were popped above, so file entries
+    # can never toggle launcher debug mode.
+    project_args_path = _project_args_path(project_root, workspace_hash)
+    project_args = _load_project_args(project_args_path)
+    if sys.stdout.isatty():
+        if project_args_path.exists():
+            print(
+                f"Project args: {project_args_path} "
+                f"({len(project_args)} argument(s) loaded)"
+            )
+        else:
+            print(
+                f"Project args: {project_args_path} not found; create it "
+                "with --init-project-args"
+            )
+    assistant_args = project_args + assistant_args
 
     if not _docker_available(debug=debug):
         print(
