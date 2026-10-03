@@ -61,7 +61,28 @@ def _section(text: str, heading: str) -> str:
     return "\n".join(lines[start:end])
 
 
+def _normalized(text: str) -> str:
+    """Collapse whitespace so assertions can span the README's hard
+    line wraps."""
+    return " ".join(text.split())
+
+
 def test_merging_section_is_gone():
     """The replaced section's title no longer appears anywhere in the
     README: the project-root configuration merging description is gone."""
     assert "Mergeable configuration" not in _doc_text()
+
+
+def test_customization_section_documents_args_file_and_precedence():
+    """The per-project customization section introduces the args file at
+    its host-side location and states the argument precedence order."""
+    section = _normalized(_section(_doc_text(), "Per-project customization"))
+    # The section introduces the args file...
+    assert "per-project args file" in section
+    # ...at its host-side location...
+    assert "~/.config/aider-agent/projects/" in section
+    # ...and states the precedence order.
+    assert (
+        "typed command-line arguments win over args-file entries, "
+        "which win over the `.agent/` defaults"
+    ) in section
