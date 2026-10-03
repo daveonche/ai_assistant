@@ -62,9 +62,14 @@ def _section(text: str, heading: str) -> str:
 
 
 def _normalized(text: str) -> str:
-    """Collapse whitespace so assertions can span the README's hard
-    line wraps."""
-    return " ".join(text.split())
+    """Collapse whitespace and strip blockquote markers so assertions
+    can span the README's hard line wraps, including inside
+    blockquotes."""
+    stripped = "\n".join(
+        line.lstrip().removeprefix(">").lstrip()
+        for line in text.splitlines()
+    )
+    return " ".join(stripped.split())
 
 
 def test_merging_section_is_gone():
