@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 STATUS_DOC = REPO_ROOT / "docs" / "implementation_status.md"
 
 SPRINT4_HEADING = "## Sprint 4"
-PRIORITY_HEADING = "## Priority Order for Next Implementation Phase"
+SPRINT5_HEADING = "## Sprint 5"
 
 
 def _doc_text() -> str:
@@ -24,7 +24,7 @@ def _sprint4_text() -> str:
     """Return the Sprint 4 section of the implementation status document."""
     text = _doc_text()
     start = text.index(SPRINT4_HEADING)
-    end = text.index(PRIORITY_HEADING, start)
+    end = text.index(SPRINT5_HEADING, start)
     return text[start:end]
 
 
