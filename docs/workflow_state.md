@@ -4,7 +4,7 @@ Last updated: 2026-10-03
 
 ## Active Workflow
 
-- Command: `$workflows-post-scaffolding-chain` — chain active, paused at the story-analysis phase, S5.2 pending
-- Last completed: S5.1 unit testing finished — dedicated suites for all seven steps (latest: step 7 repo-state suite, eadb91c); S5.1 complete
-- Next action: confirm the story-analysis SKILL.md path (not stated verbatim in context), add it via `/read-only` together with `/read-only docs/sprints/sprint_5_stories.md`, then begin S5.2 story analysis
-- Reload to resume: `/read-only .agent/AGENTS.md`, `/read-only docs/sprints/sprint_5_stories.md`, plus the story-analysis SKILL.md (path to confirm at resume) — everything else recoverable via `/read-only` on demand.
+- Command: `$workflows-post-scaffolding-chain` — chain active, S5.2 implementation complete, unit-testing phase next
+- Last completed: S5.2 implementation finished — all three steps (Sprint 5 record 0a327ce, Priority Order rewrite, conventions check green; extraction-boundary fix be34c3f); S5.2 complete
+- Next action: begin the unit-testing phase for S5.2 (documentation-only story; likely no new suites) — confirm the unit-testing SKILL.md path at resume
+- Reload to resume: `/read-only .agent/AGENTS.md`, `/read-only docs/sprints/sprint_5_stories.md`, `/read-only docs/analysis/S5.2-story-steps.md`, plus the unit-testing SKILL.md (path to confirm at resume) — everything else recoverable via `/read-only` on demand.
