@@ -75,6 +75,17 @@ AGENT_CONFIG_FILES = (
     ("--model-metadata-file", ".aider.model.metadata.json", "{}\n"),
 )
 
+# Project-root configuration files the launcher must ignore: (filename,
+# payload). The payload is assistant-flag-shaped, so if the launcher ever
+# passed root config contents through to the assistant, the container run
+# would show it.
+ROOT_CONFIG_FILES = (
+    (".aider.conf.yml", "--evil-flag-from-root-config"),
+    (".aider.model.settings.yml", "--evil-flag-from-root-model-settings"),
+    (".aiderignore", "--evil-flag-from-root-aiderignore"),
+    (".aider.model.metadata.json", "--evil-flag-from-root-model-metadata"),
+)
+
 
 def _make_sandbox(tmp_path: Path) -> Path:
     sandbox = tmp_path / "project"
@@ -162,3 +173,24 @@ def test_config_references_point_at_agent_dir(tmp_path: Path):
         # index() proves the flag is present; the token after it must be
         # the .agent/ copy's path.
         assert run[run.index(flag) + 1] == str(sandbox / ".agent" / name), run
+
+
+def test_root_config_files_are_never_read_or_passed(tmp_path: Path):
+    """With all four project-root configuration files present, the
+    container run contains neither their paths nor their contents: the
+    launcher never detects, reads, or passes them to the assistant."""
+    sandbox = _make_sandbox(tmp_path)
+    stub_dir = _write_docker_stub(sandbox)
+    for name, payload in ROOT_CONFIG_FILES:
+        (sandbox / name).write_text(payload + "\n", encoding="utf-8")
+
+    result = run_chain(sandbox, stub_dir)
+    assert result.returncode == 0, result.stderr
+
+    run = _container_run(sandbox)
+    for name, payload in ROOT_CONFIG_FILES:
+        root_path = str(sandbox / name)
+        # Substring form, so an occurrence embedded inside a longer
+        # argument is caught too.
+        assert not any(root_path in arg for arg in run), run
+        assert not any(payload in arg for arg in run), run
