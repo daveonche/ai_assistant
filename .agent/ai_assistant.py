@@ -494,6 +494,79 @@ def _load_project_args(path: Path) -> list[str]:
     return tokens
 
 
+# Template written by --init-project-args (see _init_project_args). Every
+# line is a comment, so a freshly created file loads as zero arguments;
+# users uncomment the entries they want.
+PROJECT_ARGS_TEMPLATE = """\
+# Per-project assistant arguments
+#
+# This file adds arguments to every assistant launch for this project
+# directory. It lives in your home configuration area, outside any
+# repository, so repository content can never create or alter it, and it
+# survives assistant updates.
+#
+# Format: one argument token per line. Blank lines and lines starting
+# with '#' are ignored. Entries are taken verbatim: no quotes, no
+# variable expansion, no shell interpretation. A value that contains
+# spaces goes on its own line after its flag.
+#
+# Precedence: arguments you type on the command line win over entries in
+# this file, which win over the assistant's own defaults in .agent/.
+#
+# Simple flags — uncomment to enable; they apply on every launch:
+#
+#   --dark-mode
+#
+#   --test-cmd
+#   python -m pytest -q
+#
+#   --lint-cmd
+#   ruff check .
+#
+# File overrides — replace the assistant's own file entirely, so use them
+# only when this project genuinely needs extra or different
+# configurations; otherwise leave them commented out so the assistant's
+# own copy stays in force. When you do override:
+#
+#   1. Reference a file under a distinctive name unlikely to exist in any
+#      repository: a hostile repository could ship a same-named file that
+#      silently satisfies the reference.
+#   2. Create that file in the project root and copy the needed entries
+#      from the assistant's own copy (.agent/.aider.model.settings.yml or
+#      .agent/.aiderignore) so the override is self-sufficient.
+#
+#   --model-settings-file
+#   my-project-model-settings.yml
+#
+#   --aiderignore
+#   my-project-aiderignore
+"""
+
+
+def _init_project_args(project_root: Path, workspace_hash: str) -> int:
+    """Create the per-project args file from the template, or report it.
+
+    The file is created exclusively ('x' mode) after its parent directory
+    is made, so an existing file is never overwritten or modified: the
+    existing file is reported and left untouched. Returns a process exit
+    code: 0 when the file exists afterwards (freshly created or
+    pre-existing), 1 when the template cannot be written.
+    """
+    path = _project_args_path(project_root, workspace_hash)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf-8") as handle:
+            handle.write(PROJECT_ARGS_TEMPLATE)
+    except FileExistsError:
+        print(f"Project args file already exists; left unchanged: {path}")
+        return 0
+    except OSError as exc:
+        print(f"Warning: could not create {path}: {exc}", file=sys.stderr)
+        return 1
+    print(f"Created the per-project args file: {path}")
+    return 0
+
+
 def _base_repo_digests(image: str, debug: bool = False) -> str:
     """Return local repo digests for an image, or "" when unknown."""
     command = [
@@ -1817,6 +1890,11 @@ def main() -> int:
         debug = True
         assistant_args.pop(0)
 
+    init_project_args = False
+    while assistant_args and assistant_args[0] == "--init-project-args":
+        init_project_args = True
+        assistant_args.pop(0)
+
     if os.name != "posix":
         print("This assistant currently supports Linux only.", file=sys.stderr)
         return 1
@@ -1826,6 +1904,14 @@ def main() -> int:
     project_root = Path.cwd()
     dir_name = project_root.name
     workspace_hash = hashlib.md5((str(project_root) + "\n").encode()).hexdigest()
+
+    # --init-project-args only writes the template file, so it is handled
+    # before any container interaction (including the Docker availability
+    # check) and returns without launching: the flag works even when
+    # container tooling is unavailable.
+    if init_project_args:
+        return _init_project_args(project_root, workspace_hash)
+
     session_id = _resolve_session_id()
     command_log = _configure_command_log(workspace_hash, session_id)
     if debug:
