@@ -122,3 +122,21 @@ def test_sprint5_section_follows_sprint4_with_the_record_structure():
         assert "(" in remainder and remainder.endswith(")"), (
             f"step {number} entry lacks an evidence annotation: {remainder!r}"
         )
+
+
+def test_every_analysis_step_title_appears_verbatim_in_order():
+    """Every step title parsed from the saved S5.1 analysis appears
+    verbatim in the record, in step order, as the completed-step
+    entries' titles — so the record cannot drift from the saved
+    analysis or silently drop a scope element."""
+    titles = _analysis_step_titles()
+    section = _section(_status_text(), "Sprint 5")
+    entries = _record_entries(section)
+    assert [number for number, _ in entries] == [1, 2, 3, 4, 5, 6, 7]
+    for (number, remainder), title in zip(entries, titles):
+        # The entry opens with the analysis's title verbatim, then the
+        # evidence annotation in parentheses.
+        assert remainder.startswith(title + " ("), (
+            f"step {number} entry does not carry the analysis title "
+            f"{title!r}: {remainder!r}"
+        )
