@@ -144,6 +144,18 @@
 - [x] Step 1. Enable the image-internal component pin record (`docs/tech_stack.md` "Image-Internal Component Pins": ShellCheck v0.10.0 static binary, pytest 8.3.5, the pre-baked embedding model, Node.js 22.x, mermaid-cli ^11, distro-managed packages)
 - [x] Step 2. Enable the exact-pin scope statement and accepted-deviation note (`docs/tech_stack.md` "Version Lock Rationale")
 
+## Sprint 5
+
+### Story S5.1: Host-Side Per-Project Configuration (Replaces Root-Config Merging)
+
+- [x] Step 1. Remove project-root configuration reading (`.agent/ai_assistant.py`: counterpart detection, deep merge, model-settings merge, ignore-pattern union, the YAML/JSON subset parser and serializer, merged-config intermediates and their cleanup, and protected-key stripping removed; verified by `tests/test_audit_assistant_config_trust.py` and the removal checks in `tests/test_s5_1_step7.py`)
+- [x] Step 2. Enable per-project args file loading at launch (`.agent/ai_assistant.py`: one argument token per line, blank lines and `#` comments ignored, tokens prepended so typed CLI args win; verified by `tests/test_s5_1_step2.py`)
+- [x] Step 3. Enable args-file template creation (`./agent.sh` `--init-project-args`: commented template at the stable host-side path, refuses to overwrite an existing file, works without Docker; verified by `tests/test_s5_1_step3.py`)
+- [x] Step 4. Enable effective-configuration display (`./agent.sh` `--show-project-config`: args-file path, contents, and effective argument order, works without Docker; verified by `tests/test_s5_1_step4.py`)
+- [x] Step 5. Notify when project-root configuration files are present (`.agent/ai_assistant.py`: existence-only check, TTY-gated one-line notice pointing at `--init-project-args`; verified by `tests/test_s5_1_step5.py`)
+- [x] Step 6. Update user documentation (`README.md` "Per-project customization" replaces the merging section; verified by `tests/test_s5_1_step6.py`)
+- [x] Step 7. Verify end-to-end behavior and retire obsolete tests (six obsolete merge suites removed, full suite green; verified by `tests/test_s5_1_step7.py`)
+
 ## Priority Order for Next Implementation Phase
 
 The Sprint 3 release-management work (REQ-15) is verified and recorded:
