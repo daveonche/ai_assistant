@@ -152,7 +152,7 @@
 - [x] Step 2. Enable per-project args file loading at launch (`.agent/ai_assistant.py`: one argument token per line, blank lines and `#` comments ignored, tokens prepended so typed CLI args win; verified by `tests/test_s5_1_step2.py`)
 - [x] Step 3. Enable args-file template creation (`./agent.sh` `--init-project-args`: commented template at the stable host-side path, refuses to overwrite an existing file, works without Docker; verified by `tests/test_s5_1_step3.py`)
 - [x] Step 4. Enable effective-configuration display (`./agent.sh` `--show-project-config`: args-file path, contents, and effective argument order, works without Docker; verified by `tests/test_s5_1_step4.py`)
-- [x] Step 5. Notify when project-root configuration files are present (`.agent/ai_assistant.py`: existence-only check, TTY-gated one-line notice pointing at `--init-project-args`; verified by `tests/test_s5_1_step5.py`)
+- [x] Step 5. Notify when project-root configuration files are present (`.agent/ai_assistant.py`: existence-only check, one-line notice pointing at `--init-project-args`; verified by `tests/test_s5_1_step5.py`)
 - [x] Step 6. Update user documentation (`README.md` "Per-project customization" replaces the merging section; verified by `tests/test_s5_1_step6.py`)
 - [x] Step 7. Verify end-to-end behavior and retire obsolete tests (six obsolete merge suites removed, full suite green; verified by `tests/test_s5_1_step7.py`)
 
