@@ -86,3 +86,18 @@ def test_sprint5_stated_implemented_and_verified_with_args_file_outcome():
     assert "The Sprint 5 work is implemented and verified" in section
     assert "host-side per-project configuration" in section
     assert "args file" in section
+
+
+def test_backlog_state_recorded_and_next_workflow_step_named():
+    """The section notes the S5.2 record-keeping story's completion,
+    restates the post-Sprint-5 backlog state, and names the next
+    workflow step with a concrete value."""
+    section = _normalized(_priority_order_section())
+    # Record-keeping story completion noted alongside the Sprint 5 work.
+    assert "S5.2 record-keeping story" in section
+    # Post-Sprint-5 backlog state restated.
+    assert "the backlog is empty" in section
+    # Next workflow step named with a concrete (non-placeholder) value.
+    match = re.search(r"Next workflow step: (\S+)", section)
+    assert match, "no 'Next workflow step:' line found"
+    assert match.group(1).strip("`"), "next workflow step value is empty"
