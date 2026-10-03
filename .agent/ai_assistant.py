@@ -597,6 +597,36 @@ def _show_project_config(project_root: Path, workspace_hash: str) -> int:
     return 0
 
 
+# Project-root configuration filenames the launcher deliberately ignores.
+# Existence is checked only to tell the user why their files have no
+# effect; contents are never read (see _notice_root_config_files).
+ROOT_CONFIG_FILENAMES = (
+    ".aider.conf.yml",
+    ".aider.model.settings.yml",
+    ".aiderignore",
+    ".aider.model.metadata.json",
+)
+
+
+def _notice_root_config_files(project_root: Path) -> None:
+    """Point at --init-project-args when root config files are present.
+
+    Repository configuration files the launcher deliberately ignores would
+    otherwise fail silently: a repository ships .aider.conf.yml, the user
+    expects it to apply, and nothing happens. For each known filename that
+    exists in the project root, one line states the file is not read and
+    points at the per-project args file as the supported alternative.
+    Existence is tested only (is_file); file contents are never read.
+    Prints nothing when no such files exist.
+    """
+    for name in ROOT_CONFIG_FILENAMES:
+        if (project_root / name).is_file():
+            print(
+                f"Notice: {name} exists in the project root but is not "
+                "read; customize per-project with --init-project-args"
+            )
+
+
 def _base_repo_digests(image: str, debug: bool = False) -> str:
     """Return local repo digests for an image, or "" when unknown."""
     command = [
@@ -1974,6 +2004,13 @@ def main() -> int:
                 "with --init-project-args"
             )
     assistant_args = project_args + assistant_args
+
+    # Root-config notice: repository configuration files the launcher
+    # deliberately ignores would otherwise fail silently (see
+    # _notice_root_config_files). Placed before the Docker availability
+    # check so the notice is observable on every launch, including runs
+    # without container tooling.
+    _notice_root_config_files(project_root)
 
     if not _docker_available(debug=debug):
         print(
