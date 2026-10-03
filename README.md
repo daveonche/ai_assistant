@@ -42,6 +42,10 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
    chmod +x agent.sh .agent/ai-assistant.sh
    ```
 
+For project-specific assistant arguments, create the commented template
+with `./agent.sh --init-project-args` (see
+[Per-project customization](#per-project-customization)).
+
 ## Usage
 
 To start the AI assistant, run the root convenience launcher from the root of your project:
@@ -127,37 +131,66 @@ ai-assistant
 > an isolated application install, you can also use
 > `pipx install -e .agent`.
 
-#### Mergeable configuration with your project root
+#### Per-project customization
 
-At launch — whether via `./agent.sh` or the `ai-assistant` command — the
-launcher checks your project root for same-named counterparts of its four
-configuration files and combines them with the `.agent/` defaults:
+The launcher reads its assistant configuration only from its own
+directory: `.aider.conf.yml`, `.aider.model.settings.yml`, `.aiderignore`,
+and `.aider.model.metadata.json` in your project root are never read. If
+one of them exists, the launch prints a one-line notice saying so and
+pointing at `--init-project-args`; the file itself has no effect.
 
-| File | Format | Combination rule |
-| :--- | :--- | :--- |
-| `.aider.conf.yml` | YAML | Deep-merged: your root value wins each conflict, agent defaults are kept for keys you do not set |
-| `.aider.model.settings.yml` | YAML | Entries merged per model `name`: your entry overrides the matching default, untouched defaults are kept |
-| `.aider.model.metadata.json` | JSON | Deep-merged: your root value wins each conflict, agent defaults are kept |
-| `.aiderignore` | gitignore patterns | Union of both files' patterns, duplicates counted once |
+To customize the assistant for one project, use a per-project args file.
+It lives in your home configuration area — outside any repository — so
+repository content can never create or alter it, and it survives
+assistant updates:
 
-To override or extend the defaults, create a file with the same name in
-your project root. For example, a root `.aider.conf.yml` containing
-`auto_commits: true` flips that one setting while every other
-`.agent/.aider.conf.yml` default still applies:
-
-```yaml
-auto_commits: true
+```text
+~/.config/aider-agent/projects/<project>-<hash8>.args
 ```
 
-If your project root has no counterpart for a file, the `.agent/` copy is
-used unchanged — nothing changes until you add one. If a counterpart
-cannot be parsed (for example unsupported YAML syntax), the launcher falls
-back to the `.agent/` copy instead of failing the launch, and reports it
-in `--debug` output.
+Create it from the commented template:
 
-The combined files are written under `.agent/.merged/` — never to either
-source file — rewritten deterministically on every launch, and removed
-when the session ends.
+```bash
+./agent.sh --init-project-args
+```
+
+The template contains guidance and worked examples; an existing file is
+never overwritten or modified. The format is line-based: one argument
+token per line, blank lines and lines starting with `#` ignored, entries
+taken verbatim — no quotes, no variable expansion, no shell parsing. A
+value containing spaces goes on its own line after its flag.
+
+On an interactive launch, a status line reports the args-file path and
+how many arguments were loaded, or the creation hint when the file does
+not exist; with output redirected, no status line is printed.
+
+Arguments take effect on every launch, in this precedence order: typed
+command-line arguments win over args-file entries, which win over the
+`.agent/` defaults. Inspect the effective configuration for a project —
+path, contents, and precedence — with:
+
+```bash
+./agent.sh --show-project-config
+```
+
+> **Note:** the args file is keyed to the project directory's path.
+> Moving or renaming the project directory orphans the file: the next
+> launch reports a fresh path with zero arguments. Move the old file to
+> the new name (or re-create it) to keep your entries.
+
+The template also shows how to replace the assistant's own
+`.aider.model.settings.yml` or `.aiderignore` entirely with
+`--model-settings-file` or `--aiderignore`. When you do:
+
+1. Reference a file under a distinctive name unlikely to exist in any
+   repository — a hostile repository could ship a same-named file that
+   silently satisfies the reference.
+2. Create that file in the project root and copy the needed entries from
+   the assistant's own copy (`.agent/.aider.model.settings.yml` or
+   `.agent/.aiderignore`) so the override is self-sufficient.
+3. Use the override only when the project genuinely needs extra or
+   different configurations — otherwise leave the flag out so the
+   `.agent/` copy stays in force.
 
 #### SSH access for git remotes
 
@@ -207,7 +240,10 @@ a warning), and removes the temporary directory when it finishes,
 leaving no temporary artifacts behind. No manual step follows: the
 hook is left executable and active, so git runs it on the project's
 next commit. Afterwards, configure the environment variables as
-described above and run `./agent.sh` from the project root.
+described above and run `./agent.sh` from the project root. For
+project-specific assistant arguments, create the commented template
+with `./agent.sh --init-project-args` (see
+[Per-project customization](#per-project-customization)).
 
 #### Updating an existing install
 
