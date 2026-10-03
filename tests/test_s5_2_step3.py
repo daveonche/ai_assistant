@@ -74,3 +74,22 @@ def test_edited_sections_have_balanced_inline_code_spans():
                 f"{heading}: unbalanced inline code spans on line "
                 f"{offset + 1}: {line!r}"
             )
+
+
+def test_edited_sections_have_balanced_code_fences():
+    """Code fences in the two edited sections are balanced: backtick
+    fences occur only in even counts and no tilde fences appear — the
+    conventions reference's unclosed-fence gotcha, guarded for future
+    edits to these sections."""
+    for heading, lines in _edited_sections():
+        fence_count = 0
+        for offset, line in enumerate(lines):
+            stripped = line.lstrip()
+            assert not stripped.startswith("~~~"), (
+                f"{heading}: tilde fence on line {offset + 1}: {line!r}"
+            )
+            if stripped.startswith("```"):
+                fence_count += 1
+        assert fence_count % 2 == 0, (
+            f"{heading}: unbalanced code fences ({fence_count} fence lines)"
+        )
