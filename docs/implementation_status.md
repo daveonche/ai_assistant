@@ -161,11 +161,16 @@
 The Sprint 3 release-management work (REQ-15) is verified and recorded:
 release-reference consistency, the release tag guard, and the release script
 all pass their verification suites. All Sprint 4 stories (S4.1 mergeable root
-configuration, S4.2 framework detection and conventions recommendation, S4.3
+configuration (since replaced by S5.1's host-side per-project args file),
+S4.2 framework detection and conventions recommendation, S4.3
 README `--auto` release example fix, S4.5 container SSH support for git
 remotes, S4.6 container build tooling fixes, S4.7 container image pins and
 offline pre-bakes, and the S4.4 record-keeping story) are implemented and
 verified; their source evidence is recorded in the Sprint 4 section above.
+The Sprint 5 work is implemented and verified: S5.1 host-side per-project
+configuration through a trusted args file (replacing the S4.1 root-config
+merging, which is no longer current behavior) and the S5.2 record-keeping
+story; their source evidence is recorded in the Sprint 5 section above.
 Every requirement (REQ-1 through REQ-15) is implemented with source evidence,
 and the backlog is empty.
 
@@ -192,6 +197,6 @@ green after the change.
 
 Priority 1 - New capability intake:
 
-- No outstanding requirements remain; the next sprint requires user-introduced features or requirements (the same pattern that produced Sprint 4's S4.1-S4.3 and S4.5-S4.7)
+- No outstanding requirements remain; the next sprint requires user-introduced features or requirements (the same pattern that produced Sprint 4's S4.1-S4.3 and S4.5-S4.7 and Sprint 5's S5.1-S5.2)
 
 Next workflow step: `#generate-sprint-stories`
