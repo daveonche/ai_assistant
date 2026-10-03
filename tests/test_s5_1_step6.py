@@ -86,3 +86,22 @@ def test_customization_section_documents_args_file_and_precedence():
         "typed command-line arguments win over args-file entries, "
         "which win over the `.agent/` defaults"
     ) in section
+
+
+def test_customization_section_documents_move_rename_caveat():
+    """The per-project customization section documents the move/rename
+    caveat: the args file is keyed to the project directory's path, so
+    moving or renaming the directory orphans the file — with the
+    remediation."""
+    section = _normalized(_section(_doc_text(), "Per-project customization"))
+    # The keying statement...
+    assert "keyed to the project directory's path" in section
+    # ...the caveat itself...
+    assert (
+        "Moving or renaming the project directory orphans the file"
+    ) in section
+    # ...and the remediation.
+    assert (
+        "Move the old file to the new name (or re-create it) to keep "
+        "your entries"
+    ) in section
