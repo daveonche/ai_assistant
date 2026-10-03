@@ -567,6 +567,36 @@ def _init_project_args(project_root: Path, workspace_hash: str) -> int:
     return 0
 
 
+def _show_project_config(project_root: Path, workspace_hash: str) -> int:
+    """Print the effective per-project configuration for this project.
+
+    The single command that answers "what configuration is actually in
+    effect for this project": the args-file path, its contents verbatim
+    (or a clear absence notice pointing at --init-project-args), and the
+    effective argument order — typed command-line arguments win over file
+    entries, which win over the assistant-directory defaults. Returns a
+    process exit code (0; the display never fails the launch).
+    """
+    path = _project_args_path(project_root, workspace_hash)
+    print(f"Project args file: {path}")
+    if path.exists():
+        try:
+            contents = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            print(f"Warning: cannot read {path}: {exc}", file=sys.stderr)
+        else:
+            print("Contents:")
+            print(contents.rstrip("\n"))
+    else:
+        print("Not found; create it with --init-project-args")
+    print(
+        "Effective argument order: typed command-line arguments win over "
+        "file entries, which win over the assistant's own defaults in "
+        ".agent/."
+    )
+    return 0
+
+
 def _base_repo_digests(image: str, debug: bool = False) -> str:
     """Return local repo digests for an image, or "" when unknown."""
     command = [
@@ -1895,6 +1925,11 @@ def main() -> int:
         init_project_args = True
         assistant_args.pop(0)
 
+    show_project_config = False
+    while assistant_args and assistant_args[0] == "--show-project-config":
+        show_project_config = True
+        assistant_args.pop(0)
+
     if os.name != "posix":
         print("This assistant currently supports Linux only.", file=sys.stderr)
         return 1
@@ -1905,12 +1940,14 @@ def main() -> int:
     dir_name = project_root.name
     workspace_hash = hashlib.md5((str(project_root) + "\n").encode()).hexdigest()
 
-    # --init-project-args only writes the template file, so it is handled
-    # before any container interaction (including the Docker availability
-    # check) and returns without launching: the flag works even when
-    # container tooling is unavailable.
+    # --init-project-args and --show-project-config only write and read the
+    # args file, so they are handled before any container interaction
+    # (including the Docker availability check) and return without
+    # launching: the flags work even when container tooling is unavailable.
     if init_project_args:
         return _init_project_args(project_root, workspace_hash)
+    if show_project_config:
+        return _show_project_config(project_root, workspace_hash)
 
     session_id = _resolve_session_id()
     command_log = _configure_command_log(workspace_hash, session_id)
