@@ -131,3 +131,18 @@ def test_customization_section_documents_override_guidance():
     assert ".agent/.aiderignore" in section
     # 3. use only when genuinely needed.
     assert "genuinely needs" in section
+
+
+def test_install_and_update_sections_point_at_init_flag():
+    """The installation and update sections each carry a one-line
+    pointer to the template-creation flag, referencing the per-project
+    customization section."""
+    text = _doc_text()
+    # The Installation section carries the pointer...
+    installation = _normalized(_section(text, "Installation"))
+    assert "./agent.sh --init-project-args" in installation
+    assert "Per-project customization" in installation
+    # ...and so does the update section.
+    update = _normalized(_section(text, "Updating an existing install"))
+    assert "./agent.sh --init-project-args" in update
+    assert "Per-project customization" in update
