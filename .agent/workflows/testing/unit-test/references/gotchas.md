@@ -8,4 +8,5 @@
 - Always require explicit user confirmation after test execution before proceeding.
 - Test environment setup and dependency changes require pausing test generation and returning to it after configuration is complete.
 - Existing tests should always be checked for coverage before writing new tests.
+- File names and function signatures are not coverage evidence; only file contents are. Enumerate candidate suites with a search over the test directory, then read every hit before ruling on overlap.
 - Scope tests strictly to the current step's Must Support items; reject out-of-scope test suggestions.

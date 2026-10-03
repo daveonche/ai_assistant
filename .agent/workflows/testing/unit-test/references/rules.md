@@ -5,7 +5,18 @@
 1. Generate tests only for the current step’s Must Support items.
 2. Map every test directly to a specific requirement.
 3. Reject and flag out-of-scope test suggestions.
-4. Check for existing test coverage before writing new tests.
+4. Check for existing test coverage before writing new tests, using file
+   contents as the only evidence:
+   - Enumerate candidate suites by searching the test directory for the
+     target file, section, or identifier the new tests would assert on
+     (e.g., `grep -rln "implementation_status" tests/`), excluding
+     build caches such as `__pycache__`.
+   - Read every enumerated suite before ruling on overlap; file names
+     and function signatures are not coverage evidence.
+   - Record the check in the scenario analysis: list each inspected
+     suite with what it asserts, and mark each planned test `Exists`
+     (citing the covering suite) or `New` (citing the gap the suite
+     leaves).
 
 ## Environment and Dependencies
 
