@@ -28,6 +28,18 @@ VERIFICATION_SUITES = (
     ("tests/test_s5_1_step5.py", "root-counterpart notice"),
 )
 
+# Obsolete project-root merging test files removed in this story.
+# tests/test_s4_1_step4.py never existed in this repository (confirmed
+# by the removal commit), so it is not listed.
+OBSOLETE_MERGE_TESTS = (
+    "tests/test_s4_1_step1.py",
+    "tests/test_s4_1_step2.py",
+    "tests/test_s4_1_step3.py",
+    "tests/test_s4_1_step5.py",
+    "tests/test_audit_finding1_config_merge.py",
+    "tests/test_audit_finding2_ignore_negation.py",
+)
+
 
 def _tracked_files() -> set[str]:
     result = subprocess.run(
@@ -50,4 +62,17 @@ def test_verification_suites_exist_and_are_tracked():
         )
         assert path in tracked, (
             f"verification suite for {area!r} is not tracked by git: {path}"
+        )
+
+
+def test_obsolete_merge_test_files_are_removed():
+    """The obsolete project-root merging test files are neither present
+    on disk nor tracked by git."""
+    tracked = _tracked_files()
+    for path in OBSOLETE_MERGE_TESTS:
+        assert not (PROJECT_ROOT / path).exists(), (
+            f"obsolete merge test still on disk: {path}"
+        )
+        assert path not in tracked, (
+            f"obsolete merge test still tracked by git: {path}"
         )
