@@ -266,6 +266,10 @@ confirmation (unless `core.hooksPath` is already set), and records the
 refresh as a single commit whose subject conforms to that gate. The
 update is therefore a normal, reviewable, revertable project change —
 re-apply your local customizations after the update completes.
+Per-project assistant arguments need no re-application: the args file
+lives in your home configuration area, outside `.agent/`, so updates
+leave it untouched. Create it once with `./agent.sh --init-project-args`
+(see [Per-project customization](#per-project-customization)).
 
 When `raw.githubusercontent.com` is unreachable — for example a broken
 local resolver, or a network that blocks or filters the raw domain —
