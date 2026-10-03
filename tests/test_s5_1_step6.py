@@ -110,3 +110,24 @@ def test_customization_section_documents_move_rename_caveat():
         "Move the old file to the new name (or re-create it) to keep "
         "your entries"
     ) in section
+
+
+def test_customization_section_documents_override_guidance():
+    """The per-project customization section documents the override
+    guidance: both file-replacement flags, a distinctive referenced
+    filename (with the reason), a self-sufficient copy from the
+    assistant's own file, and overriding only when genuinely needed."""
+    section = _normalized(_section(_doc_text(), "Per-project customization"))
+    # The override mechanism: both file-replacement flags are named...
+    assert "--model-settings-file" in section
+    assert "--aiderignore" in section
+    # ...with the three guidance points:
+    # 1. a distinctive referenced filename (and why)...
+    assert "distinctive name" in section
+    assert "silently satisfies the reference" in section
+    # 2. a self-sufficient copy from the assistant's own file...
+    assert "self-sufficient" in section
+    assert ".agent/.aider.model.settings.yml" in section
+    assert ".agent/.aiderignore" in section
+    # 3. use only when genuinely needed.
+    assert "genuinely needs" in section
