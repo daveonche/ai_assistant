@@ -101,3 +101,20 @@ def test_backlog_state_recorded_and_next_workflow_step_named():
     match = re.search(r"Next workflow step: (\S+)", section)
     assert match, "no 'Next workflow step:' line found"
     assert match.group(1).strip("`"), "next workflow step value is empty"
+
+
+def test_merge_mentions_framed_as_replaced_or_no_longer_current():
+    """Every mention of root-config merging in the section is framed as
+    replaced or no-longer-current — no stale claim presents merging as
+    active behavior. Each mention is checked within a window of
+    surrounding text, so framing across the document's hard line wraps
+    still counts."""
+    section = _normalized(_priority_order_section())
+    mentions = list(re.finditer(r"merg\w*", section, re.IGNORECASE))
+    assert mentions, "no merge mentions found to verify"
+    for match in mentions:
+        window = section[max(0, match.start() - 100):match.end() + 100]
+        assert _MERGE_FRAMING.search(window), (
+            f"merge mention not framed as replaced/no-longer-current: "
+            f"...{window}..."
+        )
