@@ -76,7 +76,7 @@ Each phase depends on the output of the previous phase. Use this table to choose
 
 - `S<X.Y>` story IDs must come from Phase 2; do not guess them.
 - `$architecture-frontend-design` is conditional: activate it only when Phase 2 generated a UI/frontend story, and run it before that story's Phase 3 analysis.
-- In this chain, use the frontend design prompt for its planning steps only ([STEP 1]-[STEP 3]); Phase 4A implements the analyzed steps following the approved plan.
+- In this chain, use the frontend design prompt for its planning steps only ([STEP 1]-[STEP 3A], including the design-artifact save); Phase 4A implements the analyzed steps following the approved plan.
 - Phase 4A and Phase 4B can be resumed at a specific `[step-number]`, but only after the story has been analyzed in Phase 3.
 - Do not run implementation and unit-testing commands together; complete implementation before requesting validation tests.
 - `$code-dependency-management` is conditional and should be activated only when a new dependency is identified during Phase 4A.
@@ -136,6 +136,8 @@ Create focused user stories for the next sprint based on technical dependencies.
 
 - Implementation Status Report
 - Previous sprint's user stories
+- Project requirements list
+- Technology stack
 
 **Key Outputs → [Feed into Phase 3]:**
 
@@ -165,7 +167,7 @@ Produce an approved design direction and file inventory for a UI/frontend story 
 
 **Scope Note:**
 
-In this chain, run the prompt through its planning steps only ([STEP 1]-[STEP 3]); do not proceed to its [STEP 4] implementation. Phase 4A implements the analyzed steps following the approved plan, keeping dependency management conditional in Phase 4A.
+In this chain, run the prompt through its planning steps only ([STEP 1]-[STEP 3A], including the design-artifact save); do not proceed to its [STEP 4] implementation. Phase 4A implements the analyzed steps following the approved plan, keeping dependency management conditional in Phase 4A.
 
 ### Phase 3: Story Analysis (`$planning-story-analysis S<X.Y>`)
 
@@ -261,7 +263,7 @@ Generate and verify unit tests for the implemented story step, ensuring comprehe
    ```
 
    - Run only for stories with UI/frontend scope, before their story analysis
-   - Complete the prompt's planning steps ([STEP 1]-[STEP 3]) and stop before [STEP 4]
+   - Complete the prompt's planning steps ([STEP 1]-[STEP 3A], including the design-artifact save) and stop before [STEP 4]
 
 4. **Analyze Story:**
 
