@@ -41,7 +41,7 @@ IMPLEMENTATION PHASE (code mode):
 ## Gotchas
 
 - Context check: never assert a file's presence or freshness from transcript recall (Critical Rule 3 in `.agent/AGENTS.md`); when unsure whether a required file is loaded or current, request it via /read-only — re-loading is cheap and idempotent.
-- New dependencies: never assume uncovered functionality is covered by existing dependencies. STOP and invoke #manage-dependencies.
+- New dependencies: never assume uncovered functionality is covered by existing dependencies. STOP and invoke `$code-dependency-management`.
 - Sequential order: never skip steps or implement them out of order; subsequent steps must be explicitly reviewed when reached.
 - Verification: always verify prerequisites before implementing a step.
 
@@ -53,10 +53,11 @@ IMPLEMENTATION PHASE (code mode):
 - [ ] Step 4: Transition to code mode
 - [ ] Step 5: Implement and validate
 
-[STEP 1] Ask the user: "Are the story steps report, sprint story, and dependency context files currently loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). Required items:
+[STEP 1] Ask the user: "Are the story steps report, sprint story, dependency context files — and, for a UI/frontend story, the approved frontend design artifact — currently loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). Required items:
 1. The story steps report (`docs/analysis/S<X.Y>-story-steps.md`)
 2. The sprint story (`docs/sprints/sprint_[number]_stories.md`)
 3. Approved dependencies or dependency context from the Dependency Management workflow (`docs/dependencies/S<X.Y>-dependencies.md` when a report was generated)
+4. For UI/frontend stories: the approved design direction and file inventory from Frontend Design (default `docs/architecture/frontend_design.md`); skip this item for non-UI stories
 
 Fill the findings list below only from files the user named or that were added this session — never from transcript recall:
 
@@ -65,9 +66,10 @@ I have found in the context (per user confirmation):
 ✓ Story steps report in [filename]
 ✓ Sprint story in [filename]
 ✓ Approved dependencies in [filename]
+✓ Frontend design artifact in [filename] (UI/frontend stories only; skip this line otherwise)
 ```
 
-[STOP - If any items are missing, list them and wait for user to provide them]
+[STOP - If any items are missing, list them and wait for user to provide them. For a missing frontend design artifact on a UI story, suggest running `$architecture-frontend-design` to generate it]
 
 [STEP 2] Present the specific step to be implemented:
 ```
@@ -146,7 +148,7 @@ CRITICAL Rules:
       • [List uncovered functionality]
       
       Please:
-      1. Run #manage-dependencies S<X.Y> to invoke the Dependency Management Prompt to evaluate and approve required dependencies
+      1. Run `$code-dependency-management` to invoke the Dependency Management Prompt to evaluate and approve required dependencies
       2. After dependency management is complete, resume this implementation with #implement-step S<X.Y> [step-number]"
     - Wait for user to complete the dependency management process and return
 11. If user input at a [STOP] point is invalid or unexpected, re-prompt the user with the original question and wait for the correct input.
