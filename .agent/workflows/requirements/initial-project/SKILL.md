@@ -21,7 +21,7 @@ First, ensure correct mode by saying EXACTLY:
 [STOP - Do not proceed until user replies with "ready"]
 
 [STEP 1] Project Idea Verification
-Ask the user: "Is your project idea or problem statement currently loaded in your context? If yes, name the file. (Y/N)" — do not assess context contents yourself (Critical Rule 3).
+Ask the user: "Is your project idea or problem statement currently loaded in your context? If yes, name the file. (Y/N)" — do not assess context contents yourself (Critical Rule 3). In the scaffolding chain, the Vision Statement Document (default: `docs/vision/project_vision.md`) from Phase 1 is the expected source; when it exists, treat it as the project idea.
 
 If the user answers Y, present it:
 ```text
@@ -35,7 +35,7 @@ Would you like to:
 ```
 
 If the user answers N, ask:
-"Please provide your project idea or problem statement. Focus on:
+"Please provide your project idea or problem statement. If the project has a vision statement (default: `docs/vision/project_vision.md`), add that file — it is the expected source in the scaffolding chain. Otherwise, describe:
 - What problem are you trying to solve?
 - Who is it for?
 - What are the key features needed?"
@@ -284,6 +284,7 @@ Use #modify-requirements to modify existing requirements
 - Saving requires a mode sequence: stay in `/ask` for every review step, switch to `/code` only for the 'save to file' step, then return to `/ask`. Never emit SEARCH/REPLACE blocks during review steps.
 - REQ-IDs must remain unique across both the generate and modify flows. When adding a category in the modify flow, reuse the `[CAT]` abbreviation scheme defined in the generate workflow's STEP 3.
 - The `[Assumed]` prefix is permitted only when the user explicitly chose option 2 in STEP 2 of the generate workflow; never add it retroactively to requirements the user already approved.
+- In the scaffolding chain, Phase 2 grounds requirements in the Phase 1 Vision Statement Document (default `docs/vision/project_vision.md`); when that file exists, use it as the project idea source in [STEP 1] instead of asking the user to restate the idea.
 
 ## Critical Rules
 
