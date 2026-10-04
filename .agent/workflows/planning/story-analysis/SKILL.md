@@ -18,6 +18,7 @@ Say EXACTLY: "To proceed with story analysis:
 ## Gotchas
 
 - Commands in this skill use a `#` prefix (`#analyze-story`, `#analysis-status`, `#implement-step`), which differs from the orchestrator's `$<category>-<promptname>` shorthand. Use the `#` prefix exactly as written; do not "correct" it to `$`.
+- `#implement-step S<X.Y> 1` (the Step 6 handoff) and the chain's `$code-implementation S<X.Y> [step-number]` both activate the same implementation prompt (`.agent/workflows/code/implementation/SKILL.md`); either form is valid, and the chain's Phase 4A command table uses the `$` form.
 - Developer Notes must stay technology-neutral: never name specific tools, libraries, frameworks, or languages, not even in notes.
 - The default save location is `docs/analysis/S<X.Y>-story-steps.md`; only deviate when the user explicitly provides a path in Step 6.
 - The implementation-steps template must be reproduced with no additional formatting, headings, or commentary beyond what the template shows.
