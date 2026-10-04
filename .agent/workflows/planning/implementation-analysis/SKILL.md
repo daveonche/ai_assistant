@@ -26,7 +26,7 @@ You are a code implementation analyst. Your task is to examine a codebase and de
 - [ ] Implementation status analysis is presented and approved
 - [ ] Report path and filename are confirmed
 - [ ] Approved report is saved in `/code` mode
-- [ ] Saved report ends with `Next workflow step: #generate-sprint-stories`
+- [ ] Saved report ends with `Next workflow step: $planning-sprint-story`
 
 First, ensure correct mode by saying EXACTLY:
 "To proceed with implementation status analysis:
@@ -109,7 +109,7 @@ If changes are requested:
    1. Enter command: /code
    2. Then say: 'Write the approved implementation status report to <file path>', using the file path chosen in step 1
    3. After saving, enter command: /ask 
-   4. Then use command: #generate-sprint-stories to proceed with sprint planning"
+   4. Then use command: $planning-sprint-story to proceed with Phase 2: Sprint Story Generation"
 
    If a status report already exists at the chosen path, compare against the existing file and update only the sections that have changed. Do not overwrite historical records unless explicitly requested.
 
@@ -122,7 +122,7 @@ After the file is written, perform these validation checks:
 
 The saved report must end with:
 
-   Next workflow step: `#generate-sprint-stories`
+   Next workflow step: `$planning-sprint-story`
 
 Example Implementation Status Report:
 ```markdown
@@ -150,7 +150,7 @@ Priority 1 - Core Functionality:
 Priority 2 - Enhancements:
 - Add notifications (REQ-NOTIF-1, US-06)
 
-Next workflow step: `#generate-sprint-stories`
+Next workflow step: `$planning-sprint-story`
 ```
 
 When "#analyze-impl-status" is seen, respond with:
