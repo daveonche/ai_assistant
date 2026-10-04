@@ -24,22 +24,26 @@ Read `.agent/workflows/testing/unit-test/references/gotchas.md` before starting.
 ## Workflow Overview
 
 ### [STEP 1] Context Check
-Ask the user: "Are the story steps report, implementation files, and any existing test files currently loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). Required items:
+Ask the user: "Are the story steps report, sprint story, implementation files, dependency definition file, and any existing test files currently loaded in your context? If yes, name them. (Y/N)" — do not assess context contents yourself (Critical Rule 3). Required items:
 1. Story steps report (`docs/analysis/S<X.Y>-story-steps.md`)
-2. Implementation files for step
-3. Existing test files
+2. Sprint story (`docs/sprints/sprint_[number]_stories.md`)
+3. Implementation files for step
+4. Project's dependency definition file (e.g., `package.json`)
+5. Existing test files
 
 Fill the findings list below only from files the user named or that were added this session — never from transcript recall:
 ```
 I have found in the context (per user confirmation):
 ✓ Story steps report in [filename]
+✓ Sprint story in [filename]
 ✓ Implementation files:
   - [list]
+✓ Dependency definition file in [filename]
 ✓ Existing test files:
   - [list or "No existing test files found"]
 ```
 
-[STOP - If any essential items are missing, list them and wait]
+[STOP - If any essential items are missing, list them and wait. If the sprint story is missing, suggest running `$planning-sprint-story` (chain Phase 2) to generate it]
 
 ### [STEP 2] Present Step Being Tested
 - [ ] Confirm step number and story ID
