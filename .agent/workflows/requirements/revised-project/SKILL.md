@@ -2,6 +2,8 @@
 
 **Convention Check Reminder:** Before creating or editing any file, check the Conventions Reference Routing table in `.agent/AGENTS.md` and load the matching reference via `/read-only` before proceeding.
 
+**Scope:** Standalone utility outside both workflow chains — use it to revise an existing requirements list on demand. It is not a chain phase; requirement changes inside a chain go through that chain's own phases.
+
 When asked to revise requirements:
 
 1. Review Current Requirements
