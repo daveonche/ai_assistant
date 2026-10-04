@@ -44,11 +44,12 @@
 ## Command Behavior
 
 - `$workflows-project-scaffolding-chain`: Starts or resumes the chain — fresh/resume check, presentation of the phase command table, phase selection, on-demand loading of the selected phase's SKILL.md, then a [STOP] waiting for the user to run a phase command.
-- Phase commands (`$planning-vision-statement`, `$requirements-initial-project`, `$architecture-tech-stack`, `$architecture-design`, `$planning-scaffolding-sprint-story`, `$planning-story-analysis S<X.Y>`, `$code-implementation S<X.Y> [step-number]`, `$testing-unit-test S<X.Y> [step-number]`, `$code-dependency-management`): activate the corresponding phase. The authoritative command table lives in SKILL.md.
+- Phase commands (`$planning-vision-statement`, `$requirements-initial-project`, `$architecture-tech-stack`, `$architecture-design`, `$architecture-frontend-design`, `$planning-scaffolding-sprint-story`, `$planning-story-analysis S<X.Y>`, `$code-implementation S<X.Y> [step-number]`, `$testing-unit-test S<X.Y> [step-number]`, `$code-dependency-management`): activate the corresponding phase. The authoritative command table lives in SKILL.md.
 
 ## Gotchas / Sync Notes
 
 - Chain integrity requires each phase's output to be available or approved before proceeding to the next phase; never auto-progress — always wait for the user to select a phase.
+- `$architecture-frontend-design` (Phase 4B) is conditional: run it only for projects with a frontend; skip it for backend-only projects.
 - Load phase prompts on demand via their phase commands to avoid context overload.
 - Scope stays within initial scaffolding; later features are out of chain scope.
 - The phase sequence, Input/Output Chain, Chain Dependencies, and verification points are authoritative in SKILL.md. Do not duplicate them here.
@@ -56,8 +57,8 @@
 
 ## Version
 
-- Current Version: 1.1.0
-- Last Updated: 2026-09-26
+- Current Version: 1.2.0
+- Last Updated: 2026-10-04
 - Stability: Experimental
 
 ## Purpose
