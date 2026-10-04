@@ -6,6 +6,7 @@ This role responds to the following commands:
 - `$requirements-initial-project` - Activates Phase 2: Initial Project Requirements Management
 - `$architecture-tech-stack` - Activates Phase 3: Technology Stack Generation
 - `$architecture-design` - Activates Phase 4: Architecture Design Generation
+- `$architecture-frontend-design` - Activates Phase 4B: Frontend Design Generation (`.agent/workflows/architecture/frontend-design/SKILL.md`)
 - `$planning-scaffolding-sprint-story` - Activates Phase 5: Scaffolding Sprint Story Generation
 - `$planning-story-analysis S<X.Y>` - Activates Phase 6: Story Analysis
 - `$code-implementation S<X.Y> [step-number]` - Activates Phase 7A: Implementation
@@ -19,6 +20,7 @@ This role responds to the following commands:
 - Chain integrity requires each phase's output to be available or approved before proceeding to the next phase.
 - The orchestrator must not auto-progress through the chain; always wait for the user to select a phase.
 - When loading nested prompts, the corresponding `.agent/workflows/<category>/<promptname>/SKILL.md` must be added to the chat if not already loaded.
+- Phase 4B applies only to projects with a frontend; skip it for backend-only projects and proceed from Phase 4 to Phase 5.
 
 When you see `$workflows-project-scaffolding-chain`, activate this role:
 
@@ -46,6 +48,7 @@ Example response: `I want to start with Phase 1: $planning-vision-statement`
 | `$requirements-initial-project` | Phase 2: Initial Project Requirements Management |
 | `$architecture-tech-stack` | Phase 3: Technology Stack Generation |
 | `$architecture-design` | Phase 4: Architecture Design Generation |
+| `$architecture-frontend-design` | Phase 4B: Frontend Design Generation |
 | `$planning-scaffolding-sprint-story` | Phase 5: Scaffolding Sprint Story Generation |
 | `$planning-story-analysis S<X.Y>` | Phase 6: Story Analysis |
 | `$code-implementation S<X.Y> [step-number]` | Phase 7A: Implementation |
@@ -70,6 +73,8 @@ Phase 2: Initial Project Requirements Management
 Phase 3: Technology Stack Generation
 ↓ [Outputs feed Phase 4]
 Phase 4: Architecture Design Generation
+↓ [Outputs feed Phase 4B]
+Phase 4B: Frontend Design Generation
 ↓ [Outputs feed Phase 5]
 Phase 5: Scaffolding Sprint Story Generation
 ↓ [Outputs feed Phase 6]
@@ -146,6 +151,24 @@ Define core architectural components needed for initial project scaffolding.
 
 - Architecture Design Document (`architecture.md`)
 
+### Phase 4B: Frontend Design Generation (`$architecture-frontend-design`)
+
+[Frontend Design Prompt](../../architecture/frontend-design/SKILL.md)
+
+#### Phase 4B Purpose
+
+Produce an approved frontend design direction and file inventory grounded in the detected framework, so scaffolding stories cover the frontend files.
+
+**Required Inputs (including Phase 4 outputs):**
+
+- Architecture Design Document
+- Technology Stack Document
+- Frontend requirements from the vision and requirements documents
+
+**Key Outputs → [Feed into Phase 5]:**
+
+- Approved design direction and design plan/file inventory (e.g., `frontend_design.md`)
+
 ### Phase 5: Scaffolding Sprint Story Generation (`$planning-scaffolding-sprint-story`)
 
 [Scaffolding Sprint Story Generation Prompt](../../planning/scaffolding-sprint-story/SKILL.md)
@@ -154,9 +177,10 @@ Define core architectural components needed for initial project scaffolding.
 
 Generate focused user stories for the initial project scaffolding sprint.
 
-**Required Inputs (including Phase 4 outputs):**
+**Required Inputs (including Phase 4B outputs):**
 
 - Architecture Design Document
+- Approved frontend design direction and file inventory (when the project has a frontend)
 
 **Key Outputs → [Feed into Phase 6]:**
 
@@ -254,16 +278,25 @@ Generate and verify unit tests for the implemented story step.
    - Ensure all Phase 3 outputs are available
    - Wait for architecture design to complete before proceeding
 
-5. **Generate Scaffolding Stories:**
+5. **Generate Frontend Design (projects with a frontend):**
+
+   ```cmd
+   $architecture-frontend-design
+   ```
+
+   - Ensure all Phase 4 outputs are available
+   - Wait for the design direction and file inventory to be approved before proceeding
+
+6. **Generate Scaffolding Stories:**
 
    ```cmd
    $planning-scaffolding-sprint-story
    ```
 
-   - Ensure all Phase 4 outputs are available
+   - Ensure all Phase 4B outputs are available (when the project has a frontend)
    - Wait for story generation to complete before proceeding
 
-6. **Analyze Story:**
+7. **Analyze Story:**
 
    ```cmd
    $planning-story-analysis S<X.Y>
@@ -272,7 +305,7 @@ Generate and verify unit tests for the implemented story step.
    - Ensure the specific user story is available in the context
    - Wait for story analysis to complete before proceeding
 
-7. **Implement Stories, step by step:**
+8. **Implement Stories, step by step:**
 
    ```cmd
    $code-implementation S<X.Y> [step-number]
@@ -281,7 +314,7 @@ Generate and verify unit tests for the implemented story step.
    - Requires complete story analysis outputs
    - Execute for each story and step, in sequence
 
-8. **Generate Unit Tests:**
+9. **Generate Unit Tests:**
 
    ```cmd
    $testing-unit-test S<X.Y> [step-number]
@@ -300,6 +333,7 @@ Each phase's primary output becomes a required input for the next phase.
 | Phase 2: Initial Project Requirements Management | Core Requirements Document |
 | Phase 3: Technology Stack Generation | Technology Stack Document |
 | Phase 4: Architecture Design Generation | Architecture Design Document |
+| Phase 4B: Frontend Design Generation | Approved frontend design direction and file inventory |
 | Phase 5: Scaffolding Sprint Story Generation | Scaffolding Sprint Stories |
 | Phase 6: Story Analysis | Story Steps Report |
 | Phase 7A: Implementation | Implemented code changes |
@@ -320,13 +354,16 @@ Verify each transition before moving to the next phase.
 3. **Technology Stack → Architecture Design**
    - Verify technology stack is complete
 
-4. **Architecture Design → Scaffolding Stories**
+4. **Architecture Design → Frontend Design**
    - Verify architecture design is complete
 
-5. **Scaffolding Stories → Story Analysis**
+5. **Frontend Design → Scaffolding Stories**
+   - Verify design direction and file inventory are approved (when the project has a frontend)
+
+6. **Scaffolding Stories → Story Analysis**
    - Verify all stories have required components
 
-6. **Story Analysis → Implementation**
+7. **Story Analysis → Implementation**
    - Verify story steps report is complete
 
 ### Chain Break Prevention

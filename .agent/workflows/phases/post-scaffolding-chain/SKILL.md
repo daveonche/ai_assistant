@@ -4,6 +4,7 @@ This role responds to the following commands:
 - `$workflows-post-scaffolding-chain` - Starts or resumes the post-scaffolding workflow chain
 - `$planning-implementation-analysis` - Activates Phase 1: Implementation Status Analysis
 - `$planning-sprint-story` - Activates Phase 2: Sprint Story Generation
+- `$architecture-frontend-design` - Activates conditional frontend design generation for UI stories (`.agent/workflows/architecture/frontend-design/SKILL.md`)
 - `$planning-story-analysis S<X.Y>` - Activates Phase 3: Story Analysis
 - `$code-implementation S<X.Y> [step-number]` - Activates Phase 4A: Implementation
 - `$testing-unit-test S<X.Y> [step-number]` - Activates Phase 4B: Unit Testing
@@ -16,6 +17,7 @@ This role responds to the following commands:
 The post-scaffolding chain takes a project that has completed scaffolding and produces a new sprint narrative:
 - **Phase 1** establishes the current implementation status and identifies what remains to be built.
 - **Phase 2** generates sprint stories from the implementation status.
+- **Frontend Design** is invoked conditionally when Phase 2 generates a UI/frontend story, producing an approved design direction and file inventory before that story's analysis.
 - **Phase 3** analyzes the chosen story so it is ready for implementation.
 - **Phase 4A** implements the analyzed story.
 - **Phase 4B** writes unit tests for the implementation.
@@ -42,6 +44,7 @@ Each phase depends on the output of the previous phase. Use this table to choose
 | --- | --- | --- |
 | Phase 1: Implementation Status Analysis | Existing project code and status files | Updated implementation status |
 | Phase 2: Sprint Story Generation | Updated implementation status | Sprint stories |
+| Frontend Design (conditional) | A UI/frontend story from Phase 2; framework detection | Approved design direction and file inventory |
 | Phase 3: Story Analysis `S<X.Y>` | A sprint story ID from Phase 2 | Analyzed story steps and acceptance criteria |
 | Phase 4A: Implementation `S<X.Y>` | Analyzed story from Phase 3 | Implemented code changes |
 | Phase 4B: Unit Testing `S<X.Y>` | Implemented code from Phase 4A | Unit tests and validation results |
@@ -53,6 +56,7 @@ Each phase depends on the output of the previous phase. Use this table to choose
 | --- | --- |
 | `$planning-implementation-analysis` | Phase 1: Implementation Status Analysis |
 | `$planning-sprint-story` | Phase 2: Sprint Story Generation |
+| `$architecture-frontend-design` | Conditional: Frontend Design Generation (UI stories) |
 | `$planning-story-analysis S<X.Y>` | Phase 3: Story Analysis |
 | `$code-implementation S<X.Y> [step-number]` | Phase 4A: Implementation |
 | `$testing-unit-test S<X.Y> [step-number]` | Phase 4B: Unit Testing |
@@ -62,6 +66,7 @@ Each phase depends on the output of the previous phase. Use this table to choose
 
 - [ ] Phase 1: Implementation status is current.
 - [ ] Phase 2: Sprint stories are generated from the current status.
+- [ ] Conditional Frontend Design completed for each UI story before its story analysis.
 - [ ] Phase 3: At least one story is analyzed with actionable steps and acceptance criteria.
 - [ ] Phase 4A: The analyzed story is implemented.
 - [ ] Phase 4B: Unit tests are written and passing.
@@ -70,6 +75,8 @@ Each phase depends on the output of the previous phase. Use this table to choose
 ### Gotchas
 
 - `S<X.Y>` story IDs must come from Phase 2; do not guess them.
+- `$architecture-frontend-design` is conditional: activate it only when Phase 2 generated a UI/frontend story, and run it before that story's Phase 3 analysis.
+- In this chain, use the frontend design prompt for its planning steps only ([STEP 1]-[STEP 3]); Phase 4A implements the analyzed steps following the approved plan.
 - Phase 4A and Phase 4B can be resumed at a specific `[step-number]`, but only after the story has been analyzed in Phase 3.
 - Do not run implementation and unit-testing commands together; complete implementation before requesting validation tests.
 - `$code-dependency-management` is conditional and should be activated only when a new dependency is identified during Phase 4A.
@@ -83,7 +90,9 @@ Each phase depends on the output of the previous phase. Use this table to choose
 Phase 1: Implementation Status Analysis
 ↓ [Outputs feed Phase 2]
 Phase 2: Sprint Story Generation
-↓ [Outputs feed Phase 3]
+↓ [Outputs feed Phase 3; UI stories also feed Frontend Design]
+Frontend Design (conditional, UI stories)
+↓ [Approved design feeds Phase 3]
 Phase 3: Story Analysis
 ↓ [Outputs feed Phase 4A]
 Phase 4A: Implementation
@@ -132,6 +141,32 @@ Create focused user stories for the next sprint based on technical dependencies.
 
 - Sprint Stories (`sprint_X_stories.md`)
 
+### Conditional: Frontend Design Generation (`$architecture-frontend-design`)
+
+[Frontend Design Prompt](../../architecture/frontend-design/SKILL.md)
+
+#### Frontend Design Purpose
+
+Produce an approved design direction and file inventory for a UI/frontend story before its story analysis.
+
+**Trigger (conditional):**
+
+- Phase 2 generated one or more sprint stories with UI/frontend scope
+
+**Required Inputs:**
+
+- The UI/frontend sprint story from Phase 2
+- Implementation status from Phase 1
+- Project Framework Detection (run inside the prompt)
+
+**Key Outputs → [Feed into Phase 3]:**
+
+- Approved design direction and design plan/file inventory for the story
+
+**Scope Note:**
+
+In this chain, run the prompt through its planning steps only ([STEP 1]-[STEP 3]); do not proceed to its [STEP 4] implementation. Phase 4A implements the analyzed steps following the approved plan, keeping dependency management conditional in Phase 4A.
+
 ### Phase 3: Story Analysis (`$planning-story-analysis S<X.Y>`)
 
 [Story Analysis Prompt](../../planning/story-analysis/SKILL.md)
@@ -161,6 +196,7 @@ Systematically implement one specific step from the story analysis, ensuring all
 - Story Steps Report (`S<X.Y>-story-steps.md`)
 - Sprint story
 - Project's dependency definition file (e.g., `package.json`)
+- For UI/frontend stories: the approved design direction and file inventory from Frontend Design
 
 **Key Outputs → [Feed into Phase 4B]:**
 
@@ -218,7 +254,16 @@ Generate and verify unit tests for the implemented story step, ensuring comprehe
    - Must have all Phase 1 outputs available
    - Proceeds only when analysis outputs are complete
 
-3. **Analyze Story:**
+3. **Generate Frontend Design (conditional, UI stories):**
+
+   ```cmd
+   $architecture-frontend-design
+   ```
+
+   - Run only for stories with UI/frontend scope, before their story analysis
+   - Complete the prompt's planning steps ([STEP 1]-[STEP 3]) and stop before [STEP 4]
+
+4. **Analyze Story:**
 
    ```cmd
    $planning-story-analysis S<X.Y>
@@ -227,7 +272,7 @@ Generate and verify unit tests for the implemented story step, ensuring comprehe
    - Ensure the specific user story is available in the context
    - Wait for story analysis to complete before proceeding
 
-4. **Implement Stories, step by step:**
+5. **Implement Stories, step by step:**
 
    ```cmd
    $code-implementation S<X.Y> [step-number]
@@ -236,7 +281,7 @@ Generate and verify unit tests for the implemented story step, ensuring comprehe
    - Requires complete story analysis outputs
    - Execute for each story and step, in sequence
 
-5. **Generate Unit Tests:**
+6. **Generate Unit Tests:**
 
    ```cmd
    $testing-unit-test S<X.Y> [step-number]
@@ -259,6 +304,7 @@ See `Input/Output Chain` above for the single source of phase dependencies and o
 
 2. **Story Generation → Story Analysis**
    - Verify all sprint stories have required components
+   - For UI/frontend stories: verify Frontend Design ran first and its direction and file inventory are approved
 
 3. **Story Analysis → Implementation**
    - Verify story steps report is complete
