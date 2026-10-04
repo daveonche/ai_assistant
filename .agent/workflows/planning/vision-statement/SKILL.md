@@ -47,6 +47,7 @@ Ask the user: "Is a requirements document (default: `docs/requirements.md` or an
 
 - If the user answers Y, use the named document as the grounding source for all vision inputs.
 - If the user answers N, ask: "No requirements document is loaded. Please either add your project requirements now, or confirm you want to proceed without them (the vision will rely solely on your answers)."
+- In the scaffolding chain (fresh start), no requirements exist yet — Phase 2 generates them from this vision. Proceeding without a requirements document is the expected path there; ground the vision in the user's project idea or problem statement instead.
 
 [STOP - Wait for user's requirements or confirmation to proceed without them]
 
@@ -188,7 +189,7 @@ Based on all inputs, generate a structured vision statement following this forma
 Before presenting the draft for approval, verify the following checklist:
 - [ ] All sections are populated correctly.
 - [ ] Content reflects WHAT not HOW.
-- [ ] All sections align with the project requirements loaded in Step 1.
+- [ ] All sections align with the project requirements loaded in Step 1 (or, when no requirements were loaded, with the user's answers from Steps 2-6).
 - [ ] No technical implementation assumptions are included.
 - [ ] Formatting matches the template.
 

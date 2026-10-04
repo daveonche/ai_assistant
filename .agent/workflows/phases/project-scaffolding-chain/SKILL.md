@@ -93,7 +93,7 @@ Phase 7B: Unit Testing
 
 #### Phase 1 Purpose
 
-Define a comprehensive project vision statement that aligns with project requirements.
+Define a comprehensive project vision statement grounded in the project idea or problem statement; requirements do not exist yet at this point and are generated from this vision in Phase 2.
 
 **Initial Inputs Required:**
 
@@ -168,6 +168,10 @@ Produce an approved frontend design direction and file inventory grounded in the
 **Key Outputs → [Feed into Phase 5]:**
 
 - Approved design direction and design plan/file inventory (e.g., `frontend_design.md`)
+
+**Scope Note:**
+
+In this chain, run the prompt through its planning steps only ([STEP 1]-[STEP 3A], including the design-artifact save); do not proceed to its [STEP 4] implementation. Phase 7A implements the scaffolding stories from Phase 5, which cover the frontend files from the approved inventory.
 
 ### Phase 5: Scaffolding Sprint Story Generation (`$planning-scaffolding-sprint-story`)
 
@@ -285,7 +289,8 @@ Generate and verify unit tests for the implemented story step.
    ```
 
    - Ensure all Phase 4 outputs are available
-   - Wait for the design direction and file inventory to be approved before proceeding
+   - Complete the prompt's planning steps ([STEP 1]-[STEP 3A]) and stop before [STEP 4]
+   - Wait for the design direction and file inventory to be approved and saved before proceeding
 
 6. **Generate Scaffolding Stories:**
 
