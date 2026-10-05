@@ -7,6 +7,7 @@ This role responds to the following commands:
 - `$architecture-tech-stack` - Activates Phase 3: Technology Stack Generation
 - `$architecture-design` - Activates Phase 4: Architecture Design Generation
 - `$architecture-frontend-design` - Activates Phase 4B: Frontend Design Generation (`.agent/workflows/architecture/frontend-design/SKILL.md`)
+- `$architecture-mobile-app-design` - Activates Phase 4C: Mobile App Design Generation (`.agent/workflows/architecture/mobile-app-design/SKILL.md`)
 - `$planning-scaffolding-sprint-story` - Activates Phase 5: Scaffolding Sprint Story Generation
 - `$planning-story-analysis S<X.Y>` - Activates Phase 6: Story Analysis
 - `$code-implementation S<X.Y> [step-number]` - Activates Phase 7A: Implementation
@@ -21,6 +22,7 @@ This role responds to the following commands:
 - The orchestrator must not auto-progress through the chain; always wait for the user to select a phase.
 - When loading nested prompts, the corresponding `.agent/workflows/<category>/<promptname>/SKILL.md` must be added to the chat if not already loaded.
 - Phase 4B applies only to projects with a frontend; skip it for backend-only projects and proceed from Phase 4 to Phase 5.
+- Phase 4C applies only when the tech stack includes a mobile app client consuming the API backend; it is independent of Phase 4B — run 4B for a web frontend, 4C for the mobile client, both when the project has both.
 
 When you see `$workflows-project-scaffolding-chain`, activate this role:
 
@@ -49,6 +51,7 @@ Example response: `I want to start with Phase 1: $planning-vision-statement`
 | `$architecture-tech-stack` | Phase 3: Technology Stack Generation |
 | `$architecture-design` | Phase 4: Architecture Design Generation |
 | `$architecture-frontend-design` | Phase 4B: Frontend Design Generation |
+| `$architecture-mobile-app-design` | Phase 4C: Mobile App Design Generation |
 | `$planning-scaffolding-sprint-story` | Phase 5: Scaffolding Sprint Story Generation |
 | `$planning-story-analysis S<X.Y>` | Phase 6: Story Analysis |
 | `$code-implementation S<X.Y> [step-number]` | Phase 7A: Implementation |
@@ -75,6 +78,8 @@ Phase 3: Technology Stack Generation
 Phase 4: Architecture Design Generation
 ↓ [Outputs feed Phase 4B]
 Phase 4B: Frontend Design Generation
+↓ [Outputs feed Phase 5]
+Phase 4C: Mobile App Design Generation
 ↓ [Outputs feed Phase 5]
 Phase 5: Scaffolding Sprint Story Generation
 ↓ [Outputs feed Phase 6]
@@ -173,6 +178,28 @@ Produce an approved frontend design direction and file inventory grounded in the
 
 In this chain, run the prompt through its planning steps only ([STEP 1]-[STEP 3A], including the design-artifact save); do not proceed to its [STEP 4] implementation. Phase 7A implements the scaffolding stories from Phase 5, which cover the frontend files from the approved inventory.
 
+### Phase 4C: Mobile App Design Generation (`$architecture-mobile-app-design`)
+
+[Mobile App Design Prompt](../../architecture/mobile-app-design/SKILL.md)
+
+#### Phase 4C Purpose
+
+Produce an approved mobile app design direction and file inventory grounded in the detected mobile framework, so scaffolding stories cover the mobile app files consuming the API backend.
+
+**Required Inputs (including Phase 4 outputs):**
+
+- Architecture Design Document
+- Technology Stack Document (must name a mobile app client)
+- Mobile requirements from the vision and requirements documents
+
+**Key Outputs → [Feed into Phase 5]:**
+
+- Approved mobile design direction and design plan/file inventory (e.g., `mobile_app_design.md`)
+
+**Scope Note:**
+
+In this chain, run the prompt through its planning steps only ([STEP 1]-[STEP 3A], including the design-artifact save); do not proceed to its [STEP 4] implementation. Phase 7A implements the scaffolding stories from Phase 5, which cover the mobile app files from the approved inventory.
+
 ### Phase 5: Scaffolding Sprint Story Generation (`$planning-scaffolding-sprint-story`)
 
 [Scaffolding Sprint Story Generation Prompt](../../planning/scaffolding-sprint-story/SKILL.md)
@@ -181,10 +208,11 @@ In this chain, run the prompt through its planning steps only ([STEP 1]-[STEP 3A
 
 Generate focused user stories for the initial project scaffolding sprint.
 
-**Required Inputs (including Phase 4B outputs):**
+**Required Inputs (including Phase 4B and Phase 4C outputs):**
 
 - Architecture Design Document
 - Approved frontend design direction and file inventory (when the project has a frontend)
+- Approved mobile design direction and file inventory (when the tech stack includes a mobile app client)
 
 **Key Outputs → [Feed into Phase 6]:**
 
@@ -292,16 +320,26 @@ Generate and verify unit tests for the implemented story step.
    - Complete the prompt's planning steps ([STEP 1]-[STEP 3A]) and stop before [STEP 4]
    - Wait for the design direction and file inventory to be approved and saved before proceeding
 
-6. **Generate Scaffolding Stories:**
+6. **Generate Mobile App Design (tech stack includes a mobile app client):**
+
+   ```cmd
+   $architecture-mobile-app-design
+   ```
+
+   - Ensure all Phase 4 outputs are available
+   - Complete the prompt's planning steps ([STEP 1]-[STEP 3A]) and stop before [STEP 4]
+   - Wait for the mobile design direction and file inventory to be approved and saved before proceeding
+
+7. **Generate Scaffolding Stories:**
 
    ```cmd
    $planning-scaffolding-sprint-story
    ```
 
-   - Ensure all Phase 4B outputs are available (when the project has a frontend)
+   - Ensure all Phase 4B outputs are available (when the project has a frontend) and all Phase 4C outputs are available (when the tech stack includes a mobile app client)
    - Wait for story generation to complete before proceeding
 
-7. **Analyze Story:**
+8. **Analyze Story:**
 
    ```cmd
    $planning-story-analysis S<X.Y>
@@ -310,7 +348,7 @@ Generate and verify unit tests for the implemented story step.
    - Ensure the specific user story is available in the context
    - Wait for story analysis to complete before proceeding
 
-8. **Implement Stories, step by step:**
+9. **Implement Stories, step by step:**
 
    ```cmd
    $code-implementation S<X.Y> [step-number]
@@ -319,7 +357,7 @@ Generate and verify unit tests for the implemented story step.
    - Requires complete story analysis outputs
    - Execute for each story and step, in sequence
 
-9. **Generate Unit Tests:**
+10. **Generate Unit Tests:**
 
    ```cmd
    $testing-unit-test S<X.Y> [step-number]
@@ -339,6 +377,7 @@ Each phase's primary output becomes a required input for the next phase.
 | Phase 3: Technology Stack Generation | Technology Stack Document |
 | Phase 4: Architecture Design Generation | Architecture Design Document |
 | Phase 4B: Frontend Design Generation | Approved frontend design direction and file inventory |
+| Phase 4C: Mobile App Design Generation | Approved mobile design direction and file inventory |
 | Phase 5: Scaffolding Sprint Story Generation | Scaffolding Sprint Stories |
 | Phase 6: Story Analysis | Story Steps Report |
 | Phase 7A: Implementation | Implemented code changes |
@@ -365,10 +404,13 @@ Verify each transition before moving to the next phase.
 5. **Frontend Design → Scaffolding Stories**
    - Verify design direction and file inventory are approved (when the project has a frontend)
 
-6. **Scaffolding Stories → Story Analysis**
+6. **Mobile App Design → Scaffolding Stories**
+   - Verify mobile design direction and file inventory are approved (when the tech stack includes a mobile app client)
+
+7. **Scaffolding Stories → Story Analysis**
    - Verify all stories have required components
 
-7. **Story Analysis → Implementation**
+8. **Story Analysis → Implementation**
    - Verify story steps report is complete
 
 ### Chain Break Prevention

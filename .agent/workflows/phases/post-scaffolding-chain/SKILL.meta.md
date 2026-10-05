@@ -44,13 +44,14 @@
 ## Command Behavior
 
 - `$workflows-post-scaffolding-chain`: Starts or resumes the chain — presentation of the phase command table, phase selection, on-demand loading of the selected phase's SKILL.md, then a [STOP] waiting for the user to run a phase command.
-- Phase commands (`$planning-implementation-analysis`, `$planning-sprint-story`, `$architecture-frontend-design`, `$planning-story-analysis S<X.Y>`, `$code-implementation S<X.Y> [step-number]`, `$testing-unit-test S<X.Y> [step-number]`, `$code-dependency-management`): activate the corresponding phase. The authoritative command table lives in SKILL.md.
+- Phase commands (`$planning-implementation-analysis`, `$planning-sprint-story`, `$architecture-frontend-design`, `$architecture-mobile-app-design`, `$planning-story-analysis S<X.Y>`, `$code-implementation S<X.Y> [step-number]`, `$testing-unit-test S<X.Y> [step-number]`, `$code-dependency-management`): activate the corresponding phase. The authoritative command table lives in SKILL.md.
 
 ## Gotchas / Sync Notes
 
 - Chain integrity requires each phase's output to be available or approved before proceeding to the next phase; never auto-progress — always wait for the user to select a phase.
 - `S<X.Y>` story IDs must come from Phase 2; do not guess them.
 - `$architecture-frontend-design` is conditional: activate it only when Phase 2 generated a UI/frontend story, before that story's Phase 3 analysis; in this chain it runs its planning steps only.
+- `$architecture-mobile-app-design` is conditional: activate it only when Phase 2 generated a mobile app story (or the tech stack includes a mobile app client), before that story's Phase 3 analysis; in this chain it runs its planning steps only.
 - `$code-dependency-management` is conditional: activate it only when a new dependency is identified during Phase 4A.
 - Load phase prompts on demand via their phase commands to avoid context overload.
 - Scope stays within the current sprint; later features are out of chain scope.
@@ -59,7 +60,7 @@
 
 ## Version
 
-- Current Version: 1.8.0
+- Current Version: 1.9.0
 - Last Updated: 2026-10-05
 - Stability: Experimental
 
