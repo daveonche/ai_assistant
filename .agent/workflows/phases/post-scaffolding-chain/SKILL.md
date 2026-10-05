@@ -369,4 +369,32 @@ Before starting each phase, verify:
 
 Remember: The strength of this workflow lies in its chained nature. Each phase builds upon the outputs of the previous phase, creating a comprehensive and connected development process.
 
+## Quality Gates & Support Services (on demand — not chain phases)
+
+The chain keeps the critical path lean; the following skills are invoked on
+demand at defined checkpoints rather than baked into the phases:
+
+| Skill | When to invoke |
+| --- | --- |
+| `$code-review <file>` | After each Phase 4A step, before its Phase 4B unit test |
+| `$code-security-audit [target]` | On the sprint branch diff before sprint close; its reproducer tests feed Phase 4B |
+| `#analyze-health` | At sprint boundaries, after the Phase 4A/4B iteration loop completes |
+| `$core-framework-detection` | Invoked inside Frontend Design; not run directly |
+| `#generate-framework-docs` / `#update-framework-docs` | After stack selection; on dependency upgrades or ref bumps |
+| `$documentation-project-README` | After chain completion; refresh at sprint ends |
+| `$documentation-plantUML-diagram` | During design phases or to document new subsystems |
+| `$requirements-revised-project` | Standalone; revised requirements feed Phase 1 → Phase 2 inputs |
+| `$learning-project-tutor` | Onboarding; consumes the chain's outputs |
+| `$session-checkpoint` | Between sessions; records chain position |
+
+## SDLC Gaps (TODO)
+
+Not covered by any current workflow; candidates for future sprints:
+
+- [ ] Integration / end-to-end testing (this chain covers unit testing only)
+- [ ] Deployment / release workflow
+- [ ] CI/CD pipeline management (a conventions reference exists, but no workflow)
+- [ ] Monitoring / observability
+- [ ] Incident response
+
 <!-- sentinel: workflows/post-scaffolding-chain -->
