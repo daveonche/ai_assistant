@@ -8,7 +8,7 @@ This role responds to the following commands:
 
 ## Scope
 
-System-wide end-to-end tests only: complete user journeys through the real application with no mocked internal collaborators. NOT for unit tests (use `$testing-unit-test`) or integration tests (not yet covered by any workflow — see the SDLC Gaps TODO in the workflow chains).
+System-wide end-to-end tests only: complete user journeys through the real application with no mocked internal collaborators. NOT for unit tests (use `$testing-unit-test`) or integration tests (use `$testing-integration-test`).
 
 E2E tests are the most expensive tests in the suite: few in number, one complete journey each, critical paths only, run at sprint close as a quality gate — not per implementation step.
 

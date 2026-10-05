@@ -377,7 +377,9 @@ demand at defined checkpoints rather than baked into the phases:
 | Skill | When to invoke |
 | --- | --- |
 | `$code-review <file>` | After each Phase 4A step, before its Phase 4B unit test |
+| `$testing-integration-test S<X.Y>` | Per story, after the Phase 4A/4B loop completes all of that story's steps |
 | `$code-security-audit [target]` | On the sprint branch diff before sprint close; its reproducer tests feed Phase 4B |
+| `$testing-e2e-test` | At sprint close, after the Phase 4A/4B loop completes for all stories; shares the session with `$code-security-audit` |
 | `#analyze-health` | At sprint boundaries, after the Phase 4A/4B iteration loop completes |
 | `$core-framework-detection` | Invoked inside Frontend Design; not run directly |
 | `#generate-framework-docs` / `#update-framework-docs` | After stack selection; on dependency upgrades or ref bumps |
@@ -389,9 +391,9 @@ demand at defined checkpoints rather than baked into the phases:
 
 ## SDLC Gaps (TODO)
 
-Not covered by any current workflow; candidates for future sprints:
+Gaps in SDLC coverage; unchecked items are candidates for future sprints:
 
-- [ ] Integration / end-to-end testing (this chain covers unit testing only)
+- [x] Integration / end-to-end testing (unit: Phase 4B; integration: `$testing-integration-test` per story; E2E: `$testing-e2e-test` at sprint close)
 - [ ] Deployment / release workflow
 - [ ] CI/CD pipeline management (a conventions reference exists, but no workflow)
 - [ ] Monitoring / observability

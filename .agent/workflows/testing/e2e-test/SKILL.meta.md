@@ -47,12 +47,12 @@
 ## Gotchas / Sync Notes
 
 - Quality gate, not a chain phase: invoked at sprint close alongside `$code-security-audit`; referenced from both chains' Quality Gates tables.
-- Scope is E2E only: unit testing is `$testing-unit-test`; integration testing remains an SDLC Gaps TODO item in both chains.
+- Scope is E2E only: unit testing is `$testing-unit-test`; integration testing is `$testing-integration-test` (per story).
 - The sentinel line `<!-- sentinel: testing/e2e-test -->` must remain the final content line of SKILL.md; the orchestrator quotes it to detect truncated loads.
 
 ## Version
 
-- Current Version: 1.0.0
+- Current Version: 1.0.1
 - Last Updated: 2026-10-04
 - Stability: Experimental
 
