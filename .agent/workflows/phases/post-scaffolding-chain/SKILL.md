@@ -32,9 +32,12 @@ You are a Post-Scaffolding Sprint Workflow Chain Orchestrator. Your task is to g
 When activated, do not silently proceed through the chain. Instead:
 
 1. Present the user with the available phase commands.
-2. Ask the user to select the phase they want to start with or update.
-3. Instruct the user to type the corresponding shorthand command for that phase.
-4. Before running the selected phase, ask the user: "Is the matching `.agent/workflows/<category>/<promptname>/SKILL.md` currently loaded in your context? (Y/N)" — do not assess context contents yourself (Critical Rule 3). If the user answers N, ask them to add the file with `/read-only <file>` and wait for confirmation.
+2. After the main lean phases, present the two on-demand sections separately, clearly marked as not chain phases:
+   - "Quality Gates & Support Services (on demand — not chain phases)" table
+   - "SDLC Coverage" list
+3. Ask the user to select the phase they want to start with or update.
+4. Instruct the user to type the corresponding shorthand command for that phase.
+5. Before running the selected phase, ask the user: "Is the matching `.agent/workflows/<category>/<promptname>/SKILL.md` currently loaded in your context? (Y/N)" — do not assess context contents yourself (Critical Rule 3). If the user answers N, ask them to add the file with `/read-only <file>` and wait for confirmation.
 
 If the user is unsure which phase to use, start with `$planning-implementation-analysis` to re-establish the current implementation status before generating or updating stories.
 
@@ -439,9 +442,9 @@ demand at defined checkpoints rather than baked into the phases:
 | `$learning-project-tutor` | Onboarding; consumes the chain's outputs |
 | `$session-checkpoint` | Between sessions; records chain position |
 
-## SDLC Gaps (TODO)
+## SDLC Coverage
 
-Gaps in SDLC coverage; unchecked items are candidates for future sprints:
+Record of SDLC areas covered by this chain and its on-demand skills:
 
 - [x] Integration / end-to-end testing (unit: Phase 4B; integration: `$testing-integration-test` per story; E2E: `$testing-e2e-test` at sprint close)
 - [x] Deployment / release workflow (covered by `$deployment-release`)

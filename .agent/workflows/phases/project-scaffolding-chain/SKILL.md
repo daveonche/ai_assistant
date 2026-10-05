@@ -36,9 +36,13 @@ When activated, do not silently proceed through the chain. Instead:
 
 2. Present the user with the available phase commands.
 
-3. Ask the user to select the phase they want to start with or update, and to type the corresponding shorthand command.
+3. After the main lean phases, present the two on-demand sections separately, clearly marked as not chain phases:
+   - "Quality Gates & Support Services (on demand — not chain phases)" table
+   - "SDLC Coverage" list
 
-4. Before running the selected phase, ask the user: "Is the matching `.agent/workflows/<category>/<promptname>/SKILL.md` currently loaded in your context? (Y/N)" — do not assess context contents yourself (Critical Rule 3). If the user answers N, ask them to add the file with `/read-only <file>` and wait for confirmation.
+4. Ask the user to select the phase they want to start with or update, and to type the corresponding shorthand command.
+
+5. Before running the selected phase, ask the user: "Is the matching `.agent/workflows/<category>/<promptname>/SKILL.md` currently loaded in your context? (Y/N)" — do not assess context contents yourself (Critical Rule 3). If the user answers N, ask them to add the file with `/read-only <file>` and wait for confirmation.
 
 Example response: `I want to start with Phase 1: $planning-vision-statement`
 
@@ -484,9 +488,9 @@ demand at defined checkpoints rather than baked into the phases:
 | `$learning-project-tutor` | Onboarding; consumes the chain's outputs |
 | `$session-checkpoint` | Between sessions; records chain position |
 
-## SDLC Gaps (TODO)
+## SDLC Coverage
 
-Gaps in SDLC coverage; unchecked items are candidates for future sprints:
+Record of SDLC areas covered by this chain and its on-demand skills:
 
 - [x] Integration / end-to-end testing (unit: Phase 7B; integration: `$testing-integration-test` per story; E2E: `$testing-e2e-test` at sprint close)
 - [x] Deployment / release workflow (covered by `$deployment-release`)
