@@ -8,7 +8,7 @@ This role responds to the following commands:
 
 ## Scope
 
-Always-on observability: SLIs/SLOs and error budgets, service instrumentation (metrics, structured logs, traces), dashboards, alert strategy, runbooks, on-call practices, and chaos validation. NOT for release-specific rollback triggers and deployment-window logging (use `$deployment-release` STEP 5), pipeline health (use `$ci-pipeline`), or dedicated incident command and postmortem facilitation (a remaining SDLC Gaps TODO — this skill's on-call step is its foundation).
+Always-on observability: SLIs/SLOs and error budgets, service instrumentation (metrics, structured logs, traces), dashboards, alert strategy, runbooks, on-call practices, and chaos validation. NOT for release-specific rollback triggers and deployment-window logging (use `$deployment-release` STEP 5), pipeline health (use `$ci-pipeline`), or dedicated incident command and postmortem facilitation (use `$incident-response` — this skill's on-call step is its foundation).
 
 Observability is always-on: this skill runs when establishing or overhauling the monitoring stack, not per release.
 
