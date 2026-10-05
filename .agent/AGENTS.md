@@ -114,9 +114,12 @@ Routing rules:
 ## Session State Persistence
 
 Maintain `docs/workflow_state.md` as the session checkpoint file. It records
-at most one active workflow and is a pointer, not a log. If the file does not
-exist yet (e.g., in a project using a copied-in `.agent/`), draft it as a new
-file (empty SEARCH block) at the first checkpoint.
+at most one active workflow and is a pointer, not a log. Checkpoints must be
+concise and directly actionable: an LLM reading the file must know
+immediately what to do next without additional reasoning — every line crisp
+and prescriptive (the exact next command or action, no narrative). If the
+file does not exist yet (e.g., in a project using a copied-in `.agent/`),
+draft it as a new file (empty SEARCH block) at the first checkpoint.
 
 1. While a workflow is active, track its position: the current step,
    the last completed step, the next action, and the minimal reload
