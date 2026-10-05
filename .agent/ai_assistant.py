@@ -2,7 +2,7 @@
 """Launch an AI assistant in a Docker container.
 
 This module provides a command-line interface equivalent to the previous
-ai-assistant.sh script. It handles optional Docker image builds, container
+start.sh script. It handles optional Docker image builds, container
 cleanup, and running the assistant in a Docker container with workspace
 isolation, audio support, and Docker-outside-of-Docker capabilities.
 

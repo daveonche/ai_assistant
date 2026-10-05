@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ai-assistant.sh - Launcher for the Python AI assistant implementation
+# start.sh - Launcher for the Python AI assistant implementation
 # stored in the .agent directory.
 
 # Ensure an ssh-agent is reachable so git push/pull over SSH remotes works
