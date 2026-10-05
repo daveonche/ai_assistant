@@ -57,8 +57,8 @@
 
 ## Version
 
-- Current Version: 1.6.0
-- Last Updated: 2026-10-04
+- Current Version: 1.7.0
+- Last Updated: 2026-10-05
 - Stability: Experimental
 
 ## Purpose

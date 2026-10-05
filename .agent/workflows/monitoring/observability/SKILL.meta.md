@@ -49,13 +49,13 @@
 ## Gotchas / Sync Notes
 
 - On-demand skill, not a chain phase: referenced from both chains' Quality Gates tables; always-on cadence, not release-bound.
-- Covers the monitoring/observability TODO item in both chains; release-specific rollback triggers stay in `$deployment-release` STEP 5; incident response remains a TODO item with this skill's STEP 7 as its foundation.
+- Covers the monitoring/observability TODO item in both chains; release-specific rollback triggers stay in `$deployment-release` STEP 5; incident command and postmortem facilitation is covered by `$incident-response`, whose foundations are this skill's STEP 7.
 - The sentinel line `<!-- sentinel: monitoring/observability -->` must remain the final content line of SKILL.md; the orchestrator quotes it to detect truncated loads.
 
 ## Version
 
-- Current Version: 1.0.0
-- Last Updated: 2026-10-04
+- Current Version: 1.1.0
+- Last Updated: 2026-10-05
 - Stability: Experimental
 
 ## Purpose

@@ -105,7 +105,7 @@ One runbook per alert, concise enough for a 3 AM on-call engineer without contex
 
 - Rotation schedule, primary and secondary on-call, escalation timeout (page secondary if primary does not acknowledge in ~10 minutes), handoff briefs between rotations
 - Incident workflow: detect (alert fires) → triage (severity) → respond (follow runbook) → communicate (stakeholder updates) → resolve → review (blameless post-mortem)
-- This step is the foundation for incident response; dedicated incident-command and postmortem tooling remains an SDLC Gaps TODO in the workflow chains.
+- This step is the foundation for incident response; dedicated incident command and postmortem facilitation is covered by `$incident-response`.
 
 [STOP - Wait for the user to approve the on-call policy]
 
