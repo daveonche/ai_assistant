@@ -99,7 +99,7 @@ attribute-commit-message-committer: false
 attribute-co-authored-by: false
 
 ## Verify commits with repository hooks (default: False). Required so the
-## .githooks/commit-msg gate validates aider-generated subjects; without
+## .agent/githooks/commit-msg gate validates aider-generated subjects; without
 ## it aider commits with --no-verify and non-conforming subjects only
 ## surface as CI failures.
 git-commit-verify: true

@@ -33,9 +33,9 @@ Merge/fixup!/squash!/Revert "..." subjects are exempt.
 Messages embedding a SEARCH/REPLACE edit block are rejected.
 
 Examples:
-  .githooks/commit-msg .git/COMMIT_EDITMSG
-  bash .githooks/commit-msg /tmp/msg.txt
-  .githooks/commit-msg --debug .git/COMMIT_EDITMSG
+  .agent/githooks/commit-msg .git/COMMIT_EDITMSG
+  bash .agent/githooks/commit-msg /tmp/msg.txt
+  .agent/githooks/commit-msg --debug .git/COMMIT_EDITMSG
 EOF
 }
 
