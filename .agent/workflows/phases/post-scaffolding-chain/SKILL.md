@@ -377,9 +377,12 @@ demand at defined checkpoints rather than baked into the phases:
 | Skill | When to invoke |
 | --- | --- |
 | `$code-review <file>` | After each Phase 4A step, before its Phase 4B unit test |
+| `$ci-pipeline` | When designing or changing CI/CD workflows — continuous, per PR/merge, not release-bound |
 | `$testing-integration-test S<X.Y>` | Per story, after the Phase 4A/4B loop completes all of that story's steps |
 | `$code-security-audit [target]` | On the sprint branch diff before sprint close; its reproducer tests feed Phase 4B |
 | `$testing-e2e-test` | At sprint close, after the Phase 4A/4B loop completes for all stories; shares the session with `$code-security-audit` |
+| `$deployment-release` | When a release is ready — after the sprint-close gates; produces the runbook and executes with rollback triggers |
+| `$monitoring-observability` | When establishing or overhauling the monitoring stack — always-on operations, not release-bound |
 | `#analyze-health` | At sprint boundaries, after the Phase 4A/4B iteration loop completes |
 | `$core-framework-detection` | Invoked inside Frontend Design; not run directly |
 | `#generate-framework-docs` / `#update-framework-docs` | After stack selection; on dependency upgrades or ref bumps |
@@ -394,9 +397,9 @@ demand at defined checkpoints rather than baked into the phases:
 Gaps in SDLC coverage; unchecked items are candidates for future sprints:
 
 - [x] Integration / end-to-end testing (unit: Phase 4B; integration: `$testing-integration-test` per story; E2E: `$testing-e2e-test` at sprint close)
-- [ ] Deployment / release workflow
-- [ ] CI/CD pipeline management (a conventions reference exists, but no workflow)
-- [ ] Monitoring / observability
-- [ ] Incident response
+- [x] Deployment / release workflow (covered by `$deployment-release`)
+- [x] CI/CD pipeline management (covered by `$ci-pipeline`; conventions reference: `.agent/specs/references/ci-cd-best-practices.md`)
+- [x] Monitoring / observability (covered by `$monitoring-observability`; deployment-window monitoring: `$deployment-release` STEP 5)
+- [ ] Incident response (on-call rotation and the incident workflow are foundations in `$monitoring-observability` STEP 7; dedicated incident-command/postmortem skill remains open)
 
 <!-- sentinel: workflows/post-scaffolding-chain -->

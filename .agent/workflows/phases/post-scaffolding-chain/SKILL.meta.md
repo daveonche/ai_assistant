@@ -59,7 +59,7 @@
 
 ## Version
 
-- Current Version: 1.6.0
+- Current Version: 1.7.0
 - Last Updated: 2026-10-04
 - Stability: Experimental
 
