@@ -4,5 +4,6 @@ Last updated: 2026-10-05
 
 ## Active Workflow
 
-- (none — the Mobile App Design skill is complete (`$architecture-mobile-app-design`: Phase 4C in the scaffolding chain, conditional in the post-scaffolding chain, commit 789a4b4); next workflow step per the Priority Order: `$planning-sprint-story`)
-- Reload to resume: `.agent/workflows/phases/post-scaffolding-chain/SKILL.md`, `.agent/workflows/planning/sprint-story/SKILL.md`
+- Command: `$planning-story-analysis S6.1` (post-scaffolding chain, Phase 3: Story Analysis for story S6.1)
+- Last completed: Phase 2 — Sprint 6 stories S6.1–S6.4 (install-surface consolidation) approved and saved to `docs/sprints/sprint_6_stories.md` (commit df0396a)
+- Reload to resume: `.agent/workflows/phases/post-scaffolding-chain/SKILL.md`, `.agent/workflows/planning/story-analysis/SKILL.md`, `docs/sprints/sprint_6_stories.md`
