@@ -47,6 +47,7 @@ As a developer, I want the repository and launcher module renamed to match the p
 Acceptance Criteria:
 
 - `DEFAULT_REPO_URL` in `scripts/install.sh` points at `https://github.com/daveonche/dev-orchestrator.git`; the canonical URL in the offline-test `insteadOf` rewrites (e.g., `tests/test_s2_1_step3.py`, `tests/test_s2_1_step4.py`) and every other pinned reference (e.g., `tests/test_release_ref_consistency.py`) is updated to match
+- Installer display strings use the new product title: the `scripts/install.sh` header comment and usage text read `Agentic AI Development-Workflow` instead of `AIAssistant` (the `ai-assistant` git remote name is unchanged — an identifier existing consumer installs depend on, not a display string)
 - `.agent/ai_assistant.py` is renamed to `.agent/launcher.py`; the exec line in `.agent/start.sh` invokes `.agent/launcher.py`; no tracked code or test file references the old repository URL or the old module path (documentation references are updated in S6.3)
 - Launcher-driving and tracked-layout suites are updated and green (e.g., `tests/test_s1_2_step5.py`, `tests/test_s1_3_step1.py`, `tests/test_s5_1_step7.py`)
 - Release-reference consistency stays green; the commit subject scope `chore(agent)` and `DEFAULT_REF` (`v1.0.24`) are unchanged
