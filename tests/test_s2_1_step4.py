@@ -211,8 +211,7 @@ def release_repo(tmp_path: Path) -> Path:
     """Local release repository tagged v1.0.24 whose assistant files and
     commit-msg hook were committed as 100644 under core.fileMode=false,
     simulating a mode-insensitive source environment. The hook is the
-    real gate file, shipped inside .agent/; core.hooksPath still points
-    at the legacy .githooks location until S6.2 rewires it."""
+    real gate file, shipped inside .agent/."""
     repo = tmp_path / "release"
     repo.mkdir()
     _git(repo, "init")
@@ -271,8 +270,7 @@ def test_update_records_executable_surviving_mode_insensitive_source(
     records 100755 for them in the consumer's index and in the update
     commit's tree, so executability survives any future filemode-blind
     checkout. The gate is enabled before the refresh commit
-    (core.hooksPath=.githooks; rewiring that value to .agent/githooks is
-    S6.2 scope)."""
+    (core.hooksPath=.agent/githooks)."""
     result = run_installer(consumer_repo, None, "--yes")
     assert result.returncode == 0, result.stderr
     assert "recorded the refresh as commit" in result.stdout
@@ -293,4 +291,4 @@ def test_update_records_executable_surviving_mode_insensitive_source(
     assert _tree_modes(consumer_repo) == expected
     # the gate is live in the consumer repository after the update
     hooks_path = _git(consumer_repo, "config", "--get", "core.hooksPath")
-    assert hooks_path.stdout.strip() == ".githooks"
+    assert hooks_path.stdout.strip() == ".agent/githooks"

@@ -6,7 +6,7 @@ refreshes it through the consumer's own git (ai-assistant remote -> fetch
 change is recorded as one normal, reviewable, revertable project commit,
 and warns before replacing local customizations. When the fetched
 reference ships the commit-msg hook (.agent/githooks/commit-msg), the
-update also enables the commit message gate (core.hooksPath=.githooks)
+update also enables the commit message gate (core.hooksPath=.agent/githooks)
 unless core.hooksPath is already set; a reference predating the gate
 skips the gate entirely.
 
@@ -294,7 +294,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "core.hooksPath",
         "config",
         "core.hooksPath",
-        ".githooks",
+        ".agent/githooks",
         "rm",
         "-r",
         "-f",
@@ -344,7 +344,7 @@ def test_update_enables_commit_gate_before_its_own_commit(sandbox, git_stub):
     result = run_installer(sandbox, stub_dir, "--yes")
     assert result.returncode == 0, result.stderr
     assert "commit message gate enabled" in result.stdout
-    assert "core.hooksPath=.githooks" in result.stdout
+    assert "core.hooksPath=.agent/githooks" in result.stdout
 
     lines = log.read_text().splitlines()
     assert lines.index("config") < lines.index("commit")
@@ -378,13 +378,13 @@ def test_update_preserves_foreign_hooks_path(sandbox, git_stub):
 
 
 def test_update_reports_gate_already_active(sandbox, git_stub):
-    """core.hooksPath already pointing at .githooks is reported, not
-    reconfigured."""
+    """core.hooksPath already pointing at .agent/githooks is reported,
+    not reconfigured."""
     stub_dir, log = git_stub
 
     (sandbox / ".agent").mkdir()
     result = run_installer(
-        sandbox, stub_dir, "--yes", extra_env={"HOOKSPATH": ".githooks"}
+        sandbox, stub_dir, "--yes", extra_env={"HOOKSPATH": ".agent/githooks"}
     )
     assert result.returncode == 0, result.stderr
     assert "commit message gate already active" in result.stdout
@@ -417,7 +417,7 @@ def test_update_from_ref_without_hook_skips_gate_config(sandbox, git_stub):
     # the refresh stays scoped to .agent
     start = lines.index("commit")
     end = lines.index("rev-parse", start)
-    assert ".githooks" not in lines[start:end]
+    assert ".agent/githooks" not in lines[start:end]
     # and no hook files were staged into the worktree
     assert not (sandbox / ".agent" / "githooks").exists()
 
@@ -480,10 +480,10 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
 @pytest.fixture
 def release_repo(tmp_path: Path) -> Path:
     """Local release repository tagged v1.0.24 holding the consolidated
-    assistant directory and the real commit-msg gate file. The gate is
-    enabled as core.hooksPath=.githooks (the value rewiring to
-    .agent/githooks is S6.2 scope), so commits in these tests run
-    without hook enforcement."""
+    assistant directory and the real commit-msg gate file. The installer
+    under test enables the gate in the consumer as
+    core.hooksPath=.agent/githooks, so the refresh commit it records is
+    enforced by the real hook and must carry a conforming subject."""
     repo = tmp_path / "release"
     repo.mkdir()
     _git(repo, "init")
@@ -535,8 +535,8 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     assistant remote, and git's insteadOf rewrite redirects its fetch to
     the local release repo. The update must produce exactly one commit
     touching only .agent/ (entry script and hook included), must leave
-    the commit message gate enabled (core.hooksPath=.githooks), and
-    reverting it must restore the prior state.
+    the commit message gate enabled (core.hooksPath=.agent/githooks),
+    and reverting it must restore the prior state.
     """
     base = _git(consumer_repo, "rev-parse", "HEAD").stdout.strip()
 
@@ -566,7 +566,7 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     )
     # the gate is live in the consumer repository after the update
     hooks_path = _git(consumer_repo, "config", "--get", "core.hooksPath")
-    assert hooks_path.stdout.strip() == ".githooks"
+    assert hooks_path.stdout.strip() == ".agent/githooks"
     # the release content replaced the entry script; the tracked
     # local-only customization inside .agent/ is removed by the
     # replacement and must be re-applied after the update

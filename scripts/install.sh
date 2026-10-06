@@ -57,7 +57,7 @@ confirmed on the terminal; pass --yes to skip that prompt.
 
 When the retrieved reference ships the commit-msg hook, update mode
 enables the commit message gate in this repository
-(core.hooksPath=.githooks) unless core.hooksPath is already set; an
+(core.hooksPath=.agent/githooks) unless core.hooksPath is already set; an
 existing value is left untouched with a warning. Unset anytime with:
   git config --unset core.hooksPath
 
@@ -162,21 +162,22 @@ configure_commit_gate() {
   local existing
   if existing="$(git config --get core.hooksPath 2>/dev/null)" \
       && [[ -n "${existing}" ]]; then
-    if [[ "${existing}" == ".githooks" ]]; then
+    if [[ "${existing}" == ".agent/githooks" ]]; then
       printf 'installer: commit message gate already active\n'
       return 0
     fi
     printf 'installer: WARNING: core.hooksPath is already set to %s\n' \
       "${existing}" >&2
     printf 'installer:   leaving it untouched; enable the gate later\n' >&2
-    printf 'installer:   with: git config core.hooksPath .githooks\n' >&2
+    printf 'installer:   with: git config core.hooksPath .agent/githooks\n' >&2
     return 0
   fi
-  if ! git config core.hooksPath .githooks; then
+  if ! git config core.hooksPath .agent/githooks; then
     die "failed to enable the commit message gate (core.hooksPath)"
     return 1
   fi
-  printf 'installer: commit message gate enabled (core.hooksPath=.githooks)\n'
+  printf 'installer: commit message gate enabled (core.hooksPath=%s)\n' \
+    '.agent/githooks'
   printf 'installer:   unset anytime with: git config --unset core.hooksPath\n'
 }
 
