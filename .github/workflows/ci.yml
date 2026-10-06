@@ -51,7 +51,7 @@ jobs:
           set -euo pipefail
           validate_tip() {
             git --no-pager log -1 --format=%s > "$RUNNER_TEMP/subject.txt"
-            bash .githooks/commit-msg "$RUNNER_TEMP/subject.txt"
+            bash .agent/githooks/commit-msg "$RUNNER_TEMP/subject.txt"
           }
           if [[ "${{ github.event_name }}" != "push" ]]; then
             validate_tip
@@ -71,7 +71,7 @@ jobs:
           status=0
           while IFS= read -r commit; do
             git --no-pager log -1 --format=%s "$commit" > "$RUNNER_TEMP/subject.txt"
-            if ! bash .githooks/commit-msg "$RUNNER_TEMP/subject.txt"; then
+            if ! bash .agent/githooks/commit-msg "$RUNNER_TEMP/subject.txt"; then
               echo "::error::commit ${commit}: subject rejected by the commit-msg gate"
               status=1
             fi

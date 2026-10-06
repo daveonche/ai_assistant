@@ -5,7 +5,7 @@ Must Support verified:
   SEARCH/REPLACE edit block, regardless of the subject line.
 
 The subject-format enforcement is covered by tests/test_commit_msg_hook.py;
-this module covers only the edit-block body scan in .githooks/commit-msg.
+this module covers only the edit-block body scan in .agent/githooks/commit-msg.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import subprocess
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-HOOK = PROJECT_ROOT / ".githooks" / "commit-msg"
+HOOK = PROJECT_ROOT / ".agent" / "githooks" / "commit-msg"
 
 
 def run_hook(message: str, tmp_path: Path) -> subprocess.CompletedProcess:

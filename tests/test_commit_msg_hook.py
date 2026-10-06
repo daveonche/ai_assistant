@@ -1,4 +1,4 @@
-"""Behavior tests for the commit-msg gate (.githooks/commit-msg).
+"""Behavior tests for the commit-msg gate (.agent/githooks/commit-msg).
 
 The assistant's commit-prompt asks for a Conventional Commits subject
 (type(scope): summary, max 72 chars, plain text), yet chat prose has
@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-HOOK = PROJECT_ROOT / ".githooks" / "commit-msg"
+HOOK = PROJECT_ROOT / ".agent" / "githooks" / "commit-msg"
 
 
 def run_hook(message: str, tmp_path: Path) -> subprocess.CompletedProcess:
@@ -158,4 +158,4 @@ def test_ci_runs_the_hook_on_the_tip_commit():
     text = (
         PROJECT_ROOT / ".github" / "workflows" / "ci.yml"
     ).read_text(encoding="utf-8")
-    assert "bash .githooks/commit-msg" in text
+    assert "bash .agent/githooks/commit-msg" in text

@@ -16,7 +16,7 @@ from pathlib import Path
 import yaml
 
 CI_WORKFLOW = Path(".github/workflows/ci.yml")
-HOOK_INVOCATION = "bash .githooks/commit-msg"
+HOOK_INVOCATION = "bash .agent/githooks/commit-msg"
 
 
 def _load_workflow() -> dict:
