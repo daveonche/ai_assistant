@@ -4,19 +4,16 @@
 # Retrieves this script with a single command from inside a project
 # repository, validates the documented host prerequisites (Bash and git),
 # and performs a clean install: it clones the pinned release reference
-# into a temporary directory, copies .agent/ and agent.sh into the project
-# root, and removes the temporary directory on exit. When the assistant
-# files already exist, it refreshes them through the consumer's own git
+# into a temporary directory, copies .agent/ into the project root, and
+# removes the temporary directory on exit. When the assistant files
+# already exist, it refreshes them through the consumer's own git
 # (ai-assistant remote -> fetch -> diff preview -> confirmation ->
 # checkout -> commit) so the change is recorded as a normal, reviewable
-# project change. Both entry scripts
-# are recorded executable in the project's git index
-# (update-index --chmod=+x) so executability survives environments that
-# do not preserve file modes. When the retrieved reference ships the
-# commit-msg hook (.githooks/commit-msg), the installer copies .githooks/
-# as well, records the hook executable, and enables the commit message
-# gate in the project (core.hooksPath=.githooks) unless core.hooksPath
-# is already set.
+# project change. The entry script (.agent/start.sh) is recorded
+# executable in the project's git index (update-index --chmod=+x) so
+# executability survives environments that do not preserve file modes.
+# The commit-msg hook ships inside .agent/ (.agent/githooks/commit-msg);
+# gate enablement is handled by configure_commit_gate (see update mode).
 
 set -euo pipefail
 
@@ -40,9 +37,9 @@ usage() {
 Usage: install.sh [options]
 
 Prepare the AIAssistant assistant-file installation in the current
-project repository. When .agent/ or agent.sh already exist, the run
-switches to update mode and refreshes the files through this
-repository's git as one reviewable, revertable commit.
+project repository. When .agent/ already exists, the run switches to
+update mode and refreshes the files through this repository's git as
+one reviewable, revertable commit.
 
 Options:
   --ref REF   Install from REF instead of the pinned default
@@ -106,7 +103,7 @@ cleanup() {
 # Outputs: None
 # Returns: None
 detect_mode() {
-  if [[ -e ".agent" || -e "agent.sh" ]]; then
+  if [[ -e ".agent" ]]; then
     INSTALL_MODE="update"
   else
     INSTALL_MODE="install"
@@ -132,32 +129,21 @@ retrieve_files() {
 # Outputs: Progress to STDOUT; errors to STDERR
 # Returns: 0 on successful placement, 1 otherwise
 place_files() {
-  if [[ ! -d "${TMP_CLONE}/.agent" || ! -f "${TMP_CLONE}/agent.sh" ]]; then
+  if [[ ! -d "${TMP_CLONE}/.agent" ||
+      ! -f "${TMP_CLONE}/.agent/start.sh" ]]; then
     die "ref ${REF} does not contain the assistant files"
     return 1
   fi
   cp -R "${TMP_CLONE}/.agent" .agent
-  cp "${TMP_CLONE}/agent.sh" agent.sh
-  chmod +x agent.sh .agent/ai-assistant.sh
+  chmod +x .agent/start.sh
   # Record executability explicitly so the consumer's next commit stores
-  # 100755 for both entry scripts even with core.fileMode=false, and the
-  # scripts run immediately after the install.
-  if ! git update-index --add --chmod=+x agent.sh .agent/ai-assistant.sh; then
+  # 100755 for the entry script even with core.fileMode=false, and the
+  # script runs immediately after the install.
+  if ! git update-index --add --chmod=+x .agent/start.sh; then
     die "failed to record executability in the git index"
     return 1
   fi
-  # Older pinned references predate the commit-msg gate; only install
-  # and enable it when the retrieved reference ships the hook.
-  if [[ -f "${TMP_CLONE}/.githooks/commit-msg" ]]; then
-    cp -R "${TMP_CLONE}/.githooks" .githooks
-    chmod +x .githooks/commit-msg
-    if ! git update-index --add --chmod=+x .githooks/commit-msg; then
-      die "failed to record commit-msg hook executability in the index"
-      return 1
-    fi
-    configure_commit_gate
-  fi
-  printf 'installer: placed .agent/ and agent.sh into the project root\n'
+  printf 'installer: placed .agent/ into the project root\n'
 }
 
 # Globals: None
@@ -459,7 +445,7 @@ main() {
       printf 'installer: dry run: would update the existing .agent/'
       printf ' and agent.sh from ref %s\n' "${REF}"
     else
-      printf 'installer: dry run: would install .agent/ and agent.sh'
+      printf 'installer: dry run: would install .agent/'
       printf ' from ref %s\n' "${REF}"
     fi
     printf 'installer: dry run complete; no changes were made\n'
