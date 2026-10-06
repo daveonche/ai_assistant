@@ -7,9 +7,9 @@ DOCUMENTED_DIRECTORIES = (".agent", "docs", "scripts", "src")
 
 
 def test_top_level_layout_contains_documented_layers():
-    # agent.sh exists as a file at the project root
-    assert (PROJECT_ROOT / "agent.sh").is_file(), (
-        "agent.sh is missing or not a file at the project root"
+    # the consolidated entry script exists as a file inside .agent/
+    assert (PROJECT_ROOT / ".agent" / "start.sh").is_file(), (
+        ".agent/start.sh is missing or not a file"
     )
 
     # each documented directory layer exists as a directory
@@ -21,9 +21,7 @@ def test_top_level_layout_contains_documented_layers():
 
 ALLOWED_TOP_LEVEL_ENTRIES = {
     # documented layers (Must Support item 1)
-    "agent.sh", ".agent", "docs", "scripts", "src",
-    # commit message gate layer (documented in README.md)
-    ".githooks",
+    ".agent", "docs", "scripts", "src",
     # test-suite layer established by the unit-testing workflow
     "tests",
     # recognized configuration files and directories
@@ -63,7 +61,7 @@ def test_no_undocumented_top_level_entries():
 
 ASSISTANT_CONFIG_ARTIFACTS = (
     "AGENTS.md",
-    "ai-assistant.sh",
+    "start.sh",
     "ai_assistant.py",
     ".aider.conf.yml",
     ".aider.model.settings.yml",
@@ -93,7 +91,7 @@ def test_agent_dir_is_single_assistant_configuration_home():
             )
 
     # the assistant's runtime and prompt home are not duplicated at the top level
-    for artifact in ("AGENTS.md", "ai-assistant.sh", "ai_assistant.py",
+    for artifact in ("AGENTS.md", "start.sh", "ai_assistant.py",
                      "workflows", "specs"):
         assert not (PROJECT_ROOT / artifact).exists(), (
             f"assistant configuration artifact {artifact!r} found at the top level; "
