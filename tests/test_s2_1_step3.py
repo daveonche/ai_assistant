@@ -620,7 +620,7 @@ def test_update_on_unborn_head_records_initial_commit(unborn_consumer_repo):
 
     Regression test for the update path crashing when the consumer
     repository had no commits — the state right after a clean install
-    into a fresh `git init` (place_files stages the entry scripts but
+    into a fresh `git init` (place_files stages the entry script but
     records no commit). The preview diffs against the empty tree and the
     refresh is recorded as the repository's first commit.
     """
