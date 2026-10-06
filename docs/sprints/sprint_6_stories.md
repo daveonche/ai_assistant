@@ -40,7 +40,7 @@ Developer Notes:
 - Maps to REQ-2, REQ-9; the gate must remain active after relocation
 - CI workflow edits require the CI/CD conventions reference (routing table)
 
-## Story S6.5: Project Rename to dev-orchestrator
+## Story S6.3: Project Rename to dev-orchestrator
 
 As a developer, I want the repository and launcher module renamed to match the project's evolution from a peer programming assistant into an integrated agentic AI harness for orchestrating development workflows, so that the project's naming reflects what it has become.
 
@@ -48,10 +48,10 @@ Acceptance Criteria:
 
 - `DEFAULT_REPO_URL` in `scripts/install.sh` points at `https://github.com/daveonche/dev-orchestrator.git`; the canonical URL in the offline-test `insteadOf` rewrites (e.g., `tests/test_s2_1_step3.py`, `tests/test_s2_1_step4.py`) and every other pinned reference (e.g., `tests/test_release_ref_consistency.py`) is updated to match
 - Installer display strings use the new product title: the `scripts/install.sh` header comment and usage text read `Agentic AI Development-Workflow` instead of `AIAssistant` (the `ai-assistant` git remote name is unchanged — an identifier existing consumer installs depend on, not a display string)
-- `.agent/ai_assistant.py` is renamed to `.agent/launcher.py`; the exec line in `.agent/start.sh` invokes `.agent/launcher.py`; no tracked code or test file references the old repository URL or the old module path (documentation references are updated in S6.3)
+- `.agent/ai_assistant.py` is renamed to `.agent/launcher.py`; the exec line in `.agent/start.sh` invokes `.agent/launcher.py`; no tracked code or test file references the old repository URL or the old module path (documentation references are updated in S6.4)
 - Launcher-driving and tracked-layout suites are updated and green (e.g., `tests/test_s1_2_step5.py`, `tests/test_s1_3_step1.py`, `tests/test_s5_1_step7.py`)
 - Release-reference consistency stays green; the commit subject scope `chore(agent)` and `DEFAULT_REF` (`v1.0.24`) are unchanged
-- README and architecture-doc naming updates are deferred to S6.3's single documentation pass
+- README and architecture-doc naming updates are deferred to S6.4's single documentation pass
 - Consumers receive the new repository URL only after the next release cut (the installer is served from the pinned tag; GitHub redirects the old URL in the meantime)
 
 Dependencies: S6.2
@@ -60,10 +60,10 @@ Developer Notes:
 
 - New user-introduced requirement (naming alignment); no existing REQ covers the rename
 - Tool-agnostic module name (`launcher.py`) decouples code from product naming so future renames do not touch code
-- Product title becomes `Agentic AI Development-Workflow`; the README title change is executed in S6.3's documentation pass
+- Product title becomes `Agentic AI Development-Workflow`; the README title change is executed in S6.4's documentation pass
 - Load the bash conventions reference before implementation (routing table)
 
-## Story S6.3: Documentation Alignment for Single-Directory Install
+## Story S6.4: Documentation Alignment for Single-Directory Install
 
 As a developer, I want the README and architecture documentation updated to the single-directory install so that the documented install method matches shipped behavior.
 
@@ -75,23 +75,23 @@ Acceptance Criteria:
 - README install/copy instructions reference the `dev-orchestrator` repository URL; the architecture doc references `.agent/launcher.py`
 - Release-reference consistency stays green (`tests/test_release_ref_consistency.py`, `tests/test_s2_1_step5.py` updated where they pin paths)
 
-Dependencies: S6.1, S6.2, S6.5
+Dependencies: S6.1, S6.2, S6.3
 
 Developer Notes:
 
 - Maps to REQ-3, REQ-14, REQ-15
 - README edit requires the GFM conventions reference at implementation time (routing table)
 
-## Story S6.4: Sprint 6 Record Documentation
+## Story S6.5: Sprint 6 Record Documentation
 
 As a developer, I want the Sprint 6 work recorded in the project docs, so that the sprint history and implementation status reflect the install-surface consolidation.
 
 Acceptance Criteria:
 
-- `docs/implementation_status.md` gains a Sprint 6 section listing the S6.1–S6.3 and S6.5 work as completed steps, and its Priority Order section is updated to reflect the new backlog state
+- `docs/implementation_status.md` gains a Sprint 6 section listing the S6.1–S6.4 work as completed steps, and its Priority Order section is updated to reflect the new backlog state
 - Documentation passes the markdown conventions
 
-Dependencies: S6.1, S6.2, S6.3
+Dependencies: S6.1, S6.2, S6.4
 
 Developer Notes:
 
@@ -100,4 +100,4 @@ Developer Notes:
 
 ## Sprint Technical Rationale
 
-These stories follow the minimal dependency chain of the approved Priority Order: S6.1 defines the target layout, S6.2 rewires the gate and CI to it, S6.5 renames the repository and launcher module, S6.3 aligns the docs with shipped behavior in a single pass covering the consolidation and the rename, and S6.4 records the sprint. Priority 3 (verification alignment) is distributed into each story's acceptance criteria per the project's green-suite discipline, so no standalone verification story is needed.
+These stories follow the minimal dependency chain of the approved Priority Order: S6.1 defines the target layout, S6.2 rewires the gate and CI to it, S6.3 renames the repository and launcher module, S6.4 aligns the docs with shipped behavior in a single pass covering the consolidation and the rename, and S6.5 records the sprint. Priority 3 (verification alignment) is distributed into each story's acceptance criteria per the project's green-suite discipline, so no standalone verification story is needed.
