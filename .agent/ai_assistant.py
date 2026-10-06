@@ -864,34 +864,35 @@ def _ensure_commit_msg_gate(project_root: Path, debug: bool) -> None:
     """Activate the repo's commit-msg gate when core.hooksPath is unset.
 
     Git never runs tracked hooks on its own: core.hooksPath is a local
-    config value and deliberately not versioned, so a copied-in .githooks/
-    directory stays inert until the value is set. Every launch therefore
-    sets it to .githooks when the project root is a git worktree that
-    ships the gate, applying the installer's policy: an existing value
+    config value and deliberately not versioned, so a copied-in
+    .agent/githooks/ directory stays inert until the value is set. Every
+    launch therefore sets it to .agent/githooks when the project root is
+    a git worktree that ships the gate, applying the installer's policy:
+    an existing value
     (husky, pre-commit, another gate) is never overwritten. The change
     is repo-local (.git/config only), so it applies identically inside
     and outside a container. Best-effort and non-fatal: a missing git
     binary or a failed config write only skips the activation, never the
     launch.
     """
-    hook = project_root / ".githooks" / "commit-msg"
+    hook = project_root / ".agent" / "githooks" / "commit-msg"
     if not hook.is_file() or not (project_root / ".git").exists():
         return
     if not os.access(hook, os.X_OK):
         print(
             f"Warning: {hook} is not executable, so the gate would stay "
-            "inactive; fix with chmod +x .githooks/commit-msg and git "
-            "update-index --chmod=+x .githooks/commit-msg.",
+            "inactive; fix with chmod +x .agent/githooks/commit-msg and "
+            "git update-index --chmod=+x .agent/githooks/commit-msg.",
             file=sys.stderr,
         )
     get_command = ["git", "-C", str(project_root), "config", "core.hooksPath"]
-    set_command = get_command + [".githooks"]
+    set_command = get_command + [".agent/githooks"]
     try:
         _trace_command(get_command, debug)
         current = subprocess.run(get_command, capture_output=True, text=True)
         if current.returncode == 0:
             existing = (current.stdout or "").strip()
-            if debug and existing != ".githooks":
+            if debug and existing != ".agent/githooks":
                 print(
                     f"Note: core.hooksPath is already {existing!r}; "
                     "leaving it untouched.",
@@ -929,7 +930,7 @@ def _ensure_commit_msg_gate(project_root: Path, debug: bool) -> None:
         return
     print(
         "Note: commit-msg gate activated (git config core.hooksPath "
-        ".githooks).",
+        ".agent/githooks).",
         file=sys.stderr,
     )
 

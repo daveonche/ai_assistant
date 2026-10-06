@@ -64,9 +64,9 @@ def _make_git_sandbox(tmp_path: Path) -> Path:
 
 
 def _write_commit_msg_gate(sandbox: Path) -> None:
-    """Ship the gate files the launcher looks for in the project root."""
-    hook = sandbox / ".githooks" / "commit-msg"
-    hook.parent.mkdir()
+    """Ship the gate files the launcher looks for under .agent/."""
+    hook = sandbox / ".agent" / "githooks" / "commit-msg"
+    hook.parent.mkdir(parents=True)
     hook.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
     hook.chmod(0o755)
 
@@ -83,13 +83,13 @@ def run_chain(
     stub_dir: Path,
     args: list[str],
 ) -> subprocess.CompletedProcess:
-    """Run agent.sh from the sandbox with the docker stub on PATH."""
+    """Run .agent/start.sh from the sandbox with the docker stub on PATH."""
     env = _git_env(sandbox)
     env["PATH"] = f"{stub_dir}{os.pathsep}{env['PATH']}"
     env["DOCKER_STUB_LOG"] = str(sandbox / "docker-stub.log")
     env["AI_ASSISTANT_SESSION_ID"] = SESSION_ID
     return subprocess.run(
-        ["bash", str(PROJECT_ROOT / "agent.sh"), *args],
+        ["bash", str(PROJECT_ROOT / ".agent" / "start.sh"), *args],
         cwd=sandbox,
         env=env,
         capture_output=True,
@@ -111,7 +111,7 @@ def _hooks_path(sandbox: Path) -> str | None:
 
 def test_gate_activated_when_unset(tmp_path: Path):
     """A launch in a git worktree that ships the gate sets core.hooksPath
-    to .githooks, and a second launch leaves the value in place."""
+    to .agent/githooks, and a second launch leaves the value in place."""
     sandbox = _make_git_sandbox(tmp_path)
     stub_dir = tmp_path / "stubs"
     stub_dir.mkdir()
@@ -120,13 +120,13 @@ def test_gate_activated_when_unset(tmp_path: Path):
 
     first = run_chain(sandbox, stub_dir, args=[])
     assert first.returncode == 0, first.stderr
-    assert _hooks_path(sandbox) == ".githooks"
+    assert _hooks_path(sandbox) == ".agent/githooks"
 
     # Idempotent: the second launch sees the value already set and must
     # leave it exactly as recorded by the first run.
     second = run_chain(sandbox, stub_dir, args=[])
     assert second.returncode == 0, second.stderr
-    assert _hooks_path(sandbox) == ".githooks"
+    assert _hooks_path(sandbox) == ".agent/githooks"
 
 
 def test_existing_hooks_path_is_never_overwritten(tmp_path: Path):
@@ -150,8 +150,8 @@ def test_existing_hooks_path_is_never_overwritten(tmp_path: Path):
 
 
 def test_no_gate_files_leaves_hooks_path_unset(tmp_path: Path):
-    """Without .githooks/commit-msg the launcher writes no hooksPath, so
-    projects that never shipped the gate stay untouched."""
+    """Without .agent/githooks/commit-msg the launcher writes no
+    hooksPath, so projects that never shipped the gate stay untouched."""
     sandbox = _make_git_sandbox(tmp_path)
     stub_dir = tmp_path / "stubs"
     stub_dir.mkdir()
@@ -171,9 +171,9 @@ def test_non_executable_hook_warns_but_still_activates(tmp_path: Path):
     stub_dir.mkdir()
     _write_docker_stub(stub_dir)
     _write_commit_msg_gate(sandbox)
-    (sandbox / ".githooks" / "commit-msg").chmod(0o644)
+    (sandbox / ".agent" / "githooks" / "commit-msg").chmod(0o644)
 
     result = run_chain(sandbox, stub_dir, args=[])
     assert result.returncode == 0, result.stderr
-    assert _hooks_path(sandbox) == ".githooks"
+    assert _hooks_path(sandbox) == ".agent/githooks"
     assert "not executable" in result.stderr
