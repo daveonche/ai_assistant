@@ -1,13 +1,14 @@
 """Story S2.1, Step 3: repeatable updates through the project's own history.
 
-Verifies that scripts/install.sh detects existing assistant files, refreshes
-them through the consumer's own git (ai-assistant remote -> fetch -> preview
--> confirm -> gate configuration -> checkout -> commit) so the change is
-recorded as one normal, reviewable, revertable project commit, and warns
-before replacing local customizations. When the fetched reference ships the
-commit-msg hook (.githooks/commit-msg), the update also enables the commit
-message gate (core.hooksPath=.githooks) unless core.hooksPath is already
-set; a reference predating the gate skips the gate entirely.
+Verifies that scripts/install.sh detects an existing .agent/ install,
+refreshes it through the consumer's own git (ai-assistant remote -> fetch
+-> preview -> confirm -> gate configuration -> checkout -> commit) so the
+change is recorded as one normal, reviewable, revertable project commit,
+and warns before replacing local customizations. When the fetched
+reference ships the commit-msg hook (.agent/githooks/commit-msg), the
+update also enables the commit message gate (core.hooksPath=.githooks)
+unless core.hooksPath is already set; a reference predating the gate
+skips the gate entirely.
 
 Two layers keep the suite hermetic:
 - stub-git tests log the exact command sequence and emulate the update-path
@@ -16,9 +17,9 @@ Two layers keep the suite hermetic:
 - real-git tests run fully offline against a local release repository
   (git's insteadOf rewrite redirects the canonical assistant URL there, so
   no network is touched) and prove the recorded commit is scoped to the
-  assistant files (.agent/, agent.sh, and .githooks/commit-msg when the
-  release ships the gate) and reverts cleanly, including on a repository
-  with no commits yet (unborn HEAD).
+  assistant directory (.agent/, carrying the entry script and — when the
+  release ships the gate — the commit-msg hook) and reverts cleanly,
+  including on a repository with no commits yet (unborn HEAD).
 """
 
 import os
@@ -43,14 +44,16 @@ def git_stub(tmp_path: Path):
     """Stub git that logs its arguments and emulates the update-path
     operations: reports a work tree, has no assistant remote yet, succeeds
     at remote add / fetch / checkout / commit, and reports index changes
-    against HEAD. The emulated release ships .githooks/commit-msg, so the
-    installer's hook probes (cat-file) succeed and the gate is configured.
+    against HEAD. The emulated release ships .agent/githooks/commit-msg,
+    so the installer's hook probes (cat-file) succeed and the gate is
+    configured. A clone branch emulates the release content so the
+    install path (a stale root agent.sh without .agent/) also works.
 
     Knobs read from the environment by the stub:
     - DIFF_RC=0  no-op probe reports no changes ("already up to date")
     - FAIL_FETCH=1  the fetch fails, aborting the update after the warning
     - NO_GITHOOKS=1  the fetched reference predates the commit-msg gate:
-      the cat-file probe fails and checkout stages no .githooks/ files
+      the cat-file probe fails and checkout stages no hook file
     - HOOKSPATH=<value>  core.hooksPath is already set to <value>
     """
     stub_dir = tmp_path / "stub-bin"
@@ -107,12 +110,17 @@ def git_stub(tmp_path: Path):
         "  checkout)\n"
         "    # emulate staging the release content into the worktree\n"
         "    mkdir -p .agent\n"
-        "    printf 'release\\n' > .agent/ai-assistant.sh\n"
-        "    printf 'release\\n' > agent.sh\n"
+        "    printf 'release\\n' > .agent/start.sh\n"
         '    if [[ -z "${NO_GITHOOKS:-}" ]]; then\n'
-        "      mkdir -p .githooks\n"
-        "      printf 'hook\\n' > .githooks/commit-msg\n"
+        "      mkdir -p .agent/githooks\n"
+        "      printf 'hook\\n' > .agent/githooks/commit-msg\n"
         "    fi\n"
+        "    ;;\n"
+        "  clone)\n"
+        '    target="${@: -1}"\n'
+        '    mkdir -p "${target}/.agent"\n'
+        '    : > "${target}/.agent/start.sh"\n'
+        '    : > "${target}/.agent/githooks/commit-msg"\n'
         "    ;;\n"
         "esac\n"
         "exit 0\n"
@@ -163,7 +171,7 @@ def test_dry_run_reports_update_mode_for_existing_files(sandbox, git_stub):
     result = run_installer(sandbox, stub_dir, "--dry-run")
     assert result.returncode == 0, result.stderr
     assert (
-        "dry run: would update the existing .agent/ and agent.sh"
+        "dry run: would update the existing .agent/"
         " from ref v1.0.24" in result.stdout
     )
     assert "dry run complete; no changes were made" in result.stdout
@@ -175,23 +183,17 @@ def test_dry_run_reports_update_mode_for_existing_files(sandbox, git_stub):
     ]
 
 
-@pytest.mark.parametrize(
-    "trigger", [".agent", "agent.sh"], ids=["agent-dir", "agent-sh"]
-)
-def test_existing_assistant_files_route_to_update_without_clone(
-    sandbox, git_stub, trigger
+def test_existing_assistant_dir_routes_to_update_without_clone(
+    sandbox, git_stub
 ):
-    """Either existing entry point routes the run to the update path.
+    """An existing .agent/ routes the run to the update path.
 
     The refresh must go through the consumer's own git: no clone may be
     issued, since a temporary clone would bypass the reviewable-commit path.
     """
     stub_dir, log = git_stub
 
-    if trigger == "agent.sh":
-        (sandbox / "agent.sh").write_text("local\n")
-    else:
-        (sandbox / ".agent").mkdir()
+    (sandbox / ".agent").mkdir()
 
     result = run_installer(sandbox, stub_dir, "--yes")
     assert result.returncode == 0, result.stderr
@@ -199,8 +201,27 @@ def test_existing_assistant_files_route_to_update_without_clone(
     assert "update complete" in result.stdout
     # the refresh went through the consumer's git, never a temp clone
     assert "clone" not in log.read_text().splitlines()
-    # the triggering entry point is still in place after the refresh
-    assert (sandbox / trigger).exists()
+    # the assistant directory is still in place after the refresh
+    assert (sandbox / ".agent").exists()
+
+
+def test_root_agent_sh_alone_does_not_route_to_update(sandbox, git_stub):
+    """Detection keys on .agent alone: a stale root agent.sh without
+    .agent/ is not an existing install.
+
+    The run takes the install path instead, staging .agent/ from the
+    pinned release; the legacy root script is simply ignored.
+    """
+    stub_dir, log = git_stub
+
+    (sandbox / "agent.sh").write_text("local\n")
+
+    result = run_installer(sandbox, stub_dir, "--yes")
+    assert result.returncode == 0, result.stderr
+    assert "installer: install complete" in result.stdout
+    assert "updating an existing install" not in result.stdout
+    # the install path cloned the release; no update ran
+    assert "clone" in log.read_text().splitlines()
 
 
 def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
@@ -212,9 +233,9 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
     against HEAD..FETCH_HEAD, then the uncommitted-local-changes probe
     and its stat), gate configuration (hooksPath query, then the enable),
     clearing of the managed paths (rm -r -f --ignore-unmatch) so upstream
-    renames and deletions stage in the same commit, checkout of .agent +
-    agent.sh + .githooks, explicit executability recording for the entry
-    scripts and the hook (update-index --chmod=+x), no-op probe, scoped
+    renames and deletions stage in the same commit, checkout of .agent,
+    explicit executability recording for the entry script and the hook
+    (update-index --chmod=+x), no-op probe, scoped
     commit with the gate-conforming subject, and the short-hash lookup
     for the progress message. --yes skips the confirmation prompt, which
     needs a terminal.
@@ -252,7 +273,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "HEAD",
         "cat-file",
         "-e",
-        "FETCH_HEAD:.githooks/commit-msg",
+        "FETCH_HEAD:.agent/githooks/commit-msg",
         "--no-pager",
         "diff",
         "--stat",
@@ -260,24 +281,18 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "FETCH_HEAD",
         "--",
         ".agent",
-        "agent.sh",
-        ".githooks",
         "diff",
         "--quiet",
         "--",
         ".agent",
-        "agent.sh",
-        ".githooks",
         "--no-pager",
         "diff",
         "--stat",
         "--",
         ".agent",
-        "agent.sh",
-        ".githooks",
         "cat-file",
         "-e",
-        "FETCH_HEAD:.githooks/commit-msg",
+        "FETCH_HEAD:.agent/githooks/commit-msg",
         "config",
         "--get",
         "core.hooksPath",
@@ -286,7 +301,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         ".githooks",
         "cat-file",
         "-e",
-        "FETCH_HEAD:.githooks/commit-msg",
+        "FETCH_HEAD:.agent/githooks/commit-msg",
         "rm",
         "-r",
         "-f",
@@ -294,39 +309,30 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "--ignore-unmatch",
         "--",
         ".agent",
-        "agent.sh",
-        ".githooks",
         "checkout",
         "FETCH_HEAD",
         "--",
         ".agent",
-        "agent.sh",
-        ".githooks",
         "update-index",
         "--chmod=+x",
-        "agent.sh",
-        ".agent/ai-assistant.sh",
+        ".agent/start.sh",
         "cat-file",
         "-e",
-        "FETCH_HEAD:.githooks/commit-msg",
+        "FETCH_HEAD:.agent/githooks/commit-msg",
         "update-index",
         "--chmod=+x",
-        ".githooks/commit-msg",
+        ".agent/githooks/commit-msg",
         "diff",
         "--cached",
         "--quiet",
         "--",
         ".agent",
-        "agent.sh",
-        ".githooks",
         "commit",
         "--quiet",
         "-m",
         "chore(agent): update assistant files to v1.0.24",
         "--",
         ".agent",
-        "agent.sh",
-        ".githooks",
         "rev-parse",
         "--short",
         "HEAD",
@@ -369,7 +375,7 @@ def test_update_preserves_foreign_hooks_path(sandbox, git_stub):
     assert "core.hooksPath is already set to .husky" in result.stderr
     assert "leaving it untouched" in result.stderr
     # the hook files ship regardless; only the configuration is preserved
-    assert (sandbox / ".githooks" / "commit-msg").is_file()
+    assert (sandbox / ".agent" / "githooks" / "commit-msg").is_file()
 
     # no set-form configuration happened: the only core.hooksPath
     # invocation in the log is the --get query
@@ -399,9 +405,9 @@ def test_update_reports_gate_already_active(sandbox, git_stub):
 def test_update_from_ref_without_hook_skips_gate_config(sandbox, git_stub):
     """A fetched reference predating the gate triggers no configuration.
 
-    Older pinned references ship no .githooks/commit-msg; the installer
-    must not touch core.hooksPath and must keep the refresh scoped to the
-    classic file set.
+    Older pinned references ship no .agent/githooks/commit-msg; the
+    installer must not touch core.hooksPath and must keep the refresh
+    scoped to the .agent file set.
     """
     stub_dir, log = git_stub
 
@@ -415,12 +421,12 @@ def test_update_from_ref_without_hook_skips_gate_config(sandbox, git_stub):
     lines = log.read_text().splitlines()
     # no gate configuration at all: not even the query
     assert "config" not in lines
-    # the refresh stays scoped to .agent + agent.sh
+    # the refresh stays scoped to .agent
     start = lines.index("commit")
     end = lines.index("rev-parse", start)
     assert ".githooks" not in lines[start:end]
     # and no hook files were staged into the worktree
-    assert not (sandbox / ".githooks").exists()
+    assert not (sandbox / ".agent" / "githooks").exists()
 
 
 def test_update_noop_reports_already_up_to_date(sandbox, git_stub):
@@ -452,11 +458,11 @@ def test_overwrite_warning_precedes_update_actions_and_names_scope(
     """
     stub_dir, log = git_stub
 
-    (sandbox / "agent.sh").write_text("local\n")
+    (sandbox / ".agent").mkdir()
     result = run_installer(sandbox, stub_dir, extra_env={"FAIL_FETCH": "1"})
     assert result.returncode != 0
     assert "WARNING" in result.stderr
-    assert "replaces .agent/ and agent.sh" in result.stderr
+    assert "replaces .agent/" in result.stderr
     assert "read: list in .agent/.aider.conf.yml" in result.stderr
     assert "failed to retrieve the assistant ref v1.0.24" in result.stderr
     # the run died at the fetch, before any mutation: the warning was
@@ -480,9 +486,11 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
 
 @pytest.fixture
 def release_repo(tmp_path: Path) -> Path:
-    """Local release repository tagged v1.0.24 holding the assistant
-    files and the real commit-msg gate, so the installer's own update
-    commit and the later revert run through the actual hook."""
+    """Local release repository tagged v1.0.24 holding the consolidated
+    assistant directory and the real commit-msg gate file. The gate is
+    enabled as core.hooksPath=.githooks (the value rewiring to
+    .agent/githooks is S6.2 scope), so commits in these tests run
+    without hook enforcement."""
     repo = tmp_path / "release"
     repo.mkdir()
     _git(repo, "init")
@@ -490,13 +498,12 @@ def release_repo(tmp_path: Path) -> Path:
     _git(repo, "config", "user.name", "Test User")
     (repo / ".agent").mkdir()
     (repo / ".agent" / "release.txt").write_text("release\n")
-    (repo / ".agent" / "ai-assistant.sh").write_text("release\n")
-    (repo / "agent.sh").write_text("release\n")
-    hook = repo / ".githooks" / "commit-msg"
+    (repo / ".agent" / "start.sh").write_text("release\n")
+    hook = repo / ".agent" / "githooks" / "commit-msg"
     hook.parent.mkdir()
-    shutil.copy(PROJECT_ROOT / ".githooks" / "commit-msg", hook)
+    shutil.copy(PROJECT_ROOT / ".agent" / "githooks" / "commit-msg", hook)
     hook.chmod(0o755)
-    _git(repo, "add", ".agent", "agent.sh", ".githooks")
+    _git(repo, "add", ".agent")
     _git(repo, "commit", "-m", "release v1.0.24")
     _git(repo, "tag", "v1.0.24")
     return repo
@@ -513,10 +520,9 @@ def consumer_repo(tmp_path: Path, release_repo: Path, monkeypatch) -> Path:
     _git(repo, "init")
     _git(repo, "config", "user.email", "test@example.com")
     _git(repo, "config", "user.name", "Test User")
-    (repo / "agent.sh").write_text("local\n")
     (repo / ".agent").mkdir()
     (repo / ".agent" / "custom.txt").write_text("keep\n")
-    _git(repo, "add", ".agent", "agent.sh")
+    _git(repo, "add", ".agent")
     _git(repo, "commit", "-m", "base")
     # redirect the canonical assistant URL to the local release repo so
     # the installer's fetch never touches the network
@@ -535,10 +541,9 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     Real git, fully offline: ensure_assistant_remote adds the canonical
     assistant remote, and git's insteadOf rewrite redirects its fetch to
     the local release repo. The update must produce exactly one commit
-    touching only .agent/, agent.sh, and .githooks/commit-msg, must leave
-    the commit message gate enabled, and reverting it must restore the
-    prior state — the revert itself passing the gate through the
-    Revert "..." exemption.
+    touching only .agent/ (entry script and hook included), must leave
+    the commit message gate enabled (core.hooksPath=.githooks), and
+    reverting it must restore the prior state.
     """
     base = _git(consumer_repo, "rev-parse", "HEAD").stdout.strip()
 
@@ -558,9 +563,8 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     # the replacement, so its deletion is part of the scoped commit
     assert files == {
         ".agent/release.txt",
-        ".agent/ai-assistant.sh",
-        "agent.sh",
-        ".githooks/commit-msg",
+        ".agent/start.sh",
+        ".agent/githooks/commit-msg",
         ".agent/custom.txt",
     }
     assert (
@@ -573,15 +577,14 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     # the release content replaced the entry script; the tracked
     # local-only customization inside .agent/ is removed by the
     # replacement and must be re-applied after the update
-    assert (consumer_repo / "agent.sh").read_text() == "release\n"
+    assert (consumer_repo / ".agent" / "start.sh").read_text() == "release\n"
     assert not (consumer_repo / ".agent" / "custom.txt").exists()
 
-    # revertable: reverting the update commit restores the prior state;
-    # the revert commit itself passes the gate via the Revert exemption
+    # revertable: reverting the update commit restores the prior state
     _git(consumer_repo, "revert", "--no-edit", "HEAD")
-    assert (consumer_repo / "agent.sh").read_text() == "local\n"
     assert not (consumer_repo / ".agent" / "release.txt").exists()
-    assert not (consumer_repo / ".githooks" / "commit-msg").exists()
+    assert not (consumer_repo / ".agent" / "start.sh").exists()
+    assert not (consumer_repo / ".agent" / "githooks" / "commit-msg").exists()
     # the revert restores the removed customization as well
     assert (consumer_repo / ".agent" / "custom.txt").read_text() == "keep\n"
 
@@ -597,12 +600,11 @@ def unborn_consumer_repo(tmp_path: Path, release_repo: Path, monkeypatch) -> Pat
     _git(repo, "init")
     _git(repo, "config", "user.email", "test@example.com")
     _git(repo, "config", "user.name", "Test User")
-    (repo / "agent.sh").write_text("local\n")
     (repo / ".agent").mkdir()
-    (repo / ".agent" / "ai-assistant.sh").write_text("local\n")
+    (repo / ".agent" / "start.sh").write_text("local\n")
     (repo / ".agent" / "custom.txt").write_text("keep\n")
-    # the clean install staged the entry scripts but recorded no commit
-    _git(repo, "add", "agent.sh", ".agent/ai-assistant.sh")
+    # the clean install staged the entry script but recorded no commit
+    _git(repo, "add", ".agent/start.sh")
     git_config = tmp_path / "gitconfig-unborn"
     git_config.write_text(
         f'[url "{release_repo}"]\n'
@@ -638,9 +640,8 @@ def test_update_on_unborn_head_records_initial_commit(unborn_consumer_repo):
     )
     assert files == {
         ".agent/release.txt",
-        ".agent/ai-assistant.sh",
-        "agent.sh",
-        ".githooks/commit-msg",
+        ".agent/start.sh",
+        ".agent/githooks/commit-msg",
     }
     assert (
         _git(unborn_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
@@ -654,7 +655,8 @@ def test_update_on_unborn_head_records_initial_commit(unborn_consumer_repo):
 @pytest.fixture
 def legacy_release_repo(tmp_path: Path) -> Path:
     """Local release repository tagged v1.0.10 that predates the
-    commit-msg gate: it holds the assistant files but no .githooks/."""
+    commit-msg gate: it holds the assistant directory but no
+    .agent/githooks/."""
     repo = tmp_path / "legacy-release"
     repo.mkdir()
     _git(repo, "init")
@@ -662,9 +664,8 @@ def legacy_release_repo(tmp_path: Path) -> Path:
     _git(repo, "config", "user.name", "Test User")
     (repo / ".agent").mkdir()
     (repo / ".agent" / "release.txt").write_text("legacy\n")
-    (repo / ".agent" / "ai-assistant.sh").write_text("legacy\n")
-    (repo / "agent.sh").write_text("legacy\n")
-    _git(repo, "add", ".agent", "agent.sh")
+    (repo / ".agent" / "start.sh").write_text("legacy\n")
+    _git(repo, "add", ".agent")
     _git(repo, "commit", "-m", "release v1.0.10")
     _git(repo, "tag", "v1.0.10")
     return repo
@@ -681,10 +682,9 @@ def legacy_consumer_repo(
     _git(repo, "init")
     _git(repo, "config", "user.email", "test@example.com")
     _git(repo, "config", "user.name", "Test User")
-    (repo / "agent.sh").write_text("local\n")
     (repo / ".agent").mkdir()
-    (repo / ".agent" / "ai-assistant.sh").write_text("local\n")
-    _git(repo, "add", ".agent", "agent.sh")
+    (repo / ".agent" / "start.sh").write_text("local\n")
+    _git(repo, "add", ".agent")
     _git(repo, "commit", "-m", "base")
     git_config = tmp_path / "gitconfig-legacy"
     git_config.write_text(
@@ -699,10 +699,10 @@ def test_update_from_ref_without_hook_skips_gate(legacy_consumer_repo):
     """Updating from a reference that predates the gate leaves the
     repository configuration untouched.
 
-    The legacy release ships no .githooks/commit-msg, so the installer
-    must not enable core.hooksPath, must not stage .githooks/ files, and
-    must still record a subject that conforms to the gate (a consumer
-    with the gate already enabled stays compatible).
+    The legacy release ships no .agent/githooks/commit-msg, so the
+    installer must not enable core.hooksPath, must not stage hook files,
+    and must still record a subject that conforms to the gate (a
+    consumer with the gate already enabled stays compatible).
     """
     result = run_installer(
         legacy_consumer_repo, None, "--yes", "--ref", "v1.0.10"
@@ -722,7 +722,7 @@ def test_update_from_ref_without_hook_skips_gate(legacy_consumer_repo):
     assert probe.returncode != 0  # unset
     assert probe.stdout.strip() == ""
 
-    # the commit stays scoped to the classic file set
+    # the commit stays scoped to the .agent file set
     files = set(
         _git(
             legacy_consumer_repo, "show", "--name-only", "--format=", "HEAD"
@@ -730,8 +730,7 @@ def test_update_from_ref_without_hook_skips_gate(legacy_consumer_repo):
     )
     assert files == {
         ".agent/release.txt",
-        ".agent/ai-assistant.sh",
-        "agent.sh",
+        ".agent/start.sh",
     }
     assert (
         _git(legacy_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
@@ -751,13 +750,12 @@ def renamed_release_repo(tmp_path: Path) -> Path:
     _git(repo, "config", "user.name", "Test User")
     (repo / ".agent" / "workflows").mkdir(parents=True)
     (repo / ".agent" / "workflows" / "skill.md").write_text("release\n")
-    (repo / ".agent" / "ai-assistant.sh").write_text("release\n")
-    (repo / "agent.sh").write_text("release\n")
-    hook = repo / ".githooks" / "commit-msg"
+    (repo / ".agent" / "start.sh").write_text("release\n")
+    hook = repo / ".agent" / "githooks" / "commit-msg"
     hook.parent.mkdir()
-    shutil.copy(PROJECT_ROOT / ".githooks" / "commit-msg", hook)
+    shutil.copy(PROJECT_ROOT / ".agent" / "githooks" / "commit-msg", hook)
     hook.chmod(0o755)
-    _git(repo, "add", ".agent", "agent.sh", ".githooks")
+    _git(repo, "add", ".agent")
     _git(repo, "commit", "-m", "release v1.0.24")
     _git(repo, "tag", "v1.0.24")
     return repo
@@ -775,11 +773,10 @@ def renamed_consumer_repo(
     _git(repo, "init")
     _git(repo, "config", "user.email", "test@example.com")
     _git(repo, "config", "user.name", "Test User")
-    (repo / "agent.sh").write_text("local\n")
     (repo / ".agent" / "prompts").mkdir(parents=True)
     (repo / ".agent" / "prompts" / "skill.md").write_text("local\n")
-    (repo / ".agent" / "ai-assistant.sh").write_text("local\n")
-    _git(repo, "add", ".agent", "agent.sh")
+    (repo / ".agent" / "start.sh").write_text("local\n")
+    _git(repo, "add", ".agent")
     _git(repo, "commit", "-m", "base")
     git_config = tmp_path / "gitconfig-renamed"
     git_config.write_text(
@@ -825,7 +822,6 @@ def test_update_applies_upstream_directory_rename(renamed_consumer_repo):
     assert changes == {
         "A\t.agent/workflows/skill.md",
         "D\t.agent/prompts/skill.md",
-        "M\t.agent/ai-assistant.sh",
-        "M\tagent.sh",
-        "A\t.githooks/commit-msg",
+        "M\t.agent/start.sh",
+        "A\t.agent/githooks/commit-msg",
     }

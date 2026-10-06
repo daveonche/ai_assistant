@@ -1,13 +1,13 @@
 """Story S2.1, Step 4: executable assistant files that survive
 mode-insensitive environments.
 
-Verifies that scripts/install.sh leaves both entry scripts (agent.sh and
-.agent/ai-assistant.sh) and the commit-msg hook (.githooks/commit-msg)
+Verifies that scripts/install.sh leaves the entry script
+(.agent/start.sh) and the commit-msg hook (.agent/githooks/commit-msg)
 runnable immediately after install or update, records their
 executability explicitly in the project's git index
 (update-index --chmod=+x) so it survives environments that do not
 preserve file modes (core.fileMode=false), and that this source
-repository itself records mode 100755 for all three files.
+repository itself records mode 100755 for both files.
 
 Two layers keep the suite hermetic:
 - the install path uses a git stub that emulates cloning the release and
@@ -34,8 +34,8 @@ import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INSTALLER = PROJECT_ROOT / "scripts" / "install.sh"
-ENTRY_SCRIPTS = ("agent.sh", ".agent/ai-assistant.sh")
-HOOK_PATH = ".githooks/commit-msg"
+ENTRY_SCRIPTS = (".agent/start.sh",)
+HOOK_PATH = ".agent/githooks/commit-msg"
 # Everything the installer records executable in the git index.
 RECORDED_EXECUTABLES = (*ENTRY_SCRIPTS, HOOK_PATH)
 
@@ -100,10 +100,10 @@ def run_installer(
 
 def test_source_repo_records_executable_assistant_files():
     """Requirement 3: this repository records executability for every
-    file the installer records executable — the two entry scripts and
-    the commit-msg hook, mode 100755 in the git index (Definition of
-    Done check: `git ls-files -s` shows 100755) and already committed to
-    HEAD (`git ls-tree HEAD` shows 100755)."""
+    file the installer records executable — the entry script and the
+    commit-msg hook, mode 100755 in the git index (Definition of Done
+    check: `git ls-files -s` shows 100755) and already committed to HEAD
+    (`git ls-tree HEAD` shows 100755)."""
     modes = _index_modes(PROJECT_ROOT)
     for path in RECORDED_EXECUTABLES:
         assert modes.get(path) == "100755", (
@@ -137,10 +137,11 @@ def fresh_repo(tmp_path: Path) -> Path:
 @pytest.fixture
 def clone_stub(tmp_path: Path):
     """Stub git that logs its arguments, reports a work tree, emulates
-    cloning a release that contains the assistant files and the
-    commit-msg hook, and passes every other git call through to the real
-    binary. The passthrough keeps the update-index executability
-    recording and the gate configuration real while retrieval stays
+    cloning a release that contains the consolidated assistant directory
+    (.agent/ with the entry script and the commit-msg hook inside it,
+    both executable as in the release tree), and passes every other git
+    call through to the real binary. The passthrough keeps the
+    update-index executability recording real while retrieval stays
     hermetic; the absolute real-git path avoids recursing into the stub."""
     real_git = shutil.which("git")
     assert real_git is not None, "git is required for these tests"
@@ -155,11 +156,11 @@ def clone_stub(tmp_path: Path):
         "  printf 'true\\n'\n"
         'elif [[ "${1:-}" == "clone" ]]; then\n'
         '  target="${@: -1}"\n'
-        '  mkdir -p "${target}/.agent"\n'
-        '  : > "${target}/.agent/ai-assistant.sh"\n'
-        '  : > "${target}/agent.sh"\n'
-        '  mkdir -p "${target}/.githooks"\n'
-        '  : > "${target}/.githooks/commit-msg"\n'
+        '  mkdir -p "${target}/.agent/githooks"\n'
+        '  : > "${target}/.agent/start.sh"\n'
+        '  : > "${target}/.agent/githooks/commit-msg"\n'
+        '  chmod +x "${target}/.agent/start.sh"\n'
+        '  chmod +x "${target}/.agent/githooks/commit-msg"\n'
         "else\n"
         f"  exec {real_git} \"$@\"\n"
         "fi\n"
@@ -172,10 +173,11 @@ def test_install_records_executable_and_immediately_runnable(
     fresh_repo, clone_stub
 ):
     """Requirements 1+2 on the install path: after the one-command
-    install both entry scripts and the commit-msg hook carry the exec
-    bit on disk (runnable with no further preparation), are recorded
-    100755 in the consumer's git index (robust to core.fileMode=false),
-    and the commit message gate is enabled (core.hooksPath=.githooks)."""
+    install the entry script and the commit-msg hook carry the exec bit
+    on disk (runnable with no further preparation — the hook inherited
+    from the release tree), and the entry script is recorded 100755 in
+    the consumer's git index (robust to core.fileMode=false). Install
+    mode never configures the gate: core.hooksPath stays untouched."""
     stub_dir, _log = clone_stub
 
     result = run_installer(fresh_repo, stub_dir)
@@ -189,17 +191,19 @@ def test_install_records_executable_and_immediately_runnable(
         mode = script.stat().st_mode
         assert mode & stat.S_IXUSR, f"{path} is not executable on disk"
 
-    # recorded explicitly: 100755 in the index, so the consumer's next
-    # commit preserves executability on any filesystem
-    assert _index_modes(fresh_repo) == {
-        "agent.sh": "100755",
-        ".agent/ai-assistant.sh": "100755",
-        ".githooks/commit-msg": "100755",
-    }
-    # the gate is live: the hook just recorded executable is the one
-    # core.hooksPath points at
-    hooks_path = _git(fresh_repo, "config", "--get", "core.hooksPath")
-    assert hooks_path.stdout.strip() == ".githooks"
+    # recorded explicitly: 100755 in the index for the entry script, so
+    # the consumer's next commit preserves executability on any
+    # filesystem; the hook is not index-recorded on install
+    assert _index_modes(fresh_repo) == {".agent/start.sh": "100755"}
+    # install mode never configures the gate: core.hooksPath stays unset
+    probe = subprocess.run(
+        ["git", "config", "--get", "core.hooksPath"],
+        cwd=fresh_repo,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert probe.returncode != 0
 
 
 @pytest.fixture
@@ -207,8 +211,8 @@ def release_repo(tmp_path: Path) -> Path:
     """Local release repository tagged v1.0.24 whose assistant files and
     commit-msg hook were committed as 100644 under core.fileMode=false,
     simulating a mode-insensitive source environment. The hook is the
-    real gate, so the installer's own update commit runs through the
-    actual hook it ships."""
+    real gate file, shipped inside .agent/; core.hooksPath still points
+    at the legacy .githooks location until S6.2 rewires it."""
     repo = tmp_path / "release"
     repo.mkdir()
     _git(repo, "init")
@@ -218,14 +222,13 @@ def release_repo(tmp_path: Path) -> Path:
     _git(repo, "config", "core.fileMode", "false")
     (repo / ".agent").mkdir()
     (repo / ".agent" / "release.txt").write_text("release\n")
-    (repo / ".agent" / "ai-assistant.sh").write_text("release\n")
-    (repo / "agent.sh").write_text("release\n")
+    (repo / ".agent" / "start.sh").write_text("release\n")
     hook = repo / HOOK_PATH
     hook.parent.mkdir()
     shutil.copy(PROJECT_ROOT / HOOK_PATH, hook)
     for path in RECORDED_EXECUTABLES:
         (repo / path).chmod(0o755)  # exec bit on disk, but ...
-    _git(repo, "add", ".agent", "agent.sh", ".githooks")
+    _git(repo, "add", ".agent")
     _git(repo, "commit", "-m", "release v1.0.24")
     _git(repo, "tag", "v1.0.24")
     # ... the source records 100644, as on a mode-insensitive filesystem
@@ -244,10 +247,9 @@ def consumer_repo(tmp_path: Path, release_repo: Path, monkeypatch) -> Path:
     _git(repo, "init")
     _git(repo, "config", "user.email", "test@example.com")
     _git(repo, "config", "user.name", "Test User")
-    (repo / "agent.sh").write_text("local\n")
     (repo / ".agent").mkdir()
     (repo / ".agent" / "custom.txt").write_text("keep\n")
-    _git(repo, "add", ".agent", "agent.sh")
+    _git(repo, "add", ".agent")
     _git(repo, "commit", "-m", "base")
     # redirect the canonical assistant URL to the local release repo so
     # the installer's fetch never touches the network
@@ -264,13 +266,13 @@ def test_update_records_executable_surviving_mode_insensitive_source(
     consumer_repo,
 ):
     """Requirements 1+2 on the update path: refreshing from a source that
-    records 100644 (mode-insensitive environment) still leaves both entry
-    scripts and the commit-msg hook executable on disk immediately and
+    records 100644 (mode-insensitive environment) still leaves the entry
+    script and the commit-msg hook executable on disk immediately and
     records 100755 for them in the consumer's index and in the update
     commit's tree, so executability survives any future filemode-blind
-    checkout. The gate is enabled before the refresh commit, so the
-    installer's own commit runs through the hook it just recorded
-    executable."""
+    checkout. The gate is enabled before the refresh commit
+    (core.hooksPath=.githooks; rewiring that value to .agent/githooks is
+    S6.2 scope)."""
     result = run_installer(consumer_repo, None, "--yes")
     assert result.returncode == 0, result.stderr
     assert "recorded the refresh as commit" in result.stdout
@@ -284,9 +286,8 @@ def test_update_records_executable_surviving_mode_insensitive_source(
 
     # recorded explicitly: 100755 in the index and in the update commit
     expected = {
-        "agent.sh": "100755",
-        ".agent/ai-assistant.sh": "100755",
-        ".githooks/commit-msg": "100755",
+        ".agent/start.sh": "100755",
+        ".agent/githooks/commit-msg": "100755",
     }
     assert _index_modes(consumer_repo) == expected
     assert _tree_modes(consumer_repo) == expected
