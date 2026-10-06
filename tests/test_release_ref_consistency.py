@@ -22,9 +22,11 @@ README = PROJECT_ROOT / "README.md"
 STEP5 = PROJECT_ROOT / "tests" / "test_s2_1_step5.py"
 
 # The release reference embedded in a documented install URL, e.g.
-# .../dev-orchestrator/v1.0.0/scripts/install.sh -> 'v1.0.0'.
+# .../raw.githubusercontent.com/<owner>/<repo>/v1.0.0/scripts/install.sh
+# -> 'v1.0.0'.
 URL_REF = re.compile(
     r"raw\.githubusercontent\.com/[^/\s\"']+"
+    r"/[^/\s\"']+"
     r"/([^/\s\"']+)/scripts/install\.sh"
 )
 
