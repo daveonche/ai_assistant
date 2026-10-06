@@ -99,4 +99,4 @@ Developer Notes:
 
 ## Sprint Technical Rationale
 
-These stories follow the minimal dependency chain of the approved Priority Order: S6.1 defines the target layout, S6.2 rewires the gate and CI to it, S6.3 aligns the docs with shipped behavior, and S6.4 records the sprint. Priority 3 (verification alignment) is distributed into each story's acceptance criteria per the project's green-suite discipline, so no standalone verification story is needed.
+These stories follow the minimal dependency chain of the approved Priority Order: S6.1 defines the target layout, S6.2 rewires the gate and CI to it, S6.5 renames the repository and launcher module, S6.3 aligns the docs with shipped behavior in a single pass covering the consolidation and the rename, and S6.4 records the sprint. Priority 3 (verification alignment) is distributed into each story's acceptance criteria per the project's green-suite discipline, so no standalone verification story is needed.
