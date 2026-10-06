@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AIAssistant installer entry point (story S2.1, steps 1-4).
+# Agentic AI Development-Workflow installer entry point (story S2.1, steps 1-4).
 #
 # Retrieves this script with a single command from inside a project
 # repository, validates the documented host prerequisites (Bash and git),
@@ -36,10 +36,10 @@ usage() {
   cat <<EOF
 Usage: install.sh [options]
 
-Prepare the AIAssistant assistant-file installation in the current
-project repository. When .agent/ already exists, the run switches to
-update mode and refreshes the files through this repository's git as
-one reviewable, revertable commit.
+Prepare the Agentic AI Development-Workflow assistant-file
+installation in the current project repository. When .agent/ already
+exists, the run switches to update mode and refreshes the files
+through this repository's git as one reviewable, revertable commit.
 
 Options:
   --ref REF   Install from REF instead of the pinned default
