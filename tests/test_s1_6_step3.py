@@ -85,7 +85,7 @@ def test_shell_scripts_discovered_by_pattern_not_hardcoded_list():
     )
     assert "|" in run, \
         "the discovered script list must be piped into the static analyzer"
-    for script in ("agent.sh", ".agent/ai-assistant.sh"):
+    for script in (".agent/start.sh", "scripts/install.sh"):
         assert script not in run, (
             f"discovery must not hard-code script names (found '{script}'); "
             "newly added scripts must be covered automatically"
@@ -98,9 +98,9 @@ def test_shell_scripts_discovered_by_pattern_not_hardcoded_list():
     assert discovered == tracked_sh, (
         "the '*.sh' discovery pattern must select every tracked *.sh script"
     )
-    assert {"agent.sh", ".agent/ai-assistant.sh"} <= discovered, (
-        "the currently known scripts (agent.sh, .agent/ai-assistant.sh) must "
-        "be covered by the discovery pattern"
+    assert {".agent/start.sh", "scripts/install.sh"} <= discovered, (
+        "the currently known scripts (.agent/start.sh, scripts/install.sh) "
+        "must be covered by the discovery pattern"
     )
 
 

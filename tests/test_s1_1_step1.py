@@ -3,7 +3,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-DOCUMENTED_LAYERS = ("agent.sh", ".agent", "docs", "scripts", "src")
+DOCUMENTED_LAYERS = (".agent", "docs", "scripts", "src")
 
 
 def _git(*args: str) -> str:
