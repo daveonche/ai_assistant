@@ -1,10 +1,9 @@
 """Story S1.2, Step 3: executable entry scripts that pass static checks.
 
-Verifies that both entry scripts (`agent.sh` and
-`.agent/ai-assistant.sh`) are marked executable so they run directly,
-pass the project's shell-script static checks (shellcheck) with no
-warnings, and follow the machine-checkable rules from the project's
-shell-script conventions reference.
+Verifies that the entry script (`.agent/start.sh`) is marked executable
+so it runs directly, passes the project's shell-script static checks
+(shellcheck) with no warnings, and follows the machine-checkable rules
+from the project's shell-script conventions reference.
 """
 
 import stat
@@ -16,14 +15,13 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 ENTRY_SCRIPTS = (
-    PROJECT_ROOT / "agent.sh",
-    PROJECT_ROOT / ".agent" / "ai-assistant.sh",
+    PROJECT_ROOT / ".agent" / "start.sh",
 )
 
 
 @pytest.mark.parametrize("script", ENTRY_SCRIPTS, ids=lambda p: p.name)
 def test_entry_scripts_are_executable(script):
-    """Both entry scripts run directly: X bits set for u/g/o.
+    """The entry script runs directly: X bits set for u/g/o.
 
     Git records the mode bit, so a working-tree check proves a fresh
     clone preserves executability.
@@ -36,9 +34,9 @@ def test_entry_scripts_are_executable(script):
 
 @pytest.mark.parametrize("script", ENTRY_SCRIPTS, ids=lambda p: p.name)
 def test_entry_scripts_pass_shellcheck(script):
-    """Both entry scripts pass shellcheck with zero warnings.
+    """The entry script passes shellcheck with zero warnings.
 
-    Maps to Step 3 Must Support: "Both scripts pass the project's
+    Maps to Step 3 Must Support: "The script passes the project's
     shell-script static checks with no warnings." The default severity
     (style included) applies, so exit status 0 means a clean report.
     """
@@ -56,7 +54,7 @@ def test_entry_scripts_pass_shellcheck(script):
 
 @pytest.mark.parametrize("script", ENTRY_SCRIPTS, ids=lambda p: p.name)
 def test_entry_scripts_follow_shell_conventions(script):
-    """Both entry scripts follow machine-checkable shell conventions.
+    """The entry script follows machine-checkable shell conventions.
 
     Maps to Step 3 Must Support: "Script style follows the project's
     shell-script conventions reference." Only rules enforceable by

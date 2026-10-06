@@ -76,7 +76,7 @@ class LaunchResult(NamedTuple):
 
     returncode: int
     stderr: str
-    pid: int  # launcher PID: agent.sh exec's down to ai_assistant.py
+    pid: int  # launcher PID: start.sh exec's down to ai_assistant.py
 
 
 def _make_sandbox(tmp_path: Path, name: str = "sandbox") -> Path:
@@ -117,7 +117,7 @@ def _popen_chain(
     sandbox: Path, env: dict[str, str], args: list[str]
 ) -> subprocess.Popen:
     return subprocess.Popen(
-        ["bash", str(PROJECT_ROOT / "agent.sh"), *args],
+        ["bash", str(PROJECT_ROOT / ".agent" / "start.sh"), *args],
         cwd=sandbox,
         env=env,
         stdout=subprocess.PIPE,
@@ -384,7 +384,7 @@ def test_container_labels_bind_to_host_launcher_process(tmp_path: Path):
     assert len(runs) == 1, runs
     run_argv = runs[0]
 
-    # The hostpid label is the launcher chain's own PID: every entry file
+    # The hostpid label is the launcher chain's own PID: the entry script
     # exec's down to ai_assistant.py, so the Popen pid IS os.getpid() there.
     host_pid = label_value(run_argv, "aider.hostpid")
     assert host_pid == str(result.pid)

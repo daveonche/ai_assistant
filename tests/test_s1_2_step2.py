@@ -1,9 +1,8 @@
 """Story S1.2, Step 2: argument and debug-flag forwarding.
 
-Verifies that the entry chain (`agent.sh` → `.agent/ai-assistant.sh` →
-`python3`) forwards the debug flag and every assistant argument to the
-launcher unchanged, in order, without consuming, reordering, or dropping
-anything.
+Verifies that the entry chain (`.agent/start.sh` → `python3`) forwards the
+debug flag and every assistant argument to the launcher unchanged, in
+order, without consuming, reordering, or dropping anything.
 
 The launcher is never executed: a stub `python3` is placed first on PATH to
 record its invocation, so the full chain is exercised without Docker.
@@ -24,17 +23,13 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 def sandbox(tmp_path: Path) -> Path:
     """Isolated workspace preserving the entry-chain layout."""
     (tmp_path / ".agent").mkdir()
-    shutil.copy2(PROJECT_ROOT / "agent.sh", tmp_path / "agent.sh")
     shutil.copy2(
-        PROJECT_ROOT / ".agent" / "ai-assistant.sh",
-        tmp_path / ".agent" / "ai-assistant.sh",
+        PROJECT_ROOT / ".agent" / "start.sh",
+        tmp_path / ".agent" / "start.sh",
     )
     executable = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-    for script in (
-        tmp_path / "agent.sh",
-        tmp_path / ".agent" / "ai-assistant.sh",
-    ):
-        script.chmod(script.stat().st_mode | executable)
+    script = tmp_path / ".agent" / "start.sh"
+    script.chmod(script.stat().st_mode | executable)
     return tmp_path
 
 
@@ -53,7 +48,8 @@ def python3_stub(tmp_path: Path):
 def run_entry(
     sandbox: Path, stub_dir: Path, args: list[str]
 ) -> subprocess.CompletedProcess:
-    """Run agent.sh with extra arguments, stub python3 first on PATH.
+    """Run .agent/start.sh with extra arguments, stub python3 first on
+    PATH.
 
     The caller's cwd is deliberately unrelated to the sandbox: the chain
     must resolve its own script locations, not the caller's directory.
@@ -61,7 +57,7 @@ def run_entry(
     env = os.environ.copy()
     env["PATH"] = f"{stub_dir}{os.pathsep}{env.get('PATH', '')}"
     return subprocess.run(
-        [str(sandbox / "agent.sh"), *args],
+        [str(sandbox / ".agent" / "start.sh"), *args],
         cwd=PROJECT_ROOT,
         env=env,
         capture_output=True,
@@ -70,7 +66,7 @@ def run_entry(
     )
 
 
-def test_agent_sh_forwards_debug_flag_to_launcher(sandbox, python3_stub):
+def test_start_sh_forwards_debug_flag_to_launcher(sandbox, python3_stub):
     """--debug must reach the launcher right after its path, in position."""
     stub_dir, log = python3_stub
 
@@ -84,7 +80,7 @@ def test_agent_sh_forwards_debug_flag_to_launcher(sandbox, python3_stub):
     ]
 
 
-def test_agent_sh_forwards_all_arguments_unchanged_in_order(
+def test_start_sh_forwards_all_arguments_unchanged_in_order(
     sandbox, python3_stub
 ):
     """The entry chain must deliver the full argv to the launcher intact.

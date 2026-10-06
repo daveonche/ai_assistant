@@ -1,8 +1,8 @@
 """Story S1.2, Step 1: single-command host entry delegation.
 
-Verifies that the root entry script (`agent.sh`) delegates all lifecycle
-logic to the assistant launcher (`.agent/ai_assistant.py`) by way of the
-intermediate wrapper script (`.agent/ai-assistant.sh`).
+Verifies that the entry script (`.agent/start.sh`) delegates all lifecycle
+logic to the assistant launcher (`.agent/ai_assistant.py`) via its single
+exec handoff.
 
 The launcher is never executed: a stub `python3` is placed first on PATH to
 record its invocation, so the full chain is exercised without Docker.
@@ -23,17 +23,13 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 def sandbox(tmp_path: Path) -> Path:
     """Isolated workspace preserving the entry-chain layout."""
     (tmp_path / ".agent").mkdir()
-    shutil.copy2(PROJECT_ROOT / "agent.sh", tmp_path / "agent.sh")
     shutil.copy2(
-        PROJECT_ROOT / ".agent" / "ai-assistant.sh",
-        tmp_path / ".agent" / "ai-assistant.sh",
+        PROJECT_ROOT / ".agent" / "start.sh",
+        tmp_path / ".agent" / "start.sh",
     )
     executable = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-    for script in (
-        tmp_path / "agent.sh",
-        tmp_path / ".agent" / "ai-assistant.sh",
-    ):
-        script.chmod(script.stat().st_mode | executable)
+    script = tmp_path / ".agent" / "start.sh"
+    script.chmod(script.stat().st_mode | executable)
     return tmp_path
 
 
@@ -50,7 +46,7 @@ def python3_stub(tmp_path: Path):
 
 
 def run_entry(sandbox: Path, stub_dir: Path) -> subprocess.CompletedProcess:
-    """Run agent.sh with the stub python3 first on PATH.
+    """Run .agent/start.sh with the stub python3 first on PATH.
 
     The caller's cwd is deliberately unrelated to the sandbox: the chain
     must resolve its own script locations, not the caller's directory.
@@ -58,7 +54,7 @@ def run_entry(sandbox: Path, stub_dir: Path) -> subprocess.CompletedProcess:
     env = os.environ.copy()
     env["PATH"] = f"{stub_dir}{os.pathsep}{env.get('PATH', '')}"
     return subprocess.run(
-        [str(sandbox / "agent.sh")],
+        [str(sandbox / ".agent" / "start.sh")],
         cwd=PROJECT_ROOT,
         env=env,
         capture_output=True,
@@ -67,8 +63,8 @@ def run_entry(sandbox: Path, stub_dir: Path) -> subprocess.CompletedProcess:
     )
 
 
-def test_agent_sh_delegates_to_launcher_via_wrapper(sandbox, python3_stub):
-    """agent.sh reaches the launcher only through the wrapper script."""
+def test_start_sh_delegates_to_launcher(sandbox, python3_stub):
+    """start.sh reaches the launcher through its single exec handoff."""
     stub_dir, log = python3_stub
 
     result = run_entry(sandbox, stub_dir)
@@ -76,28 +72,30 @@ def test_agent_sh_delegates_to_launcher_via_wrapper(sandbox, python3_stub):
     invocations = log.read_text().splitlines()
     assert invocations == [str(sandbox / ".agent" / "ai_assistant.py")]
 
-    # Negative control: breaking the chain must break delegation —
-    # agent.sh must not fall back to invoking python3 directly.
-    (sandbox / ".agent" / "ai-assistant.sh").unlink()
-    broken = run_entry(sandbox, stub_dir)
-    assert broken.returncode != 0
+    # Negative control: removing the exec line must break delegation —
+    # start.sh must not reach the launcher by any other means.
+    script = sandbox / ".agent" / "start.sh"
+    lines = [
+        line
+        for line in script.read_text().splitlines()
+        if not line.strip().startswith("exec ")
+    ]
+    script.write_text("\n".join(lines) + "\n")
+    run_entry(sandbox, stub_dir)
     assert len(log.read_text().splitlines()) == 1
 
 
-def test_agent_sh_contains_no_lifecycle_logic():
-    """agent.sh is a thin pass-through: no lifecycle logic of its own."""
-    source = (PROJECT_ROOT / "agent.sh").read_text()
+def test_start_sh_contains_no_lifecycle_logic():
+    """start.sh bootstraps the environment and execs the launcher; it
+    performs no container lifecycle logic of its own."""
+    source = (PROJECT_ROOT / ".agent" / "start.sh").read_text()
     tokens = {"docker", "build", "run", "image", "container"}
     for raw_line in source.splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
         assert not tokens & set(line.lower().split()), line
-        assert (
-            line.startswith("set ")
-            or line.startswith("SCRIPT_DIR=")
-            or line.startswith("exec ")
-        ), line
     exec_lines = [l for l in source.splitlines()
                   if l.strip().startswith("exec ")]
     assert len(exec_lines) == 1
+    assert "ai_assistant.py" in exec_lines[0]

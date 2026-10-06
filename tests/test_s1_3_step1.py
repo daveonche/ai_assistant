@@ -2,8 +2,7 @@
 
 Must Support verified:
 - A launcher entry file within the `.agent/` configuration directory that
-  executes on the host and completes the delegation chain started by
-  agent.sh.
+  executes on the host and hands off to the assistant launcher.
 - Accepting a debug flag that turns on verbose output.
 - Forwarding all remaining user arguments, unchanged and in order, to the
   assistant environment launch.
@@ -55,14 +54,14 @@ def _make_sandbox(tmp_path: Path) -> Path:
 
 
 def run_chain(sandbox: Path, stub_dir: Path, args: list[str]) -> subprocess.CompletedProcess:
-    """Run agent.sh from the sandbox with the docker stub on PATH."""
+    """Run .agent/start.sh from the sandbox with the docker stub on PATH."""
     env = os.environ.copy()
     env["PATH"] = f"{stub_dir}{os.pathsep}{env['PATH']}"
     env["DOCKER_STUB_LOG"] = str(sandbox / "docker-stub.log")
     env["HOME"] = str(sandbox)
     env.pop("AI_ASSISTANT_SESSION_ID", None)
     return subprocess.run(
-        ["bash", str(PROJECT_ROOT / "agent.sh"), *args],
+        ["bash", str(PROJECT_ROOT / ".agent" / "start.sh"), *args],
         cwd=sandbox,
         env=env,
         capture_output=True,
@@ -98,7 +97,7 @@ def _imported_roots(path: Path) -> set[str]:
 
 
 def test_agent_chain_completes_via_launcher(tmp_path: Path):
-    """agent.sh -> .agent/ai-assistant.sh -> .agent/ai_assistant.py runs the
+    """.agent/start.sh -> .agent/ai_assistant.py runs the
     real launcher, which reaches the container engine (via the stub)."""
     sandbox = _make_sandbox(tmp_path)
     stub_dir = tmp_path / "stubs"
