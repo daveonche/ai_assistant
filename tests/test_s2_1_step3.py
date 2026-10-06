@@ -229,16 +229,15 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
 
     The stub log must show the exact sequence: prerequisite probe, staged
     scope gate, assistant remote setup, shallow fetch of the pinned ref,
-    the incoming-change preview (HEAD resolution probe, hook probe, stat
-    against HEAD..FETCH_HEAD, then the uncommitted-local-changes probe
-    and its stat), gate configuration (hooksPath query, then the enable),
-    clearing of the managed paths (rm -r -f --ignore-unmatch) so upstream
-    renames and deletions stage in the same commit, checkout of .agent,
-    explicit executability recording for the entry script and the hook
-    (update-index --chmod=+x), no-op probe, scoped
-    commit with the gate-conforming subject, and the short-hash lookup
-    for the progress message. --yes skips the confirmation prompt, which
-    needs a terminal.
+    the incoming-change preview (HEAD resolution probe, stat against
+    HEAD..FETCH_HEAD, then the uncommitted-local-changes probe and its
+    stat), gate configuration (hook probe, hooksPath query, then the
+    enable), clearing of the managed paths (rm -r -f --ignore-unmatch) so
+    upstream renames and deletions stage in the same commit, checkout of
+    .agent, explicit executability recording for the entry script and the
+    hook (update-index --chmod=+x), no-op probe, scoped commit with the
+    gate-conforming subject, and the short-hash lookup for the progress
+    message. --yes skips the confirmation prompt, which needs a terminal.
     """
     stub_dir, log = git_stub
 
@@ -271,9 +270,6 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "--verify",
         "--quiet",
         "HEAD",
-        "cat-file",
-        "-e",
-        "FETCH_HEAD:.agent/githooks/commit-msg",
         "--no-pager",
         "diff",
         "--stat",
@@ -299,9 +295,6 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "config",
         "core.hooksPath",
         ".githooks",
-        "cat-file",
-        "-e",
-        "FETCH_HEAD:.agent/githooks/commit-msg",
         "rm",
         "-r",
         "-f",

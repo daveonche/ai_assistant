@@ -49,7 +49,7 @@ def git_stub(tmp_path: Path):
         "  printf 'true\\n'\n"
         'elif [[ "${1:-}" == "clone" ]]; then\n'
         '  target="${@: -1}"\n'
-        '  mkdir -p "${target}/.agent"\n'
+        '  mkdir -p "${target}/.agent/githooks"\n'
         '  : > "${target}/.agent/start.sh"\n'
         '  : > "${target}/.agent/githooks/commit-msg"\n'
         "fi\n"
