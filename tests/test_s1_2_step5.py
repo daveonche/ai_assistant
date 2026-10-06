@@ -80,7 +80,7 @@ def run_entry(
 
 
 def test_entry_chain_works_from_standalone_clone(sandbox, python3_stub):
-    """Running ./agent.sh from the clone root reaches its own launcher.
+    """Running ./.agent/start.sh from the clone root reaches its own launcher.
 
     Maps to Step 5 Must Support: "The entry chain works when run from
     a standalone clone of this repository." The stub log must record

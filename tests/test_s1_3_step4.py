@@ -132,7 +132,7 @@ def run_chain(
     args: list[str],
     extra_env: dict[str, str] | None = None,
 ) -> LaunchResult:
-    """Run agent.sh to completion with the docker stub on PATH."""
+    """Run .agent/start.sh to completion with the docker stub on PATH."""
     proc = _popen_chain(sandbox, _launcher_env(sandbox, stub_dir, extra_env), args)
     try:
         _, err = proc.communicate(timeout=60)
