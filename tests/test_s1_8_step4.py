@@ -7,7 +7,7 @@ Must Support verified:
 
 The launcher anchors its managed artifacts at AGENT_DIR (derived from its
 own __file__), so each test runs a sandboxed copy of the launch chain
-(agent.sh + .agent/ tree) — the copied launcher then anchors and cleans
+(.agent/ tree) — the copied launcher then anchors and cleans
 its artifacts inside the sandbox, and the repository's live history files
 are never touched.
 """
@@ -63,7 +63,6 @@ def _make_sandbox(tmp_path: Path) -> Path:
     sandbox = tmp_path / "sandbox"
     sandbox.mkdir()
     shutil.copytree(PROJECT_ROOT / ".agent", sandbox / ".agent", ignore=COPY_IGNORE)
-    shutil.copy2(PROJECT_ROOT / "agent.sh", sandbox / "agent.sh")
     return sandbox
 
 
@@ -79,14 +78,14 @@ def run_chain(
     stub_dir: Path,
     args: list[str],
 ) -> subprocess.CompletedProcess:
-    """Run the sandbox's own agent.sh from the sandbox with the stub on PATH."""
+    """Run the sandbox's own .agent/start.sh with the stub on PATH."""
     env = os.environ.copy()
     env["PATH"] = f"{stub_dir}{os.pathsep}{env['PATH']}"
     env["DOCKER_STUB_LOG"] = str(sandbox / "docker-stub.log")
     env["HOME"] = str(sandbox)
     env["AI_ASSISTANT_SESSION_ID"] = SESSION_ID
     return subprocess.run(
-        ["bash", str(sandbox / "agent.sh"), *args],
+        ["bash", str(sandbox / ".agent" / "start.sh"), *args],
         cwd=sandbox,
         env=env,
         capture_output=True,

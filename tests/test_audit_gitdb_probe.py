@@ -27,8 +27,8 @@ Covers:
    deferred (live-pid note) instead of an immediate concurrent gc.
 
 The docker and git CLIs are stubbed on PATH (recording stubs, same
-pattern as tests/test_audit_assistant_config_trust.py); agent.sh runs
-the real launcher python. The stub's image inspect always fails so
+pattern as tests/test_audit_assistant_config_trust.py); .agent/start.sh
+runs the real launcher python. The stub's image inspect always fails so
 every launch takes the cache-miss -> build path; the probe container is
 distinguished from the real assistant run by its --network flag, and
 the git stub emulates only `count-objects -v`.
@@ -44,8 +44,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SANDBOX_FILES = (
-    "agent.sh",
-    ".agent/ai-assistant.sh",
+    ".agent/start.sh",
     ".agent/ai_assistant.py",
     ".agent/Dockerfile.aider",
 )
@@ -174,7 +173,7 @@ def run_chain(
     args: list[str] | None = None,
 ) -> subprocess.CompletedProcess:
     return subprocess.run(
-        ["bash", str(sandbox / "agent.sh"), *(args or [])],
+        ["bash", str(sandbox / ".agent" / "start.sh"), *(args or [])],
         cwd=sandbox,
         env=_launcher_env(sandbox, stub_dir),
         capture_output=True,

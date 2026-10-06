@@ -82,7 +82,7 @@ def run_in_pty(
     stub_dir: Path,
     args: list[str] | None = None,
 ) -> tuple[int, list[tuple[float, str]]]:
-    """Run agent.sh attached to a pseudo-terminal.
+    """Run .agent/start.sh attached to a pseudo-terminal.
 
     The launcher's spinner only renders when stdout is a TTY, so the launch
     chain is attached to a pty slave. Returns (returncode, timestamped
@@ -98,7 +98,7 @@ def run_in_pty(
     env["AI_ASSISTANT_SESSION_ID"] = SESSION_ID
 
     process = subprocess.Popen(
-        ["bash", str(PROJECT_ROOT / "agent.sh"), *(args or [])],
+        ["bash", str(PROJECT_ROOT / ".agent" / "start.sh"), *(args or [])],
         stdin=slave,
         stdout=slave,
         stderr=slave,

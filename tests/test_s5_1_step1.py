@@ -1,8 +1,8 @@
 """S5.1 step 1 verification: configuration references point at .agent/ only.
 
 Exercises the launcher from the outside, the way a user runs it: the
-sandbox copies the real launch chain (agent.sh -> .agent/ai-assistant.sh
--> .agent/ai_assistant.py), the docker CLI is a recording stub on PATH,
+sandbox copies the real launch chain (.agent/start.sh ->
+.agent/ai_assistant.py), the docker CLI is a recording stub on PATH,
 and HOME points inside the sandbox.
 
 Covered here:
@@ -25,8 +25,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 AIDER_IMAGE = "aider-agent:latest"
 
 SANDBOX_FILES = (
-    "agent.sh",
-    ".agent/ai-assistant.sh",
+    ".agent/start.sh",
     ".agent/ai_assistant.py",
     ".agent/Dockerfile.aider",
 )
@@ -121,7 +120,7 @@ def run_chain(
 ) -> subprocess.CompletedProcess:
     env = _launcher_env(sandbox, stub_dir)
     return subprocess.run(
-        ["bash", str(sandbox / "agent.sh"), *(args or [])],
+        ["bash", str(sandbox / ".agent" / "start.sh"), *(args or [])],
         cwd=sandbox,
         env=env,
         capture_output=True,

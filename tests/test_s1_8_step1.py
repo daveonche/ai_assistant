@@ -61,7 +61,7 @@ def run_chain(
     args: list[str],
     extra_env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess:
-    """Run agent.sh from the sandbox with the docker stub on PATH."""
+    """Run .agent/start.sh from the sandbox with the docker stub on PATH."""
     env = os.environ.copy()
     env["PATH"] = f"{stub_dir}{os.pathsep}{env['PATH']}"
     env["DOCKER_STUB_LOG"] = str(sandbox / "docker-stub.log")
@@ -70,7 +70,7 @@ def run_chain(
     if extra_env:
         env.update(extra_env)
     return subprocess.run(
-        ["bash", str(PROJECT_ROOT / "agent.sh"), *args],
+        ["bash", str(PROJECT_ROOT / ".agent" / "start.sh"), *args],
         cwd=sandbox,
         env=env,
         capture_output=True,

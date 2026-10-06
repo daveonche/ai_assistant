@@ -1,6 +1,6 @@
 """Security-audit reproducer: planted object at the agent socket path.
 
-Reproducer for audit Finding 2 in .agent/ai-assistant.sh: an object a
+Reproducer for audit Finding 2 in .agent/start.sh: an object a
 local attacker plants at the well-known agent socket path must not be
 able to abort the launcher (a persistent denial of service under
 `set -e`), and must never lead to a hostile socket being exported.
@@ -119,7 +119,7 @@ def _plant_stale_socket(sock_path: Path) -> None:
 def run_launcher(
     sandbox: Path, stub_dir: Path, mode: str
 ) -> subprocess.CompletedProcess:
-    """Run agent.sh attached to a pseudo-terminal.
+    """Run .agent/start.sh attached to a pseudo-terminal.
 
     The launcher's agent setup only runs when stdin/stdout are TTYs, so
     the launch chain is attached to a pty slave. Returns the
@@ -139,7 +139,7 @@ def run_launcher(
     env["SSH_ADD_STUB_MODE"] = mode
 
     process = subprocess.Popen(
-        ["bash", str(PROJECT_ROOT / "agent.sh")],
+        ["bash", str(PROJECT_ROOT / ".agent" / "start.sh")],
         stdin=slave,
         stdout=slave,
         stderr=slave,

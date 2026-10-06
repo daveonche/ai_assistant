@@ -16,8 +16,8 @@ Covers audit Findings 1-3:
    home must be rejected before it reaches a mount spec.
 
 The docker CLI is stubbed on PATH (recording stub, same pattern as
-tests/test_s1_3_step5.py); agent.sh runs the real launcher python. The
-interactive-confirmation tests run the chain attached to a
+tests/test_s1_3_step5.py); .agent/start.sh runs the real launcher
+python. The interactive-confirmation tests run the chain attached to a
 pseudo-terminal (stdlib pty) because the approval gate is TTY-gated;
 XDG_RUNTIME_DIR is pointed inside the sandbox so the launcher's
 ssh-agent setup never touches a real agent socket.
@@ -37,8 +37,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SANDBOX_FILES = (
-    "agent.sh",
-    ".agent/ai-assistant.sh",
+    ".agent/start.sh",
     ".agent/ai_assistant.py",
     ".agent/Dockerfile.aider",
 )
@@ -112,7 +111,7 @@ def run_chain(
     if extra_env:
         env.update(extra_env)
     return subprocess.run(
-        ["bash", str(sandbox / "agent.sh"), *(args or [])],
+        ["bash", str(sandbox / ".agent" / "start.sh"), *(args or [])],
         cwd=sandbox,
         env=env,
         capture_output=True,
@@ -126,7 +125,7 @@ def run_chain_pty(
     stub_dir: Path,
     answer: str = "",
 ) -> subprocess.CompletedProcess:
-    """Run agent.sh attached to a pty, feeding `answer` on its stdin.
+    """Run .agent/start.sh attached to a pty, feeding `answer` on its stdin.
 
     The rebuild-approval gate only prompts on a TTY, so the interactive
     paths are exercised through a pty; stderr is merged into the
@@ -137,7 +136,7 @@ def run_chain_pty(
     env = _launcher_env(sandbox, stub_dir)
     env["XDG_RUNTIME_DIR"] = str(sandbox / "runtime")
     process = subprocess.Popen(
-        ["bash", str(sandbox / "agent.sh")],
+        ["bash", str(sandbox / ".agent" / "start.sh")],
         stdin=slave,
         stdout=slave,
         stderr=slave,

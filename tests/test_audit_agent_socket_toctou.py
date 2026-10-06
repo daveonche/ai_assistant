@@ -1,6 +1,6 @@
 """Security-audit reproducer: agent-socket TOCTOU before key offering.
 
-Reproducer for audit Finding 1 in .agent/ai-assistant.sh: a fake SSH
+Reproducer for audit Finding 1 in .agent/start.sh: a fake SSH
 agent planted at the well-known socket path after the launcher's
 ownership check must never receive the decrypted private key from the
 key-offering ssh-add, and the hostile socket must not be exported into
@@ -153,7 +153,7 @@ def _plant_stale_socket(sock_path: Path) -> None:
 
 
 def run_launcher(sandbox: Path, stub_dir: Path) -> subprocess.CompletedProcess:
-    """Run agent.sh attached to a pseudo-terminal.
+    """Run .agent/start.sh attached to a pseudo-terminal.
 
     The launcher's agent setup only runs when stdin/stdout are TTYs, so
     the launch chain is attached to a pty slave. Returns the
@@ -175,7 +175,7 @@ def run_launcher(sandbox: Path, stub_dir: Path) -> subprocess.CompletedProcess:
     env["FOREIGN_UID"] = str(FOREIGN_UID)
 
     process = subprocess.Popen(
-        ["bash", str(PROJECT_ROOT / "agent.sh")],
+        ["bash", str(PROJECT_ROOT / ".agent" / "start.sh")],
         stdin=slave,
         stdout=slave,
         stderr=slave,

@@ -12,9 +12,10 @@ config cannot be parsed or the copy cannot be written.
 
 Each test inspects the -v arguments of the real container run recorded
 by the stubbed docker CLI (same pattern as
-tests/test_audit_assistant_config_trust.py); agent.sh runs the real
-launcher python. Non-.exe credential helpers are intentionally passed
-through untouched: only the provably-broken Windows class is handled.
+tests/test_audit_assistant_config_trust.py); .agent/start.sh runs the
+real launcher python. Non-.exe credential helpers are intentionally
+passed through untouched: only the provably-broken Windows class is
+handled.
 """
 
 from __future__ import annotations
@@ -28,8 +29,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SANDBOX_FILES = (
-    "agent.sh",
-    ".agent/ai-assistant.sh",
+    ".agent/start.sh",
     ".agent/ai_assistant.py",
     ".agent/Dockerfile.aider",
 )
@@ -100,7 +100,7 @@ def run_chain(
     if extra_env:
         env.update(extra_env)
     return subprocess.run(
-        ["bash", str(sandbox / "agent.sh")],
+        ["bash", str(sandbox / ".agent" / "start.sh")],
         cwd=sandbox,
         env=env,
         capture_output=True,

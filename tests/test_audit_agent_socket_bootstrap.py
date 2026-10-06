@@ -1,4 +1,4 @@
-"""Security-audit reproducer: agent-socket bootstrap in ai-assistant.sh.
+"""Security-audit reproducer: agent-socket bootstrap in .agent/start.sh.
 
 Companion to the Finding 1/2 socket tests: covers the launcher's
 bootstrap path for a *missing* socket. Before the bootstrap change the
@@ -136,7 +136,7 @@ def _write_stubs(stub_dir: Path) -> None:
 def run_launcher(
     sandbox: Path, stub_dir: Path, home: Path | None = None
 ) -> subprocess.CompletedProcess:
-    """Run agent.sh attached to a pseudo-terminal.
+    """Run .agent/start.sh attached to a pseudo-terminal.
 
     The launcher's agent setup only runs when stdin/stdout are TTYs, so
     the launch chain is attached to a pty slave. Returns the
@@ -158,7 +158,7 @@ def run_launcher(
     env["AGENT_BOUND_MARKER"] = str(sandbox / "agent-bound-marker")
 
     process = subprocess.Popen(
-        ["bash", str(PROJECT_ROOT / "agent.sh")],
+        ["bash", str(PROJECT_ROOT / ".agent" / "start.sh")],
         stdin=slave,
         stdout=slave,
         stderr=slave,

@@ -1,8 +1,8 @@
 """S5.1 step 2 verification: per-project args loading and precedence.
 
 Exercises the launcher from the outside, the way a user runs it: the
-sandbox copies the real launch chain (agent.sh -> .agent/ai-assistant.sh
--> .agent/ai_assistant.py), the docker CLI is a recording stub on PATH,
+sandbox copies the real launch chain (.agent/start.sh ->
+.agent/ai_assistant.py), the docker CLI is a recording stub on PATH,
 and HOME points inside the sandbox so the per-project args file sits at
 its documented host-side location under ~/.config/aider-agent/projects/
 — outside the repository the launcher runs in, where repository content
@@ -37,8 +37,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 AIDER_IMAGE = "aider-agent:latest"
 
 SANDBOX_FILES = (
-    "agent.sh",
-    ".agent/ai-assistant.sh",
+    ".agent/start.sh",
     ".agent/ai_assistant.py",
     ".agent/Dockerfile.aider",
 )
@@ -120,10 +119,10 @@ def run_chain(
     stub_dir: Path,
     args: list[str] | None = None,
 ) -> subprocess.CompletedProcess:
-    """Run agent.sh with output captured (no TTY)."""
+    """Run .agent/start.sh with output captured (no TTY)."""
     env = _launcher_env(sandbox, stub_dir)
     return subprocess.run(
-        ["bash", str(sandbox / "agent.sh"), *(args or [])],
+        ["bash", str(sandbox / ".agent" / "start.sh"), *(args or [])],
         cwd=sandbox,
         env=env,
         capture_output=True,
@@ -133,7 +132,7 @@ def run_chain(
 
 
 def run_chain_pty(sandbox: Path, stub_dir: Path) -> subprocess.CompletedProcess:
-    """Run agent.sh attached to a pty so TTY-gated output is produced.
+    """Run .agent/start.sh attached to a pty so TTY-gated output is produced.
 
     stdin is never written; the launch needs no input (a first-time
     build proceeds after a warning, without prompting).
@@ -142,7 +141,7 @@ def run_chain_pty(sandbox: Path, stub_dir: Path) -> subprocess.CompletedProcess:
     env = _launcher_env(sandbox, stub_dir)
     env["XDG_RUNTIME_DIR"] = str(sandbox / "runtime")
     process = subprocess.Popen(
-        ["bash", str(sandbox / "agent.sh")],
+        ["bash", str(sandbox / ".agent" / "start.sh")],
         stdin=slave,
         stdout=slave,
         stderr=slave,

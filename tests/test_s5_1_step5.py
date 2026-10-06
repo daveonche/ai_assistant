@@ -24,8 +24,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 AIDER_IMAGE = "aider-agent:latest"
 
 SANDBOX_FILES = (
-    "agent.sh",
-    ".agent/ai-assistant.sh",
+    ".agent/start.sh",
     ".agent/ai_assistant.py",
     ".agent/Dockerfile.aider",
 )
@@ -102,7 +101,7 @@ def run_chain(
 ) -> subprocess.CompletedProcess:
     env = _launcher_env(sandbox, stub_dir)
     return subprocess.run(
-        ["bash", str(sandbox / "agent.sh"), *(args or [])],
+        ["bash", str(sandbox / ".agent" / "start.sh"), *(args or [])],
         cwd=sandbox,
         env=env,
         capture_output=True,

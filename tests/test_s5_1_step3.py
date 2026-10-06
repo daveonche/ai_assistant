@@ -28,8 +28,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SANDBOX_FILES = (
-    "agent.sh",
-    ".agent/ai-assistant.sh",
+    ".agent/start.sh",
     ".agent/ai_assistant.py",
     ".agent/Dockerfile.aider",
 )
@@ -80,7 +79,7 @@ def run_chain(
 ) -> subprocess.CompletedProcess:
     env = _launcher_env(sandbox, stub_dir)
     return subprocess.run(
-        ["bash", str(sandbox / "agent.sh"), *args],
+        ["bash", str(sandbox / ".agent" / "start.sh"), *args],
         cwd=sandbox,
         env=env,
         capture_output=True,
