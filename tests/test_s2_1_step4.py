@@ -255,7 +255,7 @@ def consumer_repo(tmp_path: Path, release_repo: Path, monkeypatch) -> Path:
     git_config = tmp_path / "gitconfig"
     git_config.write_text(
         f'[url "{release_repo}"]\n'
-        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+        "\tinsteadOf = https://github.com/daveonche/dev-orchestrator.git\n"
     )
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
     return repo

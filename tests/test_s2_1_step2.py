@@ -151,7 +151,7 @@ def test_retrieval_uses_pinned_ref_and_external_target(sandbox, git_stub):
     assert args[0] == "clone"
     assert "--branch" in args and "v1.0.24" in args
     assert "--depth" in args and "1" in args
-    assert "https://github.com/daveonche/ai_assistant.git" in args
+    assert "https://github.com/daveonche/dev-orchestrator.git" in args
     # retrieval happens outside the project: project history stays clean
     target = Path(args[-1])
     assert not target.is_relative_to(sandbox)

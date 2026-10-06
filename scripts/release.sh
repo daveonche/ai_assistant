@@ -16,9 +16,9 @@
 
 set -euo pipefail
 
-readonly DEFAULT_REPO_URL="https://github.com/daveonche/ai_assistant.git"
+readonly DEFAULT_REPO_URL="https://github.com/daveonche/dev-orchestrator.git"
 readonly RAW_URL_HOST="https://raw.githubusercontent.com/daveonche"
-readonly RAW_URL_REPO="ai_assistant"
+readonly RAW_URL_REPO="dev-orchestrator"
 readonly BUMP_FILES=(
   "scripts/install.sh"
   "README.md"

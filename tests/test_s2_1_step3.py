@@ -259,7 +259,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "remote",
         "add",
         "ai-assistant",
-        "https://github.com/daveonche/ai_assistant.git",
+        "https://github.com/daveonche/dev-orchestrator.git",
         "fetch",
         "--quiet",
         "--depth",
@@ -522,7 +522,7 @@ def consumer_repo(tmp_path: Path, release_repo: Path, monkeypatch) -> Path:
     git_config = tmp_path / "gitconfig"
     git_config.write_text(
         f'[url "{release_repo}"]\n'
-        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+        "\tinsteadOf = https://github.com/daveonche/dev-orchestrator.git\n"
     )
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
     return repo
@@ -601,7 +601,7 @@ def unborn_consumer_repo(tmp_path: Path, release_repo: Path, monkeypatch) -> Pat
     git_config = tmp_path / "gitconfig-unborn"
     git_config.write_text(
         f'[url "{release_repo}"]\n'
-        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+        "\tinsteadOf = https://github.com/daveonche/dev-orchestrator.git\n"
     )
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
     return repo
