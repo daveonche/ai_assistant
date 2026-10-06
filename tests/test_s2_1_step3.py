@@ -682,7 +682,7 @@ def legacy_consumer_repo(
     git_config = tmp_path / "gitconfig-legacy"
     git_config.write_text(
         f'[url "{legacy_release_repo}"]\n'
-        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+        "\tinsteadOf = https://github.com/daveonche/dev-orchestrator.git\n"
     )
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
     return repo
@@ -774,7 +774,7 @@ def renamed_consumer_repo(
     git_config = tmp_path / "gitconfig-renamed"
     git_config.write_text(
         f'[url "{renamed_release_repo}"]\n'
-        "\tinsteadOf = https://github.com/daveonche/ai_assistant.git\n"
+        "\tinsteadOf = https://github.com/daveonche/dev-orchestrator.git\n"
     )
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
     return repo
