@@ -5,8 +5,8 @@
 # repository, validates the documented host prerequisites (Bash and git),
 # and performs a clean install: it clones the pinned release reference
 # into a temporary directory, copies .agent/ into the project root, and
-# removes the temporary directory on exit. When the assistant files
-# already exist, it refreshes them through the consumer's own git
+# removes the temporary directory on exit. When .agent/ already
+# exists, it refreshes it through the consumer's own git
 # (ai-assistant remote -> fetch -> diff preview -> confirmation ->
 # checkout -> commit) so the change is recorded as a normal, reviewable
 # project change. The entry script (.agent/start.sh) is recorded
@@ -36,10 +36,10 @@ usage() {
   cat <<EOF
 Usage: install.sh [options]
 
-Prepare the Agentic AI Development-Workflow assistant-file
-installation in the current project repository. When .agent/ already
-exists, the run switches to update mode and refreshes the files
-through this repository's git as one reviewable, revertable commit.
+Prepare the Agentic AI Development-Workflow installation in the
+current project repository. When .agent/ already exists, the run
+switches to update mode and refreshes the files through this
+repository's git as one reviewable, revertable commit.
 
 Options:
   --ref REF   Install from REF instead of the pinned default
@@ -131,7 +131,7 @@ retrieve_files() {
 place_files() {
   if [[ ! -d "${TMP_CLONE}/.agent" ||
       ! -f "${TMP_CLONE}/.agent/start.sh" ]]; then
-    die "ref ${REF} does not contain the assistant files"
+    die "ref ${REF} does not contain the .agent files"
     return 1
   fi
   cp -R "${TMP_CLONE}/.agent" .agent
@@ -236,7 +236,7 @@ ensure_assistant_remote() {
 # Returns: 0 on successful fetch, 1 otherwise
 fetch_assistant_ref() {
   if ! git fetch --quiet --depth 1 ai-assistant "${REF}"; then
-    die "failed to retrieve the assistant ref ${REF}"
+    die "failed to retrieve ref ${REF}"
     return 1
   fi
 }
@@ -255,7 +255,7 @@ preview_refresh() {
     # preview lists every assistant file as new instead of failing with
     # "bad revision 'HEAD'".
     base="$(git hash-object -t tree /dev/null)"
-    printf 'installer: no commits yet; all assistant files are new\n'
+    printf 'installer: no commits yet; all .agent files are new\n'
   fi
   local paths=(.agent)
   git --no-pager diff --stat "${base}" FETCH_HEAD -- "${paths[@]}"
@@ -304,11 +304,11 @@ apply_refresh() {
   # and the command does not reference HEAD, preserving the unborn-HEAD
   # handling of the no-op probe below.
   if ! git rm -r -f --quiet --ignore-unmatch -- "${paths[@]}"; then
-    die "failed to clear the existing assistant files"
+    die "failed to clear the existing .agent files"
     return 1
   fi
   if ! git checkout FETCH_HEAD -- "${paths[@]}"; then
-    die "failed to check out the assistant files from ref ${REF}"
+    die "failed to check out the .agent files from ref ${REF}"
     return 1
   fi
   # Record executability explicitly before the no-op probe: the index
@@ -338,7 +338,7 @@ apply_refresh() {
   # Subject conforms to the commit-msg gate this installer may have
   # just enabled in the consumer's repository.
   if ! git commit --quiet \
-      -m "chore(agent): update assistant files to ${REF}" \
+      -m "chore(agent): update .agent files to ${REF}" \
       -- "${paths[@]}"; then
     die "failed to record the refresh as a commit"
     return 1
