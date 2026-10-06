@@ -49,14 +49,14 @@ Options:
   --debug     Enable shell tracing for troubleshooting
   --help      Show this help and exit
 
-Update mode replaces .agent/ and agent.sh with the pinned release, so
-local customizations inside .agent/ (for example the read: list in
+Update mode replaces .agent/ with the pinned release, so local
+customizations inside .agent/ (for example the read: list in
 .aider.conf.yml) are overwritten after a warning; re-apply them.
 Before applying, the incoming changes are shown and the update must be
 confirmed on the terminal; pass --yes to skip that prompt.
 
-When the retrieved reference ships the commit-msg hook, both modes
-enable the commit message gate in this repository
+When the retrieved reference ships the commit-msg hook, update mode
+enables the commit message gate in this repository
 (core.hooksPath=.githooks) unless core.hooksPath is already set; an
 existing value is left untouched with a warning. Unset anytime with:
   git config --unset core.hooksPath
@@ -149,9 +149,9 @@ place_files() {
 # Globals: None
 # Arguments: None
 # Outputs: None
-# Returns: 0 when FETCH_HEAD ships .githooks/commit-msg, 1 otherwise
+# Returns: 0 when FETCH_HEAD ships .agent/githooks/commit-msg, 1 otherwise
 fetch_has_githooks() {
-  git cat-file -e "FETCH_HEAD:.githooks/commit-msg" 2>/dev/null
+  git cat-file -e "FETCH_HEAD:.agent/githooks/commit-msg" 2>/dev/null
 }
 
 # Globals: None
@@ -185,7 +185,7 @@ configure_commit_gate() {
 # Outputs: Overwrite warning to STDERR
 # Returns: None
 warn_overwrite() {
-  printf 'installer: WARNING: the update replaces .agent/ and agent.sh\n' >&2
+  printf 'installer: WARNING: the update replaces .agent/\n' >&2
   printf 'installer:   local customizations inside .agent/ (for example\n' >&2
   printf 'installer:   the read: list in .agent/.aider.conf.yml) will be\n' >&2
   printf 'installer:   overwritten; re-apply them after the update\n' >&2
@@ -199,7 +199,7 @@ check_staged_scope() {
   local path
   while IFS= read -r path; do
     case "${path}" in
-      .agent/* | agent.sh | .githooks/*) ;;
+      .agent/*) ;;
       *)
         die "staged change outside the update scope: ${path}"
         die "commit or unstage it before updating"
@@ -256,10 +256,7 @@ preview_refresh() {
     base="$(git hash-object -t tree /dev/null)"
     printf 'installer: no commits yet; all assistant files are new\n'
   fi
-  local paths=(.agent agent.sh)
-  if fetch_has_githooks; then
-    paths+=(.githooks)
-  fi
+  local paths=(.agent)
   git --no-pager diff --stat "${base}" FETCH_HEAD -- "${paths[@]}"
   if ! git diff --quiet -- "${paths[@]}"; then
     printf 'installer: WARNING: uncommitted local changes will be' >&2
@@ -297,10 +294,7 @@ confirm_refresh() {
 # Outputs: Progress to STDOUT; errors to STDERR
 # Returns: 0 when the refresh was applied or is already up to date
 apply_refresh() {
-  local paths=(.agent agent.sh)
-  if fetch_has_githooks; then
-    paths+=(.githooks)
-  fi
+  local paths=(.agent)
   # A path-limited checkout only copies paths present in FETCH_HEAD and
   # never removes paths that upstream renamed away, so clear the managed
   # paths from the index and worktree first: the refresh becomes a true
@@ -317,20 +311,20 @@ apply_refresh() {
     return 1
   fi
   # Record executability explicitly before the no-op probe: the index
-  # stores 100755 for the entry scripts and the commit-msg hook even
+  # stores 100755 for the entry script and the commit-msg hook even
   # with core.fileMode=false, and a mode-only difference still yields a
   # reviewable commit.
-  if ! git update-index --chmod=+x agent.sh .agent/ai-assistant.sh; then
+  if ! git update-index --chmod=+x .agent/start.sh; then
     die "failed to record executability in the git index"
     return 1
   fi
-  chmod +x agent.sh .agent/ai-assistant.sh
+  chmod +x .agent/start.sh
   if fetch_has_githooks; then
-    if ! git update-index --chmod=+x .githooks/commit-msg; then
+    if ! git update-index --chmod=+x .agent/githooks/commit-msg; then
       die "failed to record commit-msg hook executability in the index"
       return 1
     fi
-    chmod +x .githooks/commit-msg
+    chmod +x .agent/githooks/commit-msg
   fi
   # No explicit HEAD in the probe: git compares the index against HEAD
   # implicitly and treats an unborn HEAD as the empty tree, so a
@@ -443,7 +437,7 @@ main() {
   if [[ "${DRY_RUN}" == true ]]; then
     if [[ "${INSTALL_MODE}" == "update" ]]; then
       printf 'installer: dry run: would update the existing .agent/'
-      printf ' and agent.sh from ref %s\n' "${REF}"
+      printf ' from ref %s\n' "${REF}"
     else
       printf 'installer: dry run: would install .agent/'
       printf ' from ref %s\n' "${REF}"
