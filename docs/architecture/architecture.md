@@ -7,7 +7,7 @@ AIAssistant is a developer CLI tool (script-launched, Dockerized, terminal-drive
 ## Core Layers
 
 - **Host Entry Layer**: `.agent/start.sh` — single-command entry point; delegates to the Python launcher (REQ-FR-ENV-2, REQ-FR-ENV-5).
-- **Launcher Layer**: `.agent/ai_assistant.py` — Python (>=3.8, stdlib only); Docker availability check, image build, container run/cleanup, config argument assembly (REQ-FR-ENV-1).
+- **Launcher Layer**: `.agent/launcher.py` — Python (>=3.8, stdlib only); Docker availability check, image build, container run/cleanup, config argument assembly (REQ-FR-ENV-1).
 - **Containerization Layer**: `.agent/Dockerfile.aider` + Docker — builds the digest-pinned `paulgauthier/aider-full` base image (tag and digest recorded in `docs/tech_stack.md`), mounts the host project root including `.agent/`, maps Docker GID for socket access (REQ-FR-ENV-4).
 - **Workflow Orchestration Layer**: `.agent/AGENTS.md` — command routing, context-window management, conventions reference routing (REQ-FR-WF-2).
 - **Prompt Library Layer**: `.agent/workflows/**/SKILL.md` — SDLC phase prompts and workflow chains (REQ-FR-WF-1, REQ-FR-TM-1, REQ-FR-TM-2).
