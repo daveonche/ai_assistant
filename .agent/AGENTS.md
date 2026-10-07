@@ -288,6 +288,17 @@ with no prefix such as `/run`, so aider recognizes it in the response
 and offers to execute it directly. Then ask the user to reply "done" —
 do not ask them to paste output manually.
 
+## Stop on Missing Input (hard rule)
+
+When a reply requires a value, file, or decision that is not in context
+and not derivable from a stated source (SKILL.md, routing table,
+transcript), do NOT reason toward it. Output the specific question(s)
+and [STOP]. Never resolve ambiguity by enumerating hypothetical
+branches, guessing values, or drafting contingent plans for outcomes
+the user has not chosen. Self-check before sending any reply: "Is every
+required input present or explicitly asked for?" If a required input is
+missing, abandon the composed plan and end the reply with the question.
+
 ## Critical Rules
 
 1. When the user needs to run `/read-only` or `/drop`, output the command inline as part of the sentence — embed the exact command in the sentence, never a paraphrase. Do not execute these commands yourself.
