@@ -232,45 +232,25 @@ hook managers), and running identically inside and outside a container
 because the change is repo-local `.git/config` only (commits 8af0277,
 6dc2594, a4f73a3, and cb02cf5). It is verified by
 `tests/test_commit_msg_gate_activation.py`, and the full suite stayed
-green after the change.
+green after the change. Since Sprint 6, the gate value is
+`.agent/githooks` (S6.2, with the known-legacy `.githooks` migration in
+S6.4) and the launcher module is `.agent/launcher.py` (S6.3).
 
-A new user-introduced requirement (the same pattern that produced Sprint 4's
-S4.1-S4.3 and S4.5-S4.7 and Sprint 5's S5.1-S5.2) now drives the next
-sprint: install-surface consolidation — all core files copied directly
-into a project root during install and update move into `.agent/`, so
-installing into other projects copies only `.agent/`. Not yet implemented
-(no source evidence yet; classified per the evidence rule):
-
-- Launcher consolidation: `.agent/ai-assistant.sh` renamed to `.agent/start.sh`; root `agent.sh` removed; launch becomes `./.agent/start.sh`
-- Hook relocation: `.githooks/commit-msg` moved to `.agent/githooks/commit-msg`; `core.hooksPath` becomes `.agent/githooks`
-- Single-directory install: `scripts/install.sh` copies only `.agent/` in install and update modes; `detect_mode()` keys on `.agent` alone; the staged-scope and refresh path lists reduce to `.agent`
-- CI path update: the commit-subject validation step invokes `.agent/githooks/commit-msg`
-- Test-suite alignment: suites driving the entry chain, installer, hook, and tracked-layout assertions
-- Documentation: README (usage, copy/install instructions, structure tree, commit-gate section) and `docs/architecture/architecture.md` (Host Entry Layer)
-
+The user-introduced install-surface consolidation requirement (the same
+pattern that produced Sprint 4's S4.1-S4.3 and S4.5-S4.7 and Sprint 5's
+S5.1-S5.2) drove Sprint 6 and is now implemented and verified: all core
+files copied directly into a project root during install and update moved
+into `.agent/`, so installing into other projects copies only `.agent/`
+(S6.1-S6.5; source evidence recorded in the Sprint 6 section above).
 Unchanged by this requirement: the per-project args-file override stays
 as-is (custom override files remain in the project root).
 
-Priority 1 - Install-Surface Consolidation (REQ-3, REQ-6):
+The four priorities that drove Sprint 6 are delivered: Priority 1
+install-surface consolidation by S6.1, Priority 2 launcher and hook gate
+rewiring by S6.2, Priority 3 verification alignment distributed into each
+story's verification criteria per the project's green-suite discipline, and
+Priority 4 documentation alignment by S6.5. Every requirement (REQ-1 through
+REQ-15) remains implemented with source evidence, and the backlog is empty
+again.
 
-- Relocate the hook into `.agent/githooks/`, rename `.agent/ai-assistant.sh` to `.agent/start.sh`, remove root `agent.sh`
-- Reduce `scripts/install.sh` to copying only `.agent/` in install and update modes
-- Rationale: defines the target layout every later change (gate value, CI path, docs, tests) depends on.
-
-Priority 2 - Launcher & Hook Gate Rewiring (REQ-2, REQ-9):
-
-- Update `_ensure_commit_msg_gate()` and installer `configure_commit_gate()` to `.agent/githooks`
-- Update the CI commit-subject step to `.agent/githooks/commit-msg`
-- Rationale: the gate must remain active after relocation; depends on Priority 1.
-
-Priority 3 - Verification Alignment (REQ-15):
-
-- Update the path-pinning suites; release-ref consistency and the full suite stay green
-- Rationale: the project's enforced green-suite discipline and pin consistency.
-
-Priority 4 - Documentation (REQ-3, REQ-14):
-
-- README and architecture doc updates matching the single-directory install
-- Rationale: the documented install method must match shipped behavior.
-
-Next workflow step: `$planning-sprint-story`
+Next workflow step: `$planning-implementation-analysis`
