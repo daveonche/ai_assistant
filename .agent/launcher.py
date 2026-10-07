@@ -860,6 +860,13 @@ def _ensure_github_known_hosts(debug: bool) -> None:
         )
 
 
+# Known-legacy core.hooksPath value from before the hook relocation to
+# .agent/githooks. Matched exactly at launch and rewritten to the current
+# location; every other pre-set value (husky, pre-commit, custom) stays
+# untouched.
+LEGACY_HOOKS_PATH = ".githooks"
+
+
 def _ensure_commit_msg_gate(project_root: Path, debug: bool) -> None:
     """Activate the repo's commit-msg gate when core.hooksPath is unset.
 
@@ -869,7 +876,11 @@ def _ensure_commit_msg_gate(project_root: Path, debug: bool) -> None:
     launch therefore sets it to .agent/githooks when the project root is
     a git worktree that ships the gate, applying the installer's policy:
     an existing value
-    (husky, pre-commit, another gate) is never overwritten. The change
+    (husky, pre-commit, another gate) is never overwritten. The one
+    exception is the known-legacy value .githooks, the hook location
+    before the relocation, which is rewritten to .agent/githooks so
+    installs configured before the move keep a working gate after
+    updating .agent/. The change
     is repo-local (.git/config only), so it applies identically inside
     and outside a container. Best-effort and non-fatal: a missing git
     binary or a failed config write only skips the activation, never the
@@ -892,17 +903,21 @@ def _ensure_commit_msg_gate(project_root: Path, debug: bool) -> None:
         current = subprocess.run(get_command, capture_output=True, text=True)
         if current.returncode == 0:
             existing = (current.stdout or "").strip()
-            if debug and existing != ".agent/githooks":
-                print(
-                    f"Note: core.hooksPath is already {existing!r}; "
-                    "leaving it untouched.",
-                    file=sys.stderr,
-                )
-            return
-        if current.returncode != 1:
-            # Only "not set" (exit 1) may trigger a write; any other
-            # status is a git error (e.g. a broken repository) and must
-            # not be written to blind.
+            if existing != LEGACY_HOOKS_PATH:
+                if debug and existing != ".agent/githooks":
+                    print(
+                        f"Note: core.hooksPath is already {existing!r}; "
+                        "leaving it untouched.",
+                        file=sys.stderr,
+                    )
+                return
+            # Known-legacy value: fall through to the rewrite below so a
+            # pre-relocation configuration keeps a working gate; every
+            # other pre-set value took the early return above.
+        elif current.returncode != 1:
+            # Only "not set" (exit 1), and the exact legacy value handled
+            # above, may trigger a write; any other status is a git error
+            # (e.g. a broken repository) and must not be written to blind.
             if debug:
                 print(
                     "Note: cannot read core.hooksPath ("
