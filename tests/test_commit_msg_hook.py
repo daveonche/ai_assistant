@@ -151,7 +151,7 @@ def test_release_bump_subject_format_is_accepted(tmp_path):
 
 def test_readme_documents_hooks_path_activation():
     text = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    assert "git config core.hooksPath .githooks" in text
+    assert "git config core.hooksPath .agent/githooks" in text
 
 
 def test_ci_runs_the_hook_on_the_tip_commit():
