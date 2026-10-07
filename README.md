@@ -22,8 +22,8 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/daveonche/ai_assistant.git
-   cd ai_assistant
+   git clone https://github.com/daveonche/dev-orchestrator.git
+   cd dev-orchestrator
    ```
 
 2. **Configure Environment Variables:**
@@ -226,7 +226,7 @@ one-command installer. From inside the target project's repository,
 run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.24/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.24/scripts/install.sh | bash
 ```
 
 The installer needs only the documented host prerequisites: Bash and
@@ -251,7 +251,7 @@ When `.agent/` or `agent.sh` already exist, the same command switches
 to update mode:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.24/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.24/scripts/install.sh | bash
 ```
 
 The installer first warns that local customizations inside `.agent/`
@@ -277,7 +277,7 @@ the installer can be retrieved from the same repository over
 `github.com` with plain git and piped to `bash` the same way:
 
 ```bash
-git fetch --depth 1 https://github.com/daveonche/ai_assistant.git v1.0.24 && git show FETCH_HEAD:scripts/install.sh | bash
+git fetch --depth 1 https://github.com/daveonche/dev-orchestrator.git v1.0.24 && git show FETCH_HEAD:scripts/install.sh | bash
 ```
 
 The git-served installer behaves identically to the curl variant:
@@ -291,7 +291,7 @@ never `main`, so repeated runs are reproducible. To install from a
 different reference, pass `--ref`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.24/scripts/install.sh | bash -s -- --ref v1.0.0
+curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.24/scripts/install.sh | bash -s -- --ref v1.0.0
 ```
 
 Three more options help before and during a run: `--dry-run` reports
@@ -444,7 +444,7 @@ After the push, wait for the `release-tag-guard` job to pass, then
 verify the served installer carries the new pin:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/daveonche/ai_assistant/v1.0.24/scripts/install.sh | grep -E 'DEFAULT_REF=|no commits yet'
+curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.24/scripts/install.sh | grep -E 'DEFAULT_REF=|no commits yet'
 ```
 
 ## Project Structure
