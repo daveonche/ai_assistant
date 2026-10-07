@@ -94,9 +94,9 @@ task touches. Before creating or editing any file, check this mapping:
 | `AGENTS.md` files | `.agent/specs/AFM.md` |
 | `*.md` documentation | `.agent/specs/references/github-flavored-markdown.md` |
 | `SKILL.md` prompt files | `.agent/specs/references/agent-skills.md` |
-| `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/specs/references/docker-best-practices.md` |
-| `compose.yml`, `compose.yaml`, `docker-compose*.yml`/`*.yaml`, or any Compose file | `.agent/specs/references/compose-file-spec.md` |
-| Docker/Compose project layout or command execution: compose file placement, `docker/<service>/` build contexts, `.log/<service>.log` logs, in-container commands | `.agent/specs/references/docker-project-layout.md` |
+| `Dockerfile*`, `*.dockerfile`, or `.dockerignore` | `.agent/specs/docker/SKILL.md` |
+| `compose.yml`, `compose.yaml`, `docker-compose*.yml`/`*.yaml`, or any Compose file | `.agent/specs/docker/SKILL.md` |
+| Docker/Compose project layout or command execution: compose file placement, `docker/<service>/` build contexts, `.log/<service>.log` logs, in-container commands | `.agent/specs/docker/SKILL.md` |
 | A framework identified by Project Framework Detection | The matching framework pack's `SKILL.md` in `.agent/specs/` (e.g., `elgg/SKILL.md`, `rails/SKILL.md`) |
 | Creating or editing anything under `.agent/specs/` (packs, `SKILL.md`, `SKILL.meta.md`, `rules/`, pack `references/`) | `.agent/specs/references/spec-pack-standard.md` |
 
