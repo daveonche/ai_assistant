@@ -336,9 +336,9 @@ The `.agent` orchestration configuration supports long-running workflow sessions
 
 ## Continuous Integration (CI)
 
-This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that validates the assistant's own tooling on every push or pull request touching `.agent/**`, `agent.sh`, or `.github/workflows/**`, and on manual `workflow_dispatch`:
+This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that validates the assistant's own tooling on every push or pull request touching `.agent/**` or `.github/workflows/**`, and on manual `workflow_dispatch`:
 
-1. **Validate launcher and scripts** — Python syntax check of `.agent/ai_assistant.py`, then `shellcheck` over all tracked `*.sh` scripts, then the commit-msg gate (`.githooks/commit-msg`) validating every commit the push introduces (tip-only checks on pull requests and new-branch pushes).
+1. **Validate launcher and scripts** — Python syntax check of `.agent/launcher.py`, then `shellcheck` over all tracked `*.sh` scripts, then the commit-msg gate (`.agent/githooks/commit-msg`) validating every commit the push introduces (tip-only checks on pull requests and new-branch pushes).
 2. **Docker image build smoke test** — builds the image from `.agent/Dockerfile.aider`.
 3. **Release tag guard** — on `v*` tag pushes, asserts the tag equals `DEFAULT_REF` in `scripts/install.sh`, so a tag cannot ship with a stale installer pin.
 
@@ -349,17 +349,17 @@ This project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) tha
 
 ## Commit Message Gate
 
-A tracked `commit-msg` hook (`.githooks/commit-msg`) mechanically
+A tracked `commit-msg` hook (`.agent/githooks/commit-msg`) mechanically
 enforces the subject format the assistant's `commit-prompt` asks for:
 `type(scope): summary`, max 72 characters, plain text — no quotes or
 backticks. The launcher activates it automatically: every launch sets
-`core.hooksPath` to `.githooks` when the project is a git worktree that
-ships the gate and the setting is still unset, so the gate is live from
-the first `./agent.sh` run with no manual step. To enable it without
-launching the assistant, run:
+`core.hooksPath` to `.agent/githooks` when the project is a git worktree
+that ships the gate and the setting is still unset, so the gate is live
+from the first `./.agent/start.sh` run with no manual step. To enable it
+without launching the assistant, run:
 
 ```bash
-git config core.hooksPath .githooks
+git config core.hooksPath .agent/githooks
 ```
 
 A non-conforming subject (stray chat prose, missing type, over-length
@@ -377,13 +377,13 @@ and buried under later commits.
 
 The gate is default-on in consumer projects: the one-command installer,
 the manual copy instructions, and every assistant launch set
-`core.hooksPath` to `.githooks` — each only when the setting is unset,
-so an existing value (pre-commit, husky, …) is never overwritten. The
-installer warns when it leaves an existing value untouched, and its own
-update commit conforms to the enforced format so the freshly enabled
+`core.hooksPath` to `.agent/githooks` — each only when the setting is
+unset, so an existing value (pre-commit, husky, …) is never overwritten.
+The installer warns when it leaves an existing value untouched, and its
+own update commit conforms to the enforced format so the freshly enabled
 gate accepts it. Remove the gate from a project with `git config
 --unset core.hooksPath`; the next launch re-enables it unless the
-`.githooks/` directory is removed as well.
+`.agent/githooks/` directory is removed as well.
 
 ## Releasing
 
@@ -449,11 +449,12 @@ curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.24/
 
 ```txt
 .
-├── agent.sh                 # Root convenience launcher
 ├── .agent/
 │   ├── AGENTS.md            # Agent workflow & context orchestrator
-│   ├── ai-assistant.sh      # Thin Bash launcher that invokes ai_assistant.py
-│   ├── ai_assistant.py      # Python CLI implementation
+│   ├── start.sh             # Entry script that invokes launcher.py
+│   ├── launcher.py          # Python CLI implementation
+│   ├── githooks/
+│   │   └── commit-msg       # Git commit-msg hook (subject format gate)
 │   ├── Dockerfile.aider     # Dockerfile for the Aider environment
 │   ├── .env.example         # Template for environment variables
 │   ├── .aider.conf.yml      # Aider configuration
@@ -465,8 +466,6 @@ curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.24/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml           # GitHub Actions CI workflow
-├── .githooks/
-│   └── commit-msg           # Git commit-msg hook (subject format gate)
 ├── docs/                    # Project documentation and analysis
 ├── scripts/                 # Utility scripts
 └── src/                     # Source code
