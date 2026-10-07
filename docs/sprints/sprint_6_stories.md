@@ -51,7 +51,7 @@ Acceptance Criteria:
 - `.agent/ai_assistant.py` is renamed to `.agent/launcher.py`; the exec line in `.agent/start.sh` invokes `.agent/launcher.py`; no tracked code or test file references the old repository URL or the old module path (documentation references are updated in S6.4)
 - Launcher-driving and tracked-layout suites are updated and green (e.g., `tests/test_s1_2_step5.py`, `tests/test_s1_3_step1.py`, `tests/test_s5_1_step7.py`)
 - Release-reference consistency stays green; the commit subject scope `chore(agent)` and `DEFAULT_REF` (`v1.0.24`) are unchanged
-- README and architecture-doc naming updates are deferred to S6.4's single documentation pass
+- README and architecture-doc naming updates are deferred to S6.5's single documentation pass
 - Consumers receive the new repository URL only after the next release cut (the installer is served from the pinned tag; GitHub redirects the old URL in the meantime)
 
 Dependencies: S6.2
@@ -60,10 +60,29 @@ Developer Notes:
 
 - New user-introduced requirement (naming alignment); no existing REQ covers the rename
 - Tool-agnostic module name (`launcher.py`) decouples code from product naming so future renames do not touch code
-- Product title becomes `Agentic AI Development-Workflow`; the README title change is executed in S6.4's documentation pass
+- Product title becomes `Agentic AI Development-Workflow`; the README title change is executed in S6.5's documentation pass
 - Load the bash conventions reference before implementation (routing table)
 
-## Story S6.4: Documentation Alignment for Single-Directory Install
+## Story S6.4: Legacy Commit-Gate Path Migration
+
+As a developer, I want the launcher and installer to migrate the known-legacy `core.hooksPath` value so that consumers who enabled the commit-msg gate before the hook relocation keep a working gate after updating `.agent/`.
+
+Acceptance Criteria:
+
+- `_ensure_commit_msg_gate()` in `.agent/launcher.py` rewrites exactly the known-legacy value `.githooks` to `.agent/githooks` (any other pre-set value stays untouched; unset still enables the gate directly)
+- Installer `configure_commit_gate()` performs the same known-legacy rewrite in update mode
+- Gate suites cover the migration: legacy value migrated, other pre-set values untouched, unset stays unset (e.g., `tests/test_commit_msg_gate_activation.py`, `tests/test_s2_1_step2.py`)
+- The old-path/doc sweep that S6.3 defers to "the next story's single documentation pass" moves to S6.5 with this story's insertion; this story covers the gate-path rewrite only
+
+Dependencies: S6.3
+
+Developer Notes:
+
+- The known-legacy value is exactly `.githooks` (the pre-S6.1 hook location); husky, pre-commit, and custom values stay untouched per the existing only-when-unset discipline
+- Consumers receive the migration only after the next release cut (the installer is served from the pinned tag)
+- Documentation references to the old names (legacy `.githooks` path, `.agent/ai_assistant.py`, root `agent.sh`) and the `tests/test_commit_msg_hook.py` README pin are updated in S6.5's single documentation pass
+
+## Story S6.5: Documentation Alignment for Single-Directory Install
 
 As a developer, I want the README and architecture documentation updated to the single-directory install so that the documented install method matches shipped behavior.
 
@@ -74,24 +93,25 @@ Acceptance Criteria:
 - `docs/architecture/architecture.md` Host Entry Layer describes `.agent/start.sh` → `.agent/launcher.py` (root `agent.sh` no longer referenced)
 - README install/copy instructions reference the `dev-orchestrator` repository URL; the architecture doc references `.agent/launcher.py`
 - Release-reference consistency stays green (`tests/test_release_ref_consistency.py`, `tests/test_s2_1_step5.py` updated where they pin paths)
+- The README gate-command pin in `tests/test_commit_msg_hook.py` moves to `.agent/githooks` in the same pass
 
-Dependencies: S6.1, S6.2, S6.3
+Dependencies: S6.1, S6.2, S6.3, S6.4
 
 Developer Notes:
 
 - Maps to REQ-3, REQ-14, REQ-15
 - README edit requires the GFM conventions reference at implementation time (routing table)
 
-## Story S6.5: Sprint 6 Record Documentation
+## Story S6.6: Sprint 6 Record Documentation
 
 As a developer, I want the Sprint 6 work recorded in the project docs, so that the sprint history and implementation status reflect the install-surface consolidation.
 
 Acceptance Criteria:
 
-- `docs/implementation_status.md` gains a Sprint 6 section listing the S6.1–S6.4 work as completed steps, and its Priority Order section is updated to reflect the new backlog state
+- `docs/implementation_status.md` gains a Sprint 6 section listing the S6.1–S6.5 work as completed steps, and its Priority Order section is updated to reflect the new backlog state
 - Documentation passes the markdown conventions
 
-Dependencies: S6.1, S6.2, S6.4
+Dependencies: S6.1, S6.2, S6.4, S6.5
 
 Developer Notes:
 
