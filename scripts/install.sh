@@ -19,6 +19,10 @@ set -euo pipefail
 
 readonly DEFAULT_REPO_URL="https://github.com/daveonche/dev-orchestrator.git"
 readonly DEFAULT_REF="v1.0.24"
+# Known-legacy core.hooksPath value from before the hook relocation to
+# .agent/githooks. Matched exactly in update mode and rewritten to the
+# current location; every other pre-set value stays untouched.
+readonly LEGACY_HOOKS_PATH=".githooks"
 
 # Globals: None
 # Arguments: Variable list of message words, joined into one message
@@ -154,16 +158,25 @@ fetch_has_githooks() {
   git cat-file -e "FETCH_HEAD:.agent/githooks/commit-msg" 2>/dev/null
 }
 
-# Globals: None
+# Globals: LEGACY_HOOKS_PATH (read)
 # Arguments: None
 # Outputs: Progress to STDOUT; warnings to STDERR; errors to STDERR
-# Returns: 0 when the gate is enabled or an existing setting is kept
+# Returns: 0 when the gate is enabled, migrated, or an existing setting is kept
 configure_commit_gate() {
   local existing
   if existing="$(git config --get core.hooksPath 2>/dev/null)" \
       && [[ -n "${existing}" ]]; then
     if [[ "${existing}" == ".agent/githooks" ]]; then
       printf 'installer: commit message gate already active\n'
+      return 0
+    fi
+    if [[ "${existing}" == "${LEGACY_HOOKS_PATH}" ]]; then
+      if ! git config core.hooksPath .agent/githooks; then
+        die "failed to migrate the legacy commit message gate path"
+        return 1
+      fi
+      printf 'installer: migrated legacy gate path %s to %s\n' \
+        "${LEGACY_HOOKS_PATH}" '.agent/githooks'
       return 0
     fi
     printf 'installer: WARNING: core.hooksPath is already set to %s\n' \
