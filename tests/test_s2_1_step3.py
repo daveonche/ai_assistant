@@ -638,7 +638,7 @@ def test_update_on_unborn_head_records_initial_commit(unborn_consumer_repo):
     }
     assert (
         _git(unborn_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
-        == "chore(agent): update assistant files to v1.0.24"
+        == "chore(agent): update .agent files to v1.0.24"
     )
     # the untracked local customization survives the refresh untracked
     custom = unborn_consumer_repo / ".agent" / "custom.txt"
