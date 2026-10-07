@@ -53,7 +53,7 @@ in `SKILL.md`; nothing here duplicates them.
 
 ## Version
 
-- Current Version: 1.0.0
+- Current Version: 1.0.1
 - Last Updated: 2026-10-07
 - Stability: Stable
 

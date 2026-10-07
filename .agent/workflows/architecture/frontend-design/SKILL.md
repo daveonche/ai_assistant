@@ -50,8 +50,7 @@ Say EXACTLY: "To proceed with frontend design:
    once, under a single space-separated `/read-only` command. Examples:
    generated `*.md` documentation →
    `.agent/specs/references/github-flavored-markdown.md`; a `Dockerfile*`
-   for the frontend → `.agent/specs/references/docker-best-practices.md`;
-   a Compose file → `.agent/specs/references/compose-file-spec.md`. Never
+   or Compose file → `.agent/specs/docker/SKILL.md`. Never
    load a reference "just in case"; only on a match.
 6. Confirm with the user: the detected framework, the frontend target
    (component, page, dashboard, full application), technical

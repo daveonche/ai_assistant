@@ -6,6 +6,10 @@ This pack records only repo-relevant rules and easily-got-wrong
 details; general Docker knowledge (multi-stage build semantics,
 instruction reference, cache ordering, Compose service concepts) is
 assumed. Consult the Docker documentation when needed.
+Version-specific guidance is not split into per-version directories:
+the upstream snapshot lives in `references/provenance.md`, and tasks
+hinging on newer behavior verify against the upstream changelog. When
+referenced material is absent, continue on general knowledge.
 
 **Source:** Docker documentation — [Building best practices](https://docs.docker.com/build/building/best-practices/), [Dockerfile reference](https://docs.docker.com/reference/dockerfile/), [Compose file reference](https://docs.docker.com/reference/compose-file.md) — and the docker-expert skill from [claude-code-templates](https://github.com/davila7/claude-code-templates/blob/main/cli-tool/components/skills/development/docker-expert/SKILL.md) (persona and diagnostics only).
 
@@ -34,8 +38,8 @@ in order:
 3. Layout and execution discipline: compose files at the project root,
    per-service build contexts, flat `.log/` files, every project
    command run in the container.
-4. Delta-only guidance: never restate general Docker practices, API
-   references, or tutorials.
+4. Delta-only guidance: do not add general Docker practices, API
+   references, or tutorials to this pack.
 
 ## Before advising
 
