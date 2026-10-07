@@ -2,7 +2,7 @@
 
 Exercises the launcher from the outside, the way a user runs it: the
 sandbox copies the real launch chain (.agent/start.sh ->
-.agent/ai_assistant.py), the docker CLI is a recording stub on PATH,
+.agent/launcher.py), the docker CLI is a recording stub on PATH,
 and HOME points inside the sandbox.
 
 Covered here:
@@ -26,7 +26,7 @@ AIDER_IMAGE = "aider-agent:latest"
 
 SANDBOX_FILES = (
     ".agent/start.sh",
-    ".agent/ai_assistant.py",
+    ".agent/launcher.py",
     ".agent/Dockerfile.aider",
 )
 

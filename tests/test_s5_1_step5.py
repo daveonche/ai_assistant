@@ -25,7 +25,7 @@ AIDER_IMAGE = "aider-agent:latest"
 
 SANDBOX_FILES = (
     ".agent/start.sh",
-    ".agent/ai_assistant.py",
+    ".agent/launcher.py",
     ".agent/Dockerfile.aider",
 )
 
