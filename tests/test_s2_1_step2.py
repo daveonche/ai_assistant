@@ -290,7 +290,7 @@ def test_temp_clone_removed_after_failed_install(sandbox, tmp_path):
 
     result = run_installer(sandbox, stub_dir)
     assert result.returncode != 0
-    assert "does not contain the assistant files" in result.stderr
+    assert "does not contain the .agent files" in result.stderr
 
     # cleanup ran despite the failure: the recorded clone target is gone
     assert not clone_target(log).exists()

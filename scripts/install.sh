@@ -252,7 +252,7 @@ preview_refresh() {
     base="HEAD"
   else
     # Unborn HEAD (no commits yet): diff against the empty tree so the
-    # preview lists every assistant file as new instead of failing with
+    # preview lists every .agent file as new instead of failing with
     # "bad revision 'HEAD'".
     base="$(git hash-object -t tree /dev/null)"
     printf 'installer: no commits yet; all .agent files are new\n'

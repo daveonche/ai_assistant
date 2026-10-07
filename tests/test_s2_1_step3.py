@@ -323,7 +323,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "commit",
         "--quiet",
         "-m",
-        "chore(agent): update assistant files to v1.0.24",
+        "chore(agent): update .agent files to v1.0.24",
         "--",
         ".agent",
         "rev-parse",
@@ -457,7 +457,7 @@ def test_overwrite_warning_precedes_update_actions_and_names_scope(
     assert "WARNING" in result.stderr
     assert "replaces .agent/" in result.stderr
     assert "read: list in .agent/.aider.conf.yml" in result.stderr
-    assert "failed to retrieve the assistant ref v1.0.24" in result.stderr
+    assert "failed to retrieve ref v1.0.24" in result.stderr
     # the run died at the fetch, before any mutation: the warning was
     # emitted ahead of the update actions that followed it
     lines = log.read_text().splitlines()
@@ -562,7 +562,7 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     }
     assert (
         _git(consumer_repo, "log", "-1", "--format=%s").stdout.strip()
-        == "chore(agent): update assistant files to v1.0.24"
+        == "chore(agent): update .agent files to v1.0.24"
     )
     # the gate is live in the consumer repository after the update
     hooks_path = _git(consumer_repo, "config", "--get", "core.hooksPath")
@@ -619,7 +619,7 @@ def test_update_on_unborn_head_records_initial_commit(unborn_consumer_repo):
     """
     result = run_installer(unborn_consumer_repo, None, "--yes")
     assert result.returncode == 0, result.stderr
-    assert "no commits yet; all assistant files are new" in result.stdout
+    assert "no commits yet; all .agent files are new" in result.stdout
     assert "recorded the refresh as commit" in result.stdout
 
     # the refresh landed as the repository's first commit, scoped to the
@@ -727,7 +727,7 @@ def test_update_from_ref_without_hook_skips_gate(legacy_consumer_repo):
     }
     assert (
         _git(legacy_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
-        == "chore(agent): update assistant files to v1.0.10"
+        == "chore(agent): update .agent files to v1.0.10"
     )
 
 
