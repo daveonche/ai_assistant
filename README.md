@@ -13,8 +13,8 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 
 - [Docker](https://docs.docker.com/get-docker/) (CLI & Compose Plugin): provides the isolated container that runs Aider, and the Compose Plugin backs the container lifecycle commands used by the launcher
 - [Git](https://git-scm.com/): needed to clone this repository and to copy the configuration into other projects; the launcher itself does not require Git to start the assistant
-- Bash: runs the `agent.sh` and `.agent/ai-assistant.sh` entry scripts
-- Python >=3.12 (host pin 3.12.12): runs the launcher (`.agent/ai_assistant.py`) and the direct `ai-assistant` install; the minimum version matches `requires-python` in `.agent/pyproject.toml`
+- Bash: runs the `.agent/start.sh` entry script
+- Python >=3.12 (host pin 3.12.12): runs the launcher (`.agent/launcher.py`) and the direct `ai-assistant` install; the minimum version matches `requires-python` in `.agent/pyproject.toml`
 - API Keys for your chosen LLM providers (OpenRouter, OpenAI, Google AI, Hugging Face): authenticate the model calls Aider makes at launch
 
 ## Installation
@@ -36,25 +36,25 @@ A CLI wrapper and pipeline orchestrator for the Aider AI coding assistant. It le
 
    Edit `.env` and fill in your `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, and `HF_TOKEN`.
 
-3. **Make the launch scripts executable (if not already):**
+3. **Make the launch script executable (if not already):**
 
    ```bash
-   chmod +x agent.sh .agent/ai-assistant.sh
+   chmod +x .agent/start.sh
    ```
 
 For project-specific assistant arguments, create the commented template
-with `./agent.sh --init-project-args` (see
+with `./.agent/start.sh --init-project-args` (see
 [Per-project customization](#per-project-customization)).
 
 ## Usage
 
-To start the AI assistant, run the root convenience launcher from the root of your project:
+To start the AI assistant, run the launcher from the root of your project:
 
 ```bash
-./agent.sh
+./.agent/start.sh
 ```
 
-This launcher calls `.agent/ai-assistant.sh`. That script delegates to `.agent/ai_assistant.py`, which automatically builds the Docker image when needed and starts the container with the necessary volume mappings and environment variables.
+This entry script delegates to `.agent/launcher.py`, which automatically builds the Docker image when needed and starts the container with the necessary volume mappings and environment variables.
 
 If you prefer a direct console command, install the `.agent` package in editable mode inside a Python virtual environment:
 
@@ -73,12 +73,10 @@ ai-assistant
 
 ### Using in Other Projects
 
-You can use this assistant in other projects by copying the `.agent` directory, the root launcher, and `.githooks/` to that project's root:
+You can use this assistant in other projects by copying the `.agent` directory to that project's root:
 
 ```bash
 cp -r .agent /path/to/your/project/
-cp agent.sh /path/to/your/project/
-cp -r .githooks /path/to/your/project/
 ```
 
 The `.agent` copy already includes `specs/`, so all
@@ -87,13 +85,13 @@ enabled per project via the `read:` setting in
 `.agent/.aider.conf.yml` — they are read on launch, never copied to
 the project root.
 
-Make the launchers and the commit-msg hook executable and update the git index so you don't have to run the execute command again in that repo:
+Make the launch script and the commit-msg hook executable and update the git index so you don't have to run the execute command again in that repo:
 
 ```bash
 cd /path/to/your/project/
-chmod +x agent.sh .agent/ai-assistant.sh .githooks/commit-msg
-git update-index --chmod=+x agent.sh .agent/ai-assistant.sh .githooks/commit-msg
-git config core.hooksPath .githooks
+chmod +x .agent/start.sh .agent/githooks/commit-msg
+git update-index --chmod=+x .agent/start.sh .agent/githooks/commit-msg
+git config core.hooksPath .agent/githooks
 ```
 
 The last command enables the commit message gate in that project right
@@ -112,9 +110,9 @@ cp .agent/.env.example .env
 Edit `.env` and fill in your `OPENAI_API_KEY`, `OPENROUTER_API_KEY`,
 `GEMINI_API_KEY`, and `HF_TOKEN`.
 
-Then run `./agent.sh` from that project's directory. The entry chain
-resolves its own paths at runtime, so it behaves exactly as it does in
-a standalone clone.
+Then run `./.agent/start.sh` from that project's directory. The entry
+chain resolves its own paths at runtime, so it behaves exactly as it
+does in a standalone clone.
 
 If you prefer a direct `ai-assistant` command instead, install the `.agent` package in editable mode inside a Python virtual environment:
 
@@ -151,7 +149,7 @@ assistant updates:
 Create it from the commented template:
 
 ```bash
-./agent.sh --init-project-args
+./.agent/start.sh --init-project-args
 ```
 
 The template contains guidance and worked examples; an existing file is
@@ -170,7 +168,7 @@ command-line arguments win over args-file entries, which win over the
 path, contents, and precedence — with:
 
 ```bash
-./agent.sh --show-project-config
+./.agent/start.sh --show-project-config
 ```
 
 > **Note:** the args file is keyed to the project directory's path.
@@ -231,24 +229,24 @@ curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.24/
 
 The installer needs only the documented host prerequisites: Bash and
 git. It clones the pinned release reference into a temporary
-directory, copies `.agent/`, `agent.sh`, and `.githooks/` into the
-project root, records the entry scripts and the commit-msg hook as
-executable in the project's git index (`git update-index --chmod=+x`),
-enables the commit message gate by default (`git config core.hooksPath
-.githooks` — an existing `core.hooksPath` value is left untouched with
-a warning), and removes the temporary directory when it finishes,
-leaving no temporary artifacts behind. No manual step follows: the
-hook is left executable and active, so git runs it on the project's
-next commit. Afterwards, configure the environment variables as
-described above and run `./agent.sh` from the project root. For
-project-specific assistant arguments, create the commented template
-with `./agent.sh --init-project-args` (see
+directory, copies `.agent/` into the project root, records the entry
+script and the commit-msg hook as executable in the project's git
+index (`git update-index --chmod=+x`), enables the commit message gate
+by default (`git config core.hooksPath .agent/githooks` — an existing
+`core.hooksPath` value is left untouched with a warning), and removes
+the temporary directory when it finishes, leaving no temporary
+artifacts behind. No manual step follows: the hook is left executable
+and active, so git runs it on the project's next commit. Afterwards,
+configure the environment variables as described above and run
+`./.agent/start.sh` from the project root. For project-specific
+assistant arguments, create the commented template with
+`./.agent/start.sh --init-project-args` (see
 [Per-project customization](#per-project-customization)).
 
 #### Updating an existing install
 
-When `.agent/` or `agent.sh` already exist, the same command switches
-to update mode:
+When `.agent/` already exists, the same command switches to update
+mode:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.24/scripts/install.sh | bash
@@ -260,15 +258,15 @@ overwritten. It then shows the incoming changes and asks for
 confirmation before touching anything; pass `--yes` to skip the prompt
 in non-interactive runs. The refresh goes through the project's own
 git: it fetches the pinned reference from the `ai-assistant` remote,
-checks out `.agent`, `agent.sh`, and — when the release ships the
-commit-msg hook — `.githooks`, enables the commit message gate after
+checks out `.agent`, enables the commit message gate after
 confirmation (unless `core.hooksPath` is already set), and records the
 refresh as a single commit whose subject conforms to that gate. The
 update is therefore a normal, reviewable, revertable project change —
 re-apply your local customizations after the update completes.
 Per-project assistant arguments need no re-application: the args file
 lives in your home configuration area, outside `.agent/`, so updates
-leave it untouched. Create it once with `./agent.sh --init-project-args`
+leave it untouched. Create it once with
+`./.agent/start.sh --init-project-args`
 (see [Per-project customization](#per-project-customization)).
 
 When `raw.githubusercontent.com` is unreachable — for example a broken
@@ -312,7 +310,7 @@ Every Docker and git command the launcher runs is appended to a per-session comm
 Run the launcher with the `--debug` flag (short form `-x`):
 
 ```bash
-./agent.sh --debug
+./.agent/start.sh --debug
 ```
 
 In debug mode the launcher additionally prints to stderr:
