@@ -28,11 +28,10 @@ def _priority_text() -> str:
 
 
 def _narrative_text() -> str:
-    """Return the narrative paragraph of the Priority Order section."""
+    """Return the narrative paragraphs of the Priority Order section."""
     priority = _priority_text()
     start = priority.index(PRIORITY_HEADING) + len(PRIORITY_HEADING)
-    end = priority.index("Priority 1 -", start)
-    return priority[start:end]
+    return priority[start:]
 
 
 def test_no_s43_pending_bullet_in_priority_order():
