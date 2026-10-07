@@ -68,6 +68,8 @@ file; increment Version and Last Updated after `SKILL.md` changes.
   version directories — never in per-version copies of the entry file.
 - Upgrade notes drive `rules/` updates: when a note changes, update the
   affected rule files in the same change.
+- Empty `rules/` or `references/` directories are kept in git with a
+  `.gitkeep` file; remove it when the first content file lands.
 
 ## Adding a pack
 

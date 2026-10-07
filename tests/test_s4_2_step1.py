@@ -206,7 +206,8 @@ def test_files_follow_markdown_conventions():
     headings/lists/tables, no tabs or 4+ leading spaces, GFM table
     rules, single final newline, no trailing whitespace. Indented
     continuation lines inside a list item count as list content (GFM
-    lazy continuation), not as the end of the list."""
+    lazy continuation), not as the end of the list, and are exempt from
+    the indented-code-block check."""
     violations: list[str] = []
     for doc in DOC_FILES:
         text = _file_text(doc)
@@ -246,9 +247,13 @@ def test_files_follow_markdown_conventions():
             prev = lines[lineno - 2].strip() if lineno > 1 else ""
             nxt = lines[lineno].strip() if lineno < len(lines) else ""
             where = f"{doc}:{lineno}"
+            is_item = (not blank) and (
+                stripped.startswith("- ")
+                or (in_list and _leading_spaces(line) > 0)
+            )
             if "\t" in line:
                 violations.append(f"{where}: tab character; use spaces")
-            if not blank and _leading_spaces(line) >= 4:
+            if not blank and _leading_spaces(line) >= 4 and not is_item:
                 violations.append(
                     f"{where}: 4+ leading spaces render as an indented "
                     "code block; use a fenced block instead"
@@ -260,10 +265,6 @@ def test_files_follow_markdown_conventions():
                     violations.append(f"{where}: missing blank line before heading")
                 if nxt:
                     violations.append(f"{where}: missing blank line after heading")
-            is_item = (not blank) and (
-                stripped.startswith("- ")
-                or (in_list and _leading_spaces(line) > 0)
-            )
             is_table_row = (not blank) and stripped.startswith("|")
             if is_item and not in_list and prev:
                 violations.append(f"{where}: missing blank line before list")
