@@ -1,6 +1,6 @@
 # Elgg Developer Guide: Topic Map
 
-Index for the Elgg developer-guide distillations under this directory. Built
+Index for the Elgg rule distillations under this directory. Built
 from the GitHub contents listing of `docs/guides/` in the Elgg repository
 (ref `7.1`, retrieved 2026-09-30) — the source of the stable manual at
 <https://learn.elgg.org/en/stable/guides/index.html>.
@@ -8,7 +8,7 @@ from the GitHub contents listing of `docs/guides/` in the Elgg repository
 Load rule: load this `index.md` first, then only the topic files the current
 task touches. Topic files track the stable manual and are updated in place;
 the per-version change list that drives updates lives in
-`../upgrade-notes/`.
+`../references/upgrade-notes/`.
 
 Topic-file names mirror their source page (`access.md` ↔ `access.rst`), so
 upstream diffs map mechanically onto updates. Scopes below are provisional
@@ -79,7 +79,8 @@ Enumerate each with the same contents-API call used for `docs/guides/`
 
 - `index.rst` is the manual's TOC (a `:glob:` toctree); it is not distilled
   as a topic.
-- Baseline contents listing kept at `source-listing-7.1.json` (per-file SHAs
-  and sizes): diff a fresh listing against it to find upstream changes.
+- Baseline contents listing kept at `../references/source-listing-7.1.json`
+  (per-file SHAs and sizes): diff a fresh listing against it to find upstream
+  changes.
 - `events-list.rst` is large (~58 KB); distill as a compact lookup list or
   split it if it exceeds the topic-file size cap.

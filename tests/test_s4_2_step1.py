@@ -3,9 +3,11 @@
 from pathlib import Path
 
 CONVENTIONS_DIR = Path(".agent", "specs")
+ELGG_SKILL = CONVENTIONS_DIR / "elgg" / "SKILL.md"
+RAILS_FILE = CONVENTIONS_DIR / "RAILS.md"
 SEEDED_FILES = (
-    CONVENTIONS_DIR / "ELGG.md",
-    CONVENTIONS_DIR / "RAILS.md",
+    ELGG_SKILL,
+    RAILS_FILE,
 )
 
 
@@ -21,45 +23,60 @@ def _file_text(path: Path) -> str:
 def test_files_declare_delta_only_scope():
     for path in SEEDED_FILES:
         text = _file_text(path)
-        assert "delta guidance" in text.lower(), (
+        lowered = text.lower()
+        assert "delta guidance" in lowered, (
             f"{path} does not declare delta-only guidance"
         )
-        assert "## Scope" in text, f"{path} missing Scope section"
-        assert "Do not add general" in text, (
+        assert "## scope" in lowered or "**scope:**" in lowered, (
+            f"{path} missing Scope section"
+        )
+        assert "do not add general" in lowered, (
             f"{path} missing exclusion of general framework knowledge"
         )
-        assert "API references" in text, f"{path} missing exclusion of API references"
-        assert "tutorials" in text, f"{path} missing exclusion of tutorials"
+        assert "api references" in lowered, (
+            f"{path} missing exclusion of API references"
+        )
+        assert "tutorials" in lowered, f"{path} missing exclusion of tutorials"
 
 
 def test_files_reference_version_specific_layout():
-    expected_refs = {
-        CONVENTIONS_DIR / "ELGG.md": "references/ELGG/v7",
-        CONVENTIONS_DIR / "RAILS.md": "references/RAILS/v7",
-    }
-    for path, ref in expected_refs.items():
-        text = _file_text(path)
-        assert ref in text, (
-            f"{path} does not cite a concrete version-specific example ({ref})"
-        )
+    text = _file_text(RAILS_FILE)
+    assert "references/RAILS/v7" in text, (
+        f"{RAILS_FILE} does not cite a concrete version-specific example"
+    )
+
+
+def test_elgg_pack_routes_version_guidance_to_upgrade_notes():
+    """The elgg pack replaced per-version directories with the upgrade
+    notes: version questions route through references/upgrading.md and
+    references/upgrade-notes/."""
+    text = _file_text(ELGG_SKILL)
+    assert "references/upgrading.md" in text, (
+        f"{ELGG_SKILL} does not route version questions through upgrading.md"
+    )
+    assert "references/upgrade-notes/" in text, (
+        f"{ELGG_SKILL} does not reference the per-version upgrade notes"
+    )
+    assert "references/ELGG/" not in text, (
+        f"{ELGG_SKILL} still cites the removed references/ELGG layout"
+    )
 
 
 def test_files_valid_without_version_dirs():
-    for path in SEEDED_FILES:
-        normalized = " ".join(_file_text(path).split())
-        lowered = normalized.lower()
-        assert "when a directory matching" in lowered, (
-            f"{path} missing load-when-directory-exists branch"
-        )
-        assert "when it does not" in lowered, (
-            f"{path} missing continue-without branch"
-        )
-        assert "continue without them" in normalized, (
-            f"{path} does not state to continue without version-specific files"
-        )
-        assert "valid on its own" in normalized, (
-            f"{path} does not declare standalone validity"
-        )
+    normalized = " ".join(_file_text(RAILS_FILE).split())
+    lowered = normalized.lower()
+    assert "when a directory matching" in lowered, (
+        f"{RAILS_FILE} missing load-when-directory-exists branch"
+    )
+    assert "when it does not" in lowered, (
+        f"{RAILS_FILE} missing continue-without branch"
+    )
+    assert "continue without them" in normalized, (
+        f"{RAILS_FILE} does not state to continue without version-specific files"
+    )
+    assert "valid on its own" in normalized, (
+        f"{RAILS_FILE} does not declare standalone validity"
+    )
 
 
 def _inside_fence(lines: list[str]) -> set[int]:

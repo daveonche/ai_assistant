@@ -1,11 +1,16 @@
 # Elgg Framework Conventions
 
-| Field | Value |
-| --- | --- |
-| Name | `elgg` |
-| Description | Delta conventions for projects using Elgg. Use when writing or reviewing Elgg plugins, events, views, routing, web services, or upgrades. Triggers on "Elgg plugin", "Elgg upgrade", or Elgg reported by Project Framework Detection. |
-| Source | Distilled from the Elgg manual: <https://learn.elgg.org/en/stable/guides/index.html> |
-| Scope | Delta guidance only: local deviations, project constraints, and pointers into this pack. General Elgg practices and API knowledge are assumed. |
+Delta conventions for projects using Elgg. Use when writing or reviewing
+Elgg plugins, events, views, routing, web services, or upgrades. Triggers
+on "Elgg plugin", "Elgg upgrade", or Elgg reported by Project Framework
+Detection.
+
+**Source:** distilled from the Elgg manual:
+<https://learn.elgg.org/en/stable/guides/index.html>
+
+**Scope:** delta guidance only — local deviations, project constraints,
+and pointers into this pack. General Elgg practices and API knowledge are
+assumed.
 
 **Convention Check Reminder:** Before creating or editing any file, check
 the Conventions Reference Routing table in `.agent/AGENTS.md` and load the

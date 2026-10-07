@@ -7,7 +7,7 @@ work that crosses an Elgg version boundary. General upgrade discipline
 (backups, staging validation, rollback planning, plugin compatibility checks)
 is assumed from general knowledge; this file records only what that knowledge
 does not supply. For plugin code, load the per-transition plugin upgrade
-notes from `.agent/specs/references/ELGG/upgrade-notes/` — one
+notes from `.agent/specs/elgg/references/upgrade-notes/` — one
 `<from>-to-<to>.md` file per documented transition (for example
 `1.7-to-1.8.md`, `2.x-to-3.0.md`), matching the official page slugs at
 <https://learn.elgg.org/en/stable/appendix/upgrade-notes.html>. Load every
