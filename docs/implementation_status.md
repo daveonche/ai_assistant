@@ -156,6 +156,45 @@
 - [x] Step 6. Update user documentation (`README.md` "Per-project customization" replaces the merging section; verified by `tests/test_s5_1_step6.py`)
 - [x] Step 7. Verify end-to-end behavior and retire obsolete tests (six obsolete merge suites removed, full suite green; verified by `tests/test_s5_1_step7.py`)
 
+## Sprint 6
+
+### Story S6.1: Install-Surface Consolidation (Single-Directory Install)
+
+- [x] Step 1. Enable the single-directory launcher entry (`.agent/ai-assistant.sh` renamed to `.agent/start.sh`; root `agent.sh` removed; launch becomes `./.agent/start.sh`)
+- [x] Step 2. Enable the relocated commit-msg hook (`.githooks/commit-msg` moved to `.agent/githooks/commit-msg`)
+- [x] Step 3. Enable single-directory install mode (`scripts/install.sh` install mode copies only `.agent/`; `detect_mode()` keys on `.agent` alone; executability recorded via `git update-index --chmod=+x` for `.agent/start.sh`)
+- [x] Step 4. Enable single-directory update mode (the staged-scope guard, preview list, and apply path reduce to `.agent`; the refresh records a single reviewable, revertable commit scoped to `.agent`, preserving REQ-6 behavior including the unborn-HEAD case)
+- [x] Step 5. Enable executable entry scripts that survive mode-insensitive environments (entry scripts committed with mode `100755` so the update path preserves executability)
+- [x] Step 6. Enable confirmation that the consolidation suites stay green (entry-chain, installer, and tracked-layout suites updated: `tests/test_s1_2_step5.py`, `tests/test_s2_1_step2.py`, `tests/test_s1_1_step2.py`)
+
+### Story S6.2: Launcher & Hook Gate Rewiring
+
+- [x] Step 1. Enable the relocated gate activation in the launcher (`_ensure_commit_msg_gate()` in `.agent/ai_assistant.py` sets `core.hooksPath` to `.agent/githooks`, still only when unset and never overwriting pre-commit/husky values)
+- [x] Step 2. Enable the relocated gate activation in the installer (`configure_commit_gate()` in `scripts/install.sh` sets the same `.agent/githooks` value)
+- [x] Step 3. Enable the CI commit-subject validation against the relocated hook (the validation step in `.github/workflows/ci.yml` invokes `.agent/githooks/commit-msg`)
+- [x] Step 4. Enable confirmation that the gate suites stay green (`tests/test_commit_msg_hook.py`, `tests/test_ci_commit_subject_range.py`, and `tests/test_commit_msg_gate_activation.py` updated and passing)
+
+### Story S6.3: Project Rename to dev-orchestrator
+
+- [x] Step 1. Enable the renamed repository source (`DEFAULT_REPO_URL` in `scripts/install.sh` points at `https://github.com/daveonche/dev-orchestrator.git`; the canonical URL in the offline-test `insteadOf` rewrites and every other pinned reference updated to match)
+- [x] Step 2. Enable the new product title in the installer display strings (the `scripts/install.sh` header comment and usage text read `Agentic AI Development-Workflow`; the `ai-assistant` git remote name is unchanged)
+- [x] Step 3. Enable the tool-agnostic launcher module (`.agent/ai_assistant.py` renamed to `.agent/launcher.py`; the exec line in `.agent/start.sh` invokes `.agent/launcher.py`; no tracked code or test file references the old repository URL or the old module path)
+- [x] Step 4. Enable confirmation that the rename suites stay green (launcher-driving and tracked-layout suites updated: `tests/test_s1_2_step5.py`, `tests/test_s1_3_step1.py`, `tests/test_s5_1_step7.py`; release-reference consistency green with the commit subject scope `chore(agent)` and `DEFAULT_REF` `v1.0.24` unchanged)
+
+### Story S6.4: Legacy Commit-Gate Path Migration
+
+- [x] Step 1. Enable the known-legacy gate-path migration in the launcher (`_ensure_commit_msg_gate()` in `.agent/launcher.py` rewrites exactly the known-legacy value `.githooks` to `.agent/githooks`; any other pre-set value stays untouched and unset still enables the gate directly)
+- [x] Step 2. Enable the same known-legacy rewrite in the installer (`configure_commit_gate()` performs the rewrite in update mode)
+- [x] Step 3. Enable confirmation that the migration suites stay green (`tests/test_commit_msg_gate_activation.py` and `tests/test_s2_1_step2.py` cover the legacy value migrated, other pre-set values untouched, and unset staying unset)
+
+### Story S6.5: Documentation Alignment for Single-Directory Install
+
+- [x] Step 1. Enable the renamed README title (the README H1 reads `Agentic AI Development-Workflow`, replacing `AIAssistant`)
+- [x] Step 2. Enable the single-directory README usage (usage shows `./.agent/start.sh`; copy/install instructions copy only `.agent/`; the project-structure tree and commit-gate section reflect `.agent/githooks`)
+- [x] Step 3. Enable the updated architecture entry layer (`docs/architecture/architecture.md` Host Entry Layer describes `.agent/start.sh` → `.agent/launcher.py`; root `agent.sh` no longer referenced)
+- [x] Step 4. Enable the renamed repository references in the documentation (README install/copy instructions reference the `dev-orchestrator` repository URL; the architecture doc references `.agent/launcher.py`)
+- [x] Step 5. Enable confirmation that the documentation pin suites stay green (`tests/test_release_ref_consistency.py` and `tests/test_s2_1_step5.py` updated where they pin paths; the README gate-command pin in `tests/test_commit_msg_hook.py` moved to `.agent/githooks` in the same pass)
+
 ## Priority Order for Next Implementation Phase
 
 The Sprint 3 release-management work (REQ-15) is verified and recorded:
