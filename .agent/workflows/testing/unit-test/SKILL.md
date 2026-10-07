@@ -153,9 +153,25 @@ Read `.agent/workflows/testing/unit-test/references/templates.md` for exact depe
 [STOP - Continue after dependency management and configuration are complete]
 
 ### [STEP 4] Generate Test Scenarios
+- [ ] Run the existing-coverage audit (rules below) BEFORE proposing
+      any new test
 - [ ] Map test cases to each Must Support item
-- [ ] Check existing coverage
 - [ ] Flag out-of-scope tests
+
+**Existing-coverage audit (mandatory gate):** For each Must Support
+item, classify its coverage before any new test is proposed:
+- EXISTS — name the exact existing test file and test; propose no new
+  test for the item.
+- PARTIAL — name the existing test and state precisely what remains
+  uncovered; scope any new test to that gap only.
+- NOT COVERED — permitted only after running a repo-wide search over
+  the test directory for the requirement's keywords (e.g.,
+  `grep -rn "<keyword>" tests/`) and recording the result; an empty
+  result is the required evidence.
+Never propose a new test that duplicates existing coverage. If every
+testable item is EXISTS, mark the step "testing complete — no new
+tests", record the existing coverage per item, and skip to the
+step-completion message.
 
 Present:
 ```
@@ -165,7 +181,9 @@ Must Support: [requirement]
 Required Tests:
 1. [scenario]
    Maps to: [exact requirement text]
-   Status: [New/Exists]
+   Status: [EXISTS — name the exact existing test / PARTIAL — name the
+   test and the uncovered gap / NOT COVERED — cite the empty search
+   result / DEFERRED — name the step that owns the coverage]
 
 Manual Verification Mapping:
 [for each manual step]
@@ -181,7 +199,8 @@ Ask: "I've mapped tests directly to step requirements. Reply with:
 [STOP - Wait for approval]
 
 ### [STEP 5] Individual Test Implementation
-For each NEW test:
+For each NEW test (only scenarios the Step 4 audit marked NOT COVERED
+or PARTIAL):
 - [ ] Present structure and wait for Y/N
 - [ ] After Y, instruct `/code` and "implement test"
 - [ ] Execute test and verify result
