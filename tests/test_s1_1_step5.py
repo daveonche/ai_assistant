@@ -69,6 +69,6 @@ def test_readme_describes_basic_usage():
     assert "git clone" in installation, (
         "README.md Installation section has no clone command"
     )
-    assert "./agent.sh" in usage, (
+    assert "./.agent/start.sh" in usage, (
         "README.md Usage section does not show how to start the assistant"
     )

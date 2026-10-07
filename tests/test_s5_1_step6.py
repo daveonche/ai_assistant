@@ -140,9 +140,9 @@ def test_install_and_update_sections_point_at_init_flag():
     text = _doc_text()
     # The Installation section carries the pointer...
     installation = _normalized(_section(text, "Installation"))
-    assert "./agent.sh --init-project-args" in installation
+    assert "./.agent/start.sh --init-project-args" in installation
     assert "Per-project customization" in installation
     # ...and so does the update section.
     update = _normalized(_section(text, "Updating an existing install"))
-    assert "./agent.sh --init-project-args" in update
+    assert "./.agent/start.sh --init-project-args" in update
     assert "Per-project customization" in update

@@ -72,7 +72,7 @@ def _entry_line(section: str, prerequisite: str) -> str:
     [
         pytest.param("Docker", ("CLI", "Compose Plugin"),
                      id="docker-cli-compose"),
-        pytest.param("Bash", ("entry scripts",),
+        pytest.param("Bash", ("entry script",),
                      id="bash-command-shell"),
         pytest.param("Python", (f">={_declared_python_minimum()}",),
                      id="python-host-minimum"),
