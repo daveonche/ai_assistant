@@ -272,11 +272,15 @@ Before executing the first step, quote the SKILL.md's sentinel line — its fina
 
 ## Command Suggestions
 
-When suggesting CLI commands that may produce long output, prefer
-non-interactive forms so an interactive pager does not interrupt the
-session. For git, prefix with `--no-pager`: suggest
-`git --no-pager status --porcelain` rather than `git status --porcelain`,
-and `git --no-pager show --stat` rather than `git show --stat`.
+**Mandatory git form (hard rule):** Every suggested git command MUST
+begin with `git --no-pager`, for every subcommand (`status`, `show`,
+`diff`, `log`, `grep`, `branch`, …). Before outputting any git
+command, self-check that it starts with `git --no-pager`; if it does
+not, rewrite it before presenting. Bare git commands open an
+interactive pager that swallows or truncates output (e.g., `git grep`
+over many files), wasting a round-trip and losing the evidence.
+Example: `git --no-pager grep -n "pattern" -- tests/`, never bare
+`git grep ...`.
 
 When asking the user to run verification commands, output each command
 in a fenced code block tagged with a shell language (for example, `bash`),
