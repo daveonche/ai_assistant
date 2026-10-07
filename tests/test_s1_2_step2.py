@@ -75,7 +75,7 @@ def test_start_sh_forwards_debug_flag_to_launcher(sandbox, python3_stub):
     assert result.returncode == 0, result.stderr
     invocations = log.read_text().splitlines()
     assert invocations == [
-        str(sandbox / ".agent" / "ai_assistant.py"),
+        str(sandbox / ".agent" / "launcher.py"),
         "--debug",
     ]
 
@@ -103,6 +103,6 @@ def test_start_sh_forwards_all_arguments_unchanged_in_order(
     assert result.returncode == 0, result.stderr
     invocations = log.read_text().splitlines()
     assert invocations == [
-        str(sandbox / ".agent" / "ai_assistant.py"),
+        str(sandbox / ".agent" / "launcher.py"),
         *args,
     ]

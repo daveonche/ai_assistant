@@ -1,5 +1,5 @@
 """Security-audit reproducers for the Docker config sanitizer in
-.agent/ai_assistant.py (_sanitize_docker_config).
+.agent/launcher.py (_sanitize_docker_config).
 
 Windows Docker Desktop writes "credsStore": "desktop.exe" into the host
 ~/.docker/config.json. That helper is a Windows binary: inside the
@@ -30,7 +30,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SANDBOX_FILES = (
     ".agent/start.sh",
-    ".agent/ai_assistant.py",
+    ".agent/launcher.py",
     ".agent/Dockerfile.aider",
 )
 

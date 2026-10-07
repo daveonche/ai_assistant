@@ -5,13 +5,13 @@ set -euo pipefail
 # stored in the .agent directory.
 
 # Ensure an ssh-agent is reachable so git push/pull over SSH remotes works
-# inside the container (ai_assistant.py forwards SSH_AUTH_SOCK into it). A
+# inside the container (launcher.py forwards SSH_AUTH_SOCK into it). A
 # persistent per-user agent on a fixed socket is reused across launches and
 # started on first use. Interactive-only and best-effort: skipped entirely
 # for non-TTY callers (tests, scripts) so nothing is spawned or prompted
 # there, and never fails the launch.
 #
-# GitHub host-key pinning is handled by ai_assistant.py on every launch
+# GitHub host-key pinning is handled by launcher.py on every launch
 # (fingerprint-verified, append-only), so ssh never prompts here or in
 # the container.
 #
@@ -251,4 +251,4 @@ if [[ -z "${SSH_AUTH_SOCK:-}" && -d "${HOME}/.ssh" && -t 0 && -t 1 ]] \
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec python3 "${SCRIPT_DIR}/ai_assistant.py" "$@"
+exec python3 "${SCRIPT_DIR}/launcher.py" "$@"

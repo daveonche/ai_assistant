@@ -1,7 +1,7 @@
 """Story S1.6 Step 2 — launcher source code validation in the pipeline.
 
 Verifies the Must Support items: "Automated syntax and style validation of
-.agent/ai_assistant.py on every pipeline run", "Validation performed with the
+.agent/launcher.py on every pipeline run", "Validation performed with the
 language's built-in checking capability alone, requiring no additional
 packages", and "A detected validation error marks the overall pipeline run as
 failed".
@@ -12,7 +12,7 @@ from pathlib import Path
 import yaml
 
 CI_WORKFLOW = Path(".github/workflows/ci.yml")
-LAUNCHER = ".agent/ai_assistant.py"
+LAUNCHER = ".agent/launcher.py"
 EXPECTED_CHECK = f"python3 -m py_compile {LAUNCHER}"
 
 

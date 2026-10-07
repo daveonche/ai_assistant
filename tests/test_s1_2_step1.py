@@ -1,7 +1,7 @@
 """Story S1.2, Step 1: single-command host entry delegation.
 
 Verifies that the entry script (`.agent/start.sh`) delegates all lifecycle
-logic to the assistant launcher (`.agent/ai_assistant.py`) via its single
+logic to the assistant launcher (`.agent/launcher.py`) via its single
 exec handoff.
 
 The launcher is never executed: a stub `python3` is placed first on PATH to
@@ -70,7 +70,7 @@ def test_start_sh_delegates_to_launcher(sandbox, python3_stub):
     result = run_entry(sandbox, stub_dir)
     assert result.returncode == 0, result.stderr
     invocations = log.read_text().splitlines()
-    assert invocations == [str(sandbox / ".agent" / "ai_assistant.py")]
+    assert invocations == [str(sandbox / ".agent" / "launcher.py")]
 
     # Negative control: removing the exec line must break delegation —
     # start.sh must not reach the launcher by any other means.
@@ -98,4 +98,4 @@ def test_start_sh_contains_no_lifecycle_logic():
     exec_lines = [l for l in source.splitlines()
                   if l.strip().startswith("exec ")]
     assert len(exec_lines) == 1
-    assert "ai_assistant.py" in exec_lines[0]
+    assert "launcher.py" in exec_lines[0]

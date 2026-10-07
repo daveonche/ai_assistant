@@ -11,7 +11,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SANDBOX_FILES = (
     ".agent/start.sh",
-    ".agent/ai_assistant.py",
+    ".agent/launcher.py",
     ".agent/Dockerfile.aider",
 )
 
@@ -218,7 +218,7 @@ def test_credential_value_absent_from_files_and_traces(tmp_path):
     # so the absence check is meaningful, not vacuous). The log path mirrors
     # the launcher's own derivation: ~/.cache/aider-agent under the session
     # HOME — the launcher-private directory, outside the container-visible
-    # ~/.cache/aider mount (see _launcher_cache_dir in ai_assistant.py) —
+    # ~/.cache/aider mount (see _launcher_cache_dir in launcher.py) —
     # named by md5 of the workspace path + session id.
     workspace_hash = hashlib.md5((str(sandbox) + "\n").encode()).hexdigest()
     command_log = (

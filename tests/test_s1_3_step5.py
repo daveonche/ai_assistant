@@ -10,7 +10,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SANDBOX_FILES = (
     ".agent/start.sh",
-    ".agent/ai_assistant.py",
+    ".agent/launcher.py",
     ".agent/Dockerfile.aider",
 )
 

@@ -91,7 +91,7 @@ def test_entry_chain_works_from_standalone_clone(sandbox, python3_stub):
     result = run_entry(sandbox, stub_dir)
     assert result.returncode == 0, result.stderr
     assert log.read_text().splitlines() == [
-        str(sandbox / ".agent" / "ai_assistant.py")
+        str(sandbox / ".agent" / "launcher.py")
     ]
 
 
@@ -126,7 +126,7 @@ def test_entry_chain_works_from_copied_project_root(
     configuration is copied into another project's root." Both the
     documented invocation (./.agent/start.sh from the target root) and
     an invocation from an unrelated cwd must reach <target>/.agent/
-    ai_assistant.py — paths resolve from the script's own location
+    launcher.py — paths resolve from the script's own location
     (Step 5 Developer Note), never from the caller's directory or the
     source repository.
     """
@@ -144,7 +144,7 @@ def test_entry_chain_works_from_copied_project_root(
 
     assert result.returncode == 0, result.stderr
     assert log.read_text().splitlines() == [
-        str(target_project / ".agent" / "ai_assistant.py")
+        str(target_project / ".agent" / "launcher.py")
     ]
 
 

@@ -76,7 +76,7 @@ class LaunchResult(NamedTuple):
 
     returncode: int
     stderr: str
-    pid: int  # launcher PID: start.sh exec's down to ai_assistant.py
+    pid: int  # launcher PID: start.sh exec's down to launcher.py
 
 
 def _make_sandbox(tmp_path: Path, name: str = "sandbox") -> Path:
@@ -189,10 +189,10 @@ def _wait_for(predicate, timeout: float, description: str) -> None:
 
 
 def _load_launcher_module():
-    """Import .agent/ai_assistant.py as a module for direct unit calls."""
+    """Import .agent/launcher.py as a module for direct unit calls."""
     spec = importlib.util.spec_from_file_location(
-        "ai_assistant_under_test",
-        PROJECT_ROOT / ".agent" / "ai_assistant.py",
+        "launcher_under_test",
+        PROJECT_ROOT / ".agent" / "launcher.py",
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -385,7 +385,7 @@ def test_container_labels_bind_to_host_launcher_process(tmp_path: Path):
     run_argv = runs[0]
 
     # The hostpid label is the launcher chain's own PID: the entry script
-    # exec's down to ai_assistant.py, so the Popen pid IS os.getpid() there.
+    # exec's down to launcher.py, so the Popen pid IS os.getpid() there.
     host_pid = label_value(run_argv, "aider.hostpid")
     assert host_pid == str(result.pid)
 

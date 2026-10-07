@@ -13,7 +13,7 @@ import yaml
 
 CI_WORKFLOW = Path(".github/workflows/ci.yml")
 IMAGE_DEFINITION = ".agent/Dockerfile.aider"
-LAUNCHER = Path(".agent/ai_assistant.py")
+LAUNCHER = Path(".agent/launcher.py")
 
 
 def _load_workflow() -> dict:

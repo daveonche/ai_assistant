@@ -97,7 +97,7 @@ def _imported_roots(path: Path) -> set[str]:
 
 
 def test_agent_chain_completes_via_launcher(tmp_path: Path):
-    """.agent/start.sh -> .agent/ai_assistant.py runs the
+    """.agent/start.sh -> .agent/launcher.py runs the
     real launcher, which reaches the container engine (via the stub)."""
     sandbox = _make_sandbox(tmp_path)
     stub_dir = tmp_path / "stubs"
@@ -161,9 +161,9 @@ def test_launcher_forwards_arguments_unchanged_in_order(tmp_path: Path):
 
 
 def test_launcher_imports_stdlib_only():
-    """Every import in .agent/ai_assistant.py resolves to a stdlib module,
+    """Every import in .agent/launcher.py resolves to a stdlib module,
     proving the launcher uses no external packages."""
-    launcher = PROJECT_ROOT / ".agent" / "ai_assistant.py"
+    launcher = PROJECT_ROOT / ".agent" / "launcher.py"
     assert launcher.is_file(), f"launcher not found at {launcher}"
     roots = _imported_roots(launcher)
     assert roots, "no imports found in launcher"

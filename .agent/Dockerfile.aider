@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 #
 # Build context for this file is the .agent directory itself (managed by
-# ai_assistant.py, which auto-creates a minimal .dockerignore). This file
+# launcher.py, which auto-creates a minimal .dockerignore). This file
 # intentionally contains NO COPY instructions:
 #   - Project source code is provided at runtime via the same-path bind mount
-#     of the project root (see run_container in ai_assistant.py).
+#     of the project root (see run_container in launcher.py).
 #   - `docker` / `docker compose` executed inside the container talk to the
 #     host daemon through the mounted /var/run/docker.sock, so compose stacks
 #     are siblings of this container and all paths resolve on the host.

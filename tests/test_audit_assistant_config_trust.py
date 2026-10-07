@@ -1,4 +1,4 @@
-"""Security-audit reproducers for .agent/ai_assistant.py config trust.
+"""Security-audit reproducers for .agent/launcher.py config trust.
 
 Covers audit Findings 1-3:
 
@@ -38,7 +38,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 SANDBOX_FILES = (
     ".agent/start.sh",
-    ".agent/ai_assistant.py",
+    ".agent/launcher.py",
     ".agent/Dockerfile.aider",
 )
 

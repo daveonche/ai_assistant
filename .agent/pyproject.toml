@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-ai-assistant = "ai_assistant:main"
+ai-assistant = "launcher:main"
 
 [tool.setuptools]
-py-modules = ["ai_assistant"]
+py-modules = ["launcher"]

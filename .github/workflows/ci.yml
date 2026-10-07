@@ -36,7 +36,7 @@ jobs:
           persist-credentials: false
 
       - name: Python syntax check of launcher
-        run: python3 -m py_compile .agent/ai_assistant.py
+        run: python3 -m py_compile .agent/launcher.py
 
       - name: Shellcheck shell scripts
         run: git ls-files -z '*.sh' | xargs -0 -r shellcheck
