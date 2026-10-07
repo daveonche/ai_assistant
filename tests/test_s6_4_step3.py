@@ -21,6 +21,7 @@ behavior added in Steps 1 and 2.
 """
 
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -186,6 +187,26 @@ def test_launcher_unset_enables_gate_directly(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 
+def _default_ref() -> str:
+    """Return the pinned DEFAULT_REF from scripts/install.sh.
+
+    The local release repository must be tagged with exactly the ref the
+    installer fetches (DEFAULT_REF). Reading the pin instead of hardcoding
+    it keeps this module passing across the release bump: the post-bump
+    validation run sees the new pin before that tag exists on any remote.
+    """
+    match = re.search(
+        r'^readonly DEFAULT_REF="(v\d+\.\d+\.\d+)"$',
+        INSTALLER.read_text(encoding="utf-8"),
+        re.MULTILINE,
+    )
+    if match is None:
+        raise RuntimeError(
+            "could not read DEFAULT_REF from scripts/install.sh"
+        )
+    return match.group(1)
+
+
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
     """Run a real git command in repo, failing loudly on errors."""
     return subprocess.run(
@@ -215,8 +236,9 @@ def run_installer(
 
 @pytest.fixture
 def release_repo(tmp_path: Path) -> Path:
-    """Local release repository tagged v1.0.24 shipping the gate inside
-    .agent/ (mirrors tests/test_s2_1_step4.py)."""
+    """Local release repository tagged with the pinned DEFAULT_REF,
+    shipping the gate inside .agent/ (mirrors tests/test_s2_1_step4.py)."""
+    ref = _default_ref()
     repo = tmp_path / "release"
     repo.mkdir()
     _git(repo, "init")
@@ -231,8 +253,8 @@ def release_repo(tmp_path: Path) -> Path:
     for path in (".agent/start.sh", HOOK_PATH):
         (repo / path).chmod(0o755)
     _git(repo, "add", ".agent")
-    _git(repo, "commit", "-m", "release v1.0.24")
-    _git(repo, "tag", "v1.0.24")
+    _git(repo, "commit", "-m", f"release {ref}")
+    _git(repo, "tag", ref)
     return repo
 
 
