@@ -5,12 +5,14 @@ Routing section of
 .agent/workflows/core/framework-detection/SKILL.md; the routing
 table and routing rules remain in .agent/AGENTS.md."""
 
+import re
 from pathlib import Path
 
 AGENTS_MD = Path(".agent", "AGENTS.md")
 SKILL_MD = Path(
     ".agent", "workflows", "core", "framework-detection", "SKILL.md"
 )
+SPECS_DIR = Path(".agent", "specs")
 FRAMEWORK_CONVENTIONS_HEADING = "## Framework Conventions Routing"
 
 
@@ -48,6 +50,12 @@ def _routing_table() -> str:
     start = lines.index("## Conventions Reference Routing") + 1
     end = lines.index("Routing rules:")
     return "\n".join(lines[start:end])
+
+
+def _pack_names() -> list[str]:
+    """Pack directory names, discovered structurally: a pack is any
+    .agent/specs/ subdirectory containing SKILL.md."""
+    return sorted(path.parent.name for path in SPECS_DIR.glob("*/SKILL.md"))
 
 
 def _normalized(text: str) -> str:
@@ -108,18 +116,39 @@ def test_recommendation_follows_routing_conventions():
     assert mirrored in bullets
 
 
-def test_routing_table_has_framework_name_matching_rule():
+def test_routing_table_has_framework_pack_matching_rule():
     """Must Support: the routing table in the orchestration
     documentation gains the framework-based routing rule as a generic
-    name-matching rule alongside the existing file-type rules."""
-    table = _normalized(_routing_table())
-    assert "a framework identified by project framework detection" in table
-    assert "the matching framework-named file in .agent/specs/" in table
-    assert "elgg.md" in table
-    assert "rails.md" in table
-    # Placed in the same table as the existing file-type rules.
-    assert ".github/workflows/*.yml" in table
-    assert "ci-cd-best-practices.md" in table
+    pack-matching rule alongside the existing file-type rules. No
+    framework or file names are hardcoded: the row's example packs are
+    checked against packs discovered structurally from .agent/specs/."""
+    rows = [
+        _normalized(line)
+        for line in _routing_table().splitlines()
+        if line.strip().startswith("|")
+    ]
+    framework_rows = [
+        row
+        for row in rows
+        if "a framework identified by project framework detection" in row
+    ]
+    assert framework_rows, "routing table lacks the framework row"
+    assert any(
+        "the matching framework pack's skill.md in .agent/specs/" in row
+        for row in framework_rows
+    ), "framework row does not route to a pack SKILL.md"
+    # The row cites pack examples; every cited pack must exist, and the
+    # names come from structural discovery, not from this test.
+    cited = re.findall(r"[a-z0-9-]+/skill\.md", " ".join(framework_rows))
+    assert cited, "framework row cites no pack SKILL.md example"
+    packs = set(_pack_names())
+    stale = [name for name in cited if name.split("/")[0] not in packs]
+    assert not stale, f"framework row cites non-existent packs: {stale}"
+    # Placed in the same table as the existing file-type rules: other
+    # rows route tasks into the cross-cutting references directory.
+    assert any(".agent/specs/references/" in row for row in rows), (
+        "routing table lacks file-type reference rows"
+    )
 
 
 def test_no_matching_framework_makes_no_recommendation():
