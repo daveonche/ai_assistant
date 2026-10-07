@@ -2,11 +2,11 @@
 
 ![Architecture Diagram](./diagrams/architecture-overview.png)
 
-AIAssistant is a developer CLI tool (script-launched, Dockerized, terminal-driven) built on a layered launcher + configuration-as-code architecture. A single host entry script (`agent.sh`) delegates to a Python launcher that manages the full Docker container lifecycle for an aider runtime. Inside the container, workflow orchestration is driven by markdown configuration (`AGENTS.md`) that loads SDLC prompt-library skills on demand, keeping the context window small and token usage minimal. All workflow state persists as git-tracked markdown artifacts under `docs/`.
+Agentic AI Development-Workflow is a developer CLI tool (script-launched, Dockerized, terminal-driven) built on a layered launcher + configuration-as-code architecture. A single host entry script (`.agent/start.sh`) delegates to a Python launcher that manages the full Docker container lifecycle for an aider runtime. Inside the container, workflow orchestration is driven by markdown configuration (`AGENTS.md`) that loads SDLC prompt-library skills on demand, keeping the context window small and token usage minimal. All workflow state persists as git-tracked markdown artifacts under `docs/`.
 
 ## Core Layers
 
-- **Host Entry Layer**: `.agent/start.sh` — single-command entry point; delegates to the Python launcher (REQ-FR-ENV-2, REQ-FR-ENV-5).
+- **Host Entry Layer**: `.agent/start.sh` → `.agent/launcher.py` — single-command entry point; delegates to the Python launcher (REQ-FR-ENV-2, REQ-FR-ENV-5).
 - **Launcher Layer**: `.agent/launcher.py` — Python (>=3.8, stdlib only); Docker availability check, image build, container run/cleanup, config argument assembly (REQ-FR-ENV-1).
 - **Containerization Layer**: `.agent/Dockerfile.aider` + Docker — builds the digest-pinned `paulgauthier/aider-full` base image (tag and digest recorded in `docs/tech_stack.md`), mounts the host project root including `.agent/`, maps Docker GID for socket access (REQ-FR-ENV-4).
 - **Workflow Orchestration Layer**: `.agent/AGENTS.md` — command routing, context-window management, conventions reference routing (REQ-FR-WF-2).
@@ -32,12 +32,12 @@ AIAssistant is a developer CLI tool (script-launched, Dockerized, terminal-drive
 
 ## Component Interactions
 
-The developer runs `agent.sh`, which delegates to `.agent/ai_assistant.py`. The launcher verifies Docker availability, builds the image from `.agent/Dockerfile.aider`, and runs the container with the host project root bind-mounted. Inside the container, aider loads `.agent/AGENTS.md`, which loads `SKILL.md` files on demand via `/read-only`. Workflow phases read and write markdown artifacts in `docs/`.
+The developer runs `.agent/start.sh`, which delegates to `.agent/launcher.py`. The launcher verifies Docker availability, builds the image from `.agent/Dockerfile.aider`, and runs the container with the host project root bind-mounted. Inside the container, aider loads `.agent/AGENTS.md`, which loads `SKILL.md` files on demand via `/read-only`. Workflow phases read and write markdown artifacts in `docs/`.
 
 ## Interface Contracts
 
-- `agent.sh` → `.agent/ai_assistant.py`: CLI arguments (debug flag, assistant arguments forwarded to aider).
-- `.agent/ai_assistant.py` → Docker CLI: build/run/cleanup commands; container identity derived from workspace hash + session ID.
+- `.agent/start.sh` → `.agent/launcher.py`: CLI arguments (debug flag, assistant arguments forwarded to aider).
+- `.agent/launcher.py` → Docker CLI: build/run/cleanup commands; container identity derived from workspace hash + session ID.
 - Container → host project: read-write bind mount of the project root (including `.agent/`).
 - `AGENTS.md` → `SKILL.md` files: `$<category>-<promptname>` shorthand mapped to `/read-only` and `/drop` context-management commands.
 - Workflow chain → `docs/`: each phase consumes the previous phase's markdown artifact and produces the next.
