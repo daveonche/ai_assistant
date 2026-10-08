@@ -1030,9 +1030,12 @@ def test_update_removes_matching_legacy_artifacts_in_same_commit(
     assert not (repo / "agent.sh").exists()
     assert not (repo / ".githooks").exists()
     # the commit carries the .agent replacement and the deletions together
+    # --no-renames: rename detection pairs the deleted legacy hook with
+    # the added .agent/githooks/commit-msg (near-identical content) and
+    # collapses the pair to one path, hiding the deletion entry
     files = set(
         _git(
-            repo, "show", "--name-only", "--format=", "HEAD"
+            repo, "show", "--no-renames", "--name-only", "--format=", "HEAD"
         ).stdout.splitlines()
     )
     assert files == {
@@ -1072,7 +1075,7 @@ def test_update_keeps_modified_legacy_artifact_with_warning(consumer_repo):
     )
     files = set(
         _git(
-            repo, "show", "--name-only", "--format=", "HEAD"
+            repo, "show", "--no-renames", "--name-only", "--format=", "HEAD"
         ).stdout.splitlines()
     )
     assert "agent.sh" not in files
@@ -1117,6 +1120,8 @@ def test_update_records_cleanup_only_commit_when_agent_is_current(
     # mirror the release tree exactly (dropping the local-only file) so
     # the .agent refresh itself is a no-op
     _git(repo, "rm", "-q", ".agent/custom.txt")
+    # git rm removes the emptied .agent/ directory; recreate it
+    (repo / ".agent").mkdir()
     (repo / ".agent" / "release.txt").write_text("release\n")
     start = repo / ".agent" / "start.sh"
     start.write_text("release\n")
