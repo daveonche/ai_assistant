@@ -99,6 +99,15 @@ def test_unresolvable_push_base_fails_closed():
     )
 
 
+def test_orphaned_push_base_is_fetched_before_failing_closed():
+    run = _hook_step().get("run") or ""
+    assert "git fetch" in run, (
+        "an orphaned force-push base must be fetched by SHA so the pushed "
+        "range stays fully validated; failing closed is the last resort "
+        "when the object is gone from the remote"
+    )
+
+
 def test_range_validation_failure_fails_overall_run():
     job = _validate_job()
     assert not job.get("continue-on-error"), \

@@ -64,8 +64,16 @@ jobs:
             exit 0
           fi
           if ! git cat-file -e "${before}^{commit}" 2>/dev/null; then
-            echo "::error::push base ${before} is not in the checked-out history (force push?); cannot validate the pushed range"
-            exit 1
+            # A force push orphans the event's base SHA: it is no longer an
+            # ancestor of the new tip, so the checkout cannot resolve it.
+            # Fetch it by SHA (GitHub serves the object until GC) so the
+            # pushed range stays fully validated; fail closed only when the
+            # object is truly gone from the remote.
+            if ! git fetch --quiet origin "${before}"; then
+              echo "::error::push base ${before} is not in the checked-out history (force push?) and could not be fetched; cannot validate the pushed range"
+              exit 1
+            fi
+            echo "::notice::force push detected: fetched orphaned base ${before}; validating the pushed range"
           fi
           commits="$(git rev-list "${before}..${{ github.event.after }}")"
           status=0
