@@ -14,6 +14,9 @@
 # executability survives environments that do not preserve file modes.
 # The commit-msg hook ships inside .agent/ (.agent/githooks/commit-msg);
 # gate enablement is handled by configure_commit_gate (see update mode).
+# Known-legacy root-level artifacts (.githooks/, agent.sh) that still
+# match their pinned legacy content are removed as part of the same
+# update commit; modified or untracked look-alikes are left untouched.
 
 set -euo pipefail
 
@@ -27,6 +30,19 @@ readonly LEGACY_REPO_URL="https://github.com/daveonche/ai_assistant.git"
 # .agent/githooks. Matched exactly in update mode and rewritten to the
 # current location; every other pre-set value stays untouched.
 readonly LEGACY_HOOKS_PATH=".githooks"
+# Known-legacy root-level artifacts from before the .agent/ relocation,
+# as "path:blob-hash" pairs. A tracked file is removed only when its
+# content still hashes to the pinned value (the unmodified legacy
+# original); anything modified or untracked is left untouched with a
+# warning.
+# NOTE: the two hash values below are placeholders and MUST be replaced
+# with the blob hashes from the last release that shipped the legacy
+# layout; until then matching never succeeds and the fail-safe warning
+# path is taken.
+readonly LEGACY_ARTIFACTS=(
+  ".githooks/commit-msg:<HASH1>"
+  "agent.sh:<HASH2>"
+)
 
 # Globals: None
 # Arguments: Variable list of message words, joined into one message
@@ -267,6 +283,44 @@ fetch_assistant_ref() {
   fi
 }
 
+# Globals: LEGACY_ARTIFACTS (read); LEGACY_REMOVE_PATHS, LEGACY_KEEP_PATHS (set)
+# Arguments: None
+# Outputs: None
+# Returns: None
+detect_legacy_artifacts() {
+  LEGACY_REMOVE_PATHS=()
+  LEGACY_KEEP_PATHS=()
+  local entry path pinned actual
+  for entry in "${LEGACY_ARTIFACTS[@]}"; do
+    path="${entry%%:*}"
+    pinned="${entry#*:}"
+    [[ -f "${path}" ]] || continue
+    if git ls-files --error-unmatch -- "${path}" >/dev/null 2>&1 \
+        && actual="$(git hash-object --path="${path}" "${path}")" \
+        && [[ "${actual}" == "${pinned}" ]]; then
+      LEGACY_REMOVE_PATHS+=("${path}")
+    else
+      LEGACY_KEEP_PATHS+=("${path}")
+    fi
+  done
+}
+
+# Globals: LEGACY_REMOVE_PATHS (read)
+# Arguments: None
+# Outputs: Progress to STDOUT; errors to STDERR
+# Returns: 0 when the removals were staged (or there is nothing to remove)
+remove_legacy_artifacts() {
+  if (( ${#LEGACY_REMOVE_PATHS[@]} == 0 )); then
+    return 0
+  fi
+  if ! git rm -f --quiet --ignore-unmatch -- "${LEGACY_REMOVE_PATHS[@]}"; then
+    die "failed to stage the legacy artifact removals"
+    return 1
+  fi
+  printf 'installer: removed legacy artifacts: %s\n' \
+    "${LEGACY_REMOVE_PATHS[*]}"
+}
+
 # Globals: REF (read)
 # Arguments: None
 # Outputs: Change preview to STDOUT; warnings to STDERR
@@ -289,6 +343,20 @@ preview_refresh() {
     printf 'installer: WARNING: uncommitted local changes will be' >&2
     printf ' overwritten:\n' >&2
     git --no-pager diff --stat -- "${paths[@]}"
+  fi
+  local legacy_path
+  if (( ${#LEGACY_REMOVE_PATHS[@]} )); then
+    printf 'installer: removing known-legacy artifacts:\n'
+    for legacy_path in "${LEGACY_REMOVE_PATHS[@]}"; do
+      printf 'installer:   %s\n' "${legacy_path}"
+    done
+  fi
+  if (( ${#LEGACY_KEEP_PATHS[@]} )); then
+    for legacy_path in "${LEGACY_KEEP_PATHS[@]}"; do
+      printf 'installer: WARNING: %s exists but does not match the\n' \
+        "${legacy_path}" >&2
+      printf 'installer:   known legacy original; leaving it untouched\n' >&2
+    done
   fi
 }
 
@@ -353,6 +421,13 @@ apply_refresh() {
     fi
     chmod +x .agent/githooks/commit-msg
   fi
+  remove_legacy_artifacts
+  # Extend the commit pathspec so the deletions land in the same
+  # reviewable commit; the guarded append avoids empty-array expansion
+  # under older bash with set -u.
+  if (( ${#LEGACY_REMOVE_PATHS[@]} )); then
+    paths+=("${LEGACY_REMOVE_PATHS[@]}")
+  fi
   # No explicit HEAD in the probe: git compares the index against HEAD
   # implicitly and treats an unborn HEAD as the empty tree, so a
   # repository with no commits reaches the commit below instead of
@@ -381,6 +456,10 @@ update_files() {
   printf 'installer: updating an existing install\n'
   warn_overwrite
   check_staged_scope
+  # Detection precedes the preview so the confirmation prompt covers the
+  # planned removals; staging happens later, after confirm_refresh, so an
+  # aborted update still touches nothing.
+  detect_legacy_artifacts
   ensure_assistant_remote
   fetch_assistant_ref
   preview_refresh
@@ -478,6 +557,10 @@ main() {
   else
     retrieve_files
     place_files
+    # A legacy consumer (root agent.sh/.githooks, no .agent/) takes the
+    # install path; stage the legacy removals for the user's own commit.
+    detect_legacy_artifacts
+    remove_legacy_artifacts
     printf 'installer: install complete\n'
   fi
 }
