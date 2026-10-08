@@ -77,6 +77,15 @@ map-tokens: 2048
 ## Control how often the repo map is refreshed. Options: auto, always, files, manual (default: auto)
 #map-refresh: auto
 
+################
+# History Files:
+
+## Specify the chat input history file (default: .aider.input.history)
+input-history-file: .agent/.aider.input.history
+
+## Specify the chat history file (default: .aider.chat.history.md)
+chat-history-file: .agent/.aider.chat.history.md
+
 ##################
 # Output settings:
 
