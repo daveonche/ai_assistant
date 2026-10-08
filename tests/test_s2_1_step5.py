@@ -10,7 +10,7 @@ from pathlib import Path
 README = Path("README.md")
 INSTALL_COMMAND = (
     "curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/"
-    "v1.0.24/scripts/install.sh | bash"
+    "v1.0.25/scripts/install.sh | bash"
 )
 
 

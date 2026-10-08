@@ -137,7 +137,7 @@ def test_clean_sandbox_install_proceeds(sandbox, git_stub):
 def test_retrieval_uses_pinned_ref_and_external_target(sandbox, git_stub):
     """Retrieval clones the pinned release ref to a target outside the project.
 
-    The fixed, published reference is the pinned tag (v1.0.24) fetched as a
+    The fixed, published reference is the pinned tag (v1.0.25) fetched as a
     shallow clone, and the clone target lives outside the project so the
     consumer's history stays clean.
     """
@@ -149,7 +149,7 @@ def test_retrieval_uses_pinned_ref_and_external_target(sandbox, git_stub):
     args = clone_args(log)
     # fixed, published release reference: shallow clone of the pinned tag
     assert args[0] == "clone"
-    assert "--branch" in args and "v1.0.24" in args
+    assert "--branch" in args and "v1.0.25" in args
     assert "--depth" in args and "1" in args
     assert "https://github.com/daveonche/dev-orchestrator.git" in args
     # retrieval happens outside the project: project history stays clean
