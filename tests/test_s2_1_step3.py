@@ -178,7 +178,7 @@ def test_dry_run_reports_update_mode_for_existing_files(sandbox, git_stub):
     assert result.returncode == 0, result.stderr
     assert (
         "dry run: would update the existing .agent/"
-        " from ref v1.0.25" in result.stdout
+        " from ref v1.0.26" in result.stdout
     )
     assert "dry run complete; no changes were made" in result.stdout
     # nothing changed, and no update action was probed
@@ -271,7 +271,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "--depth",
         "1",
         "ai-assistant",
-        "v1.0.25",
+        "v1.0.26",
         "rev-parse",
         "--verify",
         "--quiet",
@@ -329,7 +329,7 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
         "commit",
         "--quiet",
         "-m",
-        "chore(agent): update .agent files to v1.0.25",
+        "chore(agent): update .agent files to v1.0.26",
         "--",
         ".agent",
         "rev-parse",
@@ -538,7 +538,7 @@ def test_update_noop_reports_already_up_to_date(sandbox, git_stub):
         sandbox, stub_dir, "--yes", extra_env={"DIFF_RC": "0"}
     )
     assert result.returncode == 0, result.stderr
-    assert "already up to date at ref v1.0.25" in result.stdout
+    assert "already up to date at ref v1.0.26" in result.stdout
     assert "update complete" in result.stdout
     assert "commit" not in log.read_text().splitlines()
 
@@ -560,7 +560,7 @@ def test_overwrite_warning_precedes_update_actions_and_names_scope(
     assert "WARNING" in result.stderr
     assert "replaces .agent/" in result.stderr
     assert "read: list in .agent/.aider.conf.yml" in result.stderr
-    assert "failed to retrieve ref v1.0.25" in result.stderr
+    assert "failed to retrieve ref v1.0.26" in result.stderr
     # the run died at the fetch, before any mutation: the warning was
     # emitted ahead of the update actions that followed it
     lines = log.read_text().splitlines()
@@ -582,7 +582,7 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
 
 @pytest.fixture
 def release_repo(tmp_path: Path) -> Path:
-    """Local release repository tagged v1.0.25 holding the consolidated
+    """Local release repository tagged v1.0.26 holding the consolidated
     assistant directory and the real commit-msg gate file. The installer
     under test enables the gate in the consumer as
     core.hooksPath=.agent/githooks, so the refresh commit it records is
@@ -600,8 +600,8 @@ def release_repo(tmp_path: Path) -> Path:
     shutil.copy(PROJECT_ROOT / ".agent" / "githooks" / "commit-msg", hook)
     hook.chmod(0o755)
     _git(repo, "add", ".agent")
-    _git(repo, "commit", "-m", "release v1.0.25")
-    _git(repo, "tag", "v1.0.25")
+    _git(repo, "commit", "-m", "release v1.0.26")
+    _git(repo, "tag", "v1.0.26")
     return repo
 
 
@@ -665,7 +665,7 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     }
     assert (
         _git(consumer_repo, "log", "-1", "--format=%s").stdout.strip()
-        == "chore(agent): update .agent files to v1.0.25"
+        == "chore(agent): update .agent files to v1.0.26"
     )
     # the gate is live in the consumer repository after the update
     hooks_path = _git(consumer_repo, "config", "--get", "core.hooksPath")
@@ -795,7 +795,7 @@ def test_update_on_unborn_head_records_initial_commit(unborn_consumer_repo):
     }
     assert (
         _git(unborn_consumer_repo, "log", "-1", "--format=%s").stdout.strip()
-        == "chore(agent): update .agent files to v1.0.25"
+        == "chore(agent): update .agent files to v1.0.26"
     )
     # the untracked local customization survives the refresh untracked
     custom = unborn_consumer_repo / ".agent" / "custom.txt"
@@ -890,7 +890,7 @@ def test_update_from_ref_without_hook_skips_gate(legacy_consumer_repo):
 
 @pytest.fixture
 def renamed_release_repo(tmp_path: Path) -> Path:
-    """Release repository tagged v1.0.25 in which a directory inside
+    """Release repository tagged v1.0.26 in which a directory inside
     .agent/ was renamed (prompts/ -> workflows/): upstream records the
     rename as a deletion plus an addition."""
     repo = tmp_path / "renamed-release"
@@ -906,8 +906,8 @@ def renamed_release_repo(tmp_path: Path) -> Path:
     shutil.copy(PROJECT_ROOT / ".agent" / "githooks" / "commit-msg", hook)
     hook.chmod(0o755)
     _git(repo, "add", ".agent")
-    _git(repo, "commit", "-m", "release v1.0.25")
-    _git(repo, "tag", "v1.0.25")
+    _git(repo, "commit", "-m", "release v1.0.26")
+    _git(repo, "tag", "v1.0.26")
     return repo
 
 
@@ -946,7 +946,7 @@ def test_update_applies_upstream_directory_rename(renamed_consumer_repo):
     halves of the rename and the worktree ends up in the upstream layout.
     """
     result = run_installer(
-        renamed_consumer_repo, None, "--yes", "--ref", "v1.0.25"
+        renamed_consumer_repo, None, "--yes", "--ref", "v1.0.26"
     )
     assert result.returncode == 0, result.stderr
     assert "recorded the refresh as commit" in result.stdout
