@@ -19,6 +19,10 @@ set -euo pipefail
 
 readonly DEFAULT_REPO_URL="https://github.com/daveonche/dev-orchestrator.git"
 readonly DEFAULT_REF="v1.0.25"
+# Known-legacy ai-assistant remote URL from before the repository rename
+# to dev-orchestrator. Matched exactly in update mode and rewritten to
+# DEFAULT_REPO_URL; every other mismatched URL stays untouched and fails.
+readonly LEGACY_REPO_URL="https://github.com/daveonche/ai_assistant.git"
 # Known-legacy core.hooksPath value from before the hook relocation to
 # .agent/githooks. Matched exactly in update mode and rewritten to the
 # current location; every other pre-set value stays untouched.
@@ -223,19 +227,28 @@ check_staged_scope() {
   done < <(git diff --cached --name-only)
 }
 
-# Globals: REPO_URL (read)
+# Globals: REPO_URL, LEGACY_REPO_URL (read)
 # Arguments: None
-# Outputs: Error messages to STDERR
+# Outputs: Progress to STDOUT; error messages to STDERR
 # Returns: 0 when the ai-assistant remote is available, 1 otherwise
 ensure_assistant_remote() {
   local existing_url
   if existing_url="$(git remote get-url ai-assistant 2>/dev/null)"; then
-    if [[ "${existing_url}" != "${REPO_URL}" ]]; then
-      die "remote 'ai-assistant' exists but points to ${existing_url};"
-      die "expected ${REPO_URL}"
-      return 1
+    if [[ "${existing_url}" == "${REPO_URL}" ]]; then
+      return 0
     fi
-    return 0
+    if [[ "${existing_url}" == "${LEGACY_REPO_URL}" ]]; then
+      if ! git remote set-url ai-assistant "${REPO_URL}"; then
+        die "failed to migrate the legacy ai-assistant remote URL"
+        return 1
+      fi
+      printf 'installer: migrated legacy remote URL %s to %s\n' \
+        "${LEGACY_REPO_URL}" "${REPO_URL}"
+      return 0
+    fi
+    die "remote 'ai-assistant' exists but points to ${existing_url};"
+    die "expected ${REPO_URL}"
+    return 1
   fi
   if ! git remote add ai-assistant "${REPO_URL}"; then
     die "failed to configure the ai-assistant remote (${REPO_URL})"
