@@ -11,6 +11,11 @@ Covered here:
   (github.com/daveonche/ai_assistant);
 - no tracked code or test file references the old module path
   (ai_assistant).
+
+Exception: the legacy-URL migration intentionally matches the old URL
+to rewrite it — the installer's LEGACY_REPO_URL constant and the S2.1
+Step 3 regression tests pinning that migration. Those exact lines are
+allowlisted (ALLOWED_MATCHES); any other match still fails.
 """
 
 from __future__ import annotations
@@ -32,9 +37,41 @@ EXCLUDED_PATHS = (
     f":(exclude){SELF}",
 )
 
+# Intentional old-URL references: the legacy-URL migration matches the
+# pre-rename URL exactly to rewrite it (scripts/install.sh
+# LEGACY_REPO_URL), and the S2.1 Step 3 regression tests pin that
+# migration. Each entry is (path prefix, line substring); a grep match
+# is exempt only when both match, so a stale reference in any other
+# file — or any other line — still fails.
+ALLOWED_MATCHES = (
+    ("scripts/install.sh:", "readonly LEGACY_REPO_URL="),
+    (
+        "tests/test_s2_1_step3.py:",
+        '"REMOTE_URL": "https://github.com/daveonche/ai_assistant.git"',
+    ),
+    (
+        "tests/test_s2_1_step3.py:",
+        '" https://github.com/daveonche/ai_assistant.git to"',
+    ),
+    (
+        "tests/test_s2_1_step3.py:",
+        '"https://github.com/daveonche/ai_assistant.git",',
+    ),
+)
+
+
+def _intentional(match: str) -> bool:
+    """True when a grep match is an allowlisted intentional legacy
+    reference (path prefix and line substring both match)."""
+    return any(
+        match.startswith(path_prefix) and needle in match
+        for path_prefix, needle in ALLOWED_MATCHES
+    )
+
 
 def _tracked_matches(keyword: str) -> list[str]:
-    """Return tracked-file lines matching keyword ('' when none).
+    """Return tracked-file lines matching keyword, minus the allowlisted
+    intentional legacy references (empty list when none).
 
     git grep exit codes: 0 = matches found, 1 = no matches, anything
     else is a usage/pathspec error and is surfaced with stderr.
@@ -55,7 +92,11 @@ def _tracked_matches(keyword: str) -> list[str]:
         raise AssertionError(
             f"git grep failed (exit {result.returncode}): {result.stderr}"
         )
-    return result.stdout.splitlines()
+    return [
+        line
+        for line in result.stdout.splitlines()
+        if not _intentional(line)
+    ]
 
 
 def test_no_tracked_code_or_test_file_references_the_old_repository_url():
