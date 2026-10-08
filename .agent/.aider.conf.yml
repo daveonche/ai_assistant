@@ -19,7 +19,10 @@ model: openrouter/z-ai/glm-5.3-flash
 # Model settings:
 
 ## Specify a file with aider model settings for unknown models
-model-settings-file: .aider.model.settings.yml
+model-settings-file: .agent/.aider.model.settings.yml
+
+## Specify a file with context window and costs for unknown models
+#model-metadata-file: .agent/.aider.model.metadata.json
 
 ## Add a model alias (can be used multiple times)
 #alias: "architect:openrouter/z-ai/glm-5.3-flash"
@@ -32,8 +35,11 @@ alias:
  - "Editor:openrouter/deepseek/deepseek-v4-flash-0731"
  - "Helper:openrouter/inclusionai/ling-3.0-flash-vl"
 
-## Specify a file with context window and costs for unknown models
-#model-metadata-file: .aider.model.metadata.json
+## Set the reasoning_effort API parameter (default: not set)
+#reasoning-effort: xxx
+
+## Set the thinking token budget for models that support it. Use 0 to disable. (default: not set)
+#thinking-tokens: xxx
 
 ## Specify what edit format the LLM should use (default depends on model)
 edit-format: diff
@@ -51,13 +57,16 @@ weak-model: openrouter/inclusionai/ling-3.0-flash-vl
 editor-model: openrouter/deepseek/deepseek-v4-flash-0731
 
 ## Soft limit on tokens for chat history, after which summarization begins. If unspecified, defaults to the model's max_chat_history_tokens.
-max-chat-history-tokens: '4000'
+max-chat-history-tokens: 8000
 
 #################
 # Cache settings:
 
 ## Enable caching of prompts (default: False)
 cache-prompts: true
+
+## Number of times to ping at 5min intervals to keep prompt cache warm (default: 0)
+cache-keepalive-pings: 3
 
 ###################
 # Repomap settings:
@@ -77,8 +86,17 @@ dark-mode: true
 ## Enable/disable streaming responses (default: True)
 #stream: true
 
+## Show diffs when committing changes (default: False)
+show-diffs: true
+
 ###############
 # Git settings:
+
+## Enable/disable the addition of files listed in .gitignore to Aider's editing scope.
+#add-gitignore-files: false
+
+## Specify the aider ignore file (default: .aiderignore in git root)
+aiderignore: .agent/.aiderignore
 
 ## Enable/disable auto commit of LLM changes (default: True)
 auto-commits: true
@@ -126,11 +144,13 @@ commit-prompt: >-
 ## Specify command to run tests
 test-cmd: python3 -m pytest
 
+## Specify lint commands to run for different languages, eg: "python: flake8 --select=..." (can be used multiple times)
+#lint-cmd: xxx
 ## Specify multiple values like this:
-# lint-cmd:
-  # - "php: phpcs --standard=Elgg"
-  # - "python: pylint --load-plugins=pylint_odoo"
-  # - "ruby: rubocop --require rubocop-rails"
+#lint-cmd:
+#  - xxx
+#  - yyy
+#  - zzz
 
 ############
 # Upgrading:
@@ -141,17 +161,21 @@ show-release-notes: false
 #################
 # Other settings:
 
+## specify a file to edit (can be used multiple times)
+file: docs/workflow_state.md
 ## Specify multiple values like this:
-read:
-- .agent/AGENTS.md
-- docs/workflow_state.md
-# If your project uses one of the supported frameworks, uncomment the matching
-# line below so its conventions are read from .agent/specs/ on
-# launch. Convention files stay in .agent/specs/; never copy
-# them to the project root.
-# - .agent/specs/ELGG.md
-# - .agent/specs/RAILS.md
-# TODO: Uncomment the following lines if you want to use the conventions for Odoo, Flask, or Django.
-# - .agent/specs/ODOO.md
-# - .agent/specs/FLASK.md
-# - .agent/specs/DJANGO.md
+#file:
+#  - xxx
+#  - yyy
+#  - zzz
+
+## specify a read-only file (can be used multiple times)
+read: .agent/AGENTS.md
+## Specify multiple values like this:
+#read:
+#  - xxx
+#  - yyy
+#  - zzz
+
+## Enable/disable terminal bell notifications when LLM responses are ready (default: False)
+notifications: true
