@@ -55,6 +55,8 @@ def git_stub(tmp_path: Path):
     - NO_GITHOOKS=1  the fetched reference predates the commit-msg gate:
       the cat-file probe fails and checkout stages no hook file
     - HOOKSPATH=<value>  core.hooksPath is already set to <value>
+    - REMOTE_URL=<value>  the ai-assistant remote already exists and
+      points at <value> (get-url reports it instead of exiting 1)
     """
     stub_dir = tmp_path / "stub-bin"
     stub_dir.mkdir()
@@ -78,6 +80,10 @@ def git_stub(tmp_path: Path):
         "    ;;\n"
         "  remote)\n"
         '    if [[ "${2:-}" == "get-url" ]]; then\n'
+        '      if [[ -n "${REMOTE_URL:-}" ]]; then\n'
+        "        printf '%s\\n' \"${REMOTE_URL}\"\n"
+        "        exit 0\n"
+        "      fi\n"
         "      # no ai-assistant remote yet: the installer adds it\n"
         "      exit 1\n"
         "    fi\n"
@@ -332,6 +338,103 @@ def test_update_syncs_via_consumer_git_sequence(sandbox, git_stub):
     ]
 
 
+def test_update_migrates_legacy_remote_url(sandbox, git_stub):
+    """An ai-assistant remote pointing at the pre-rename legacy URL is
+    migrated to the canonical URL instead of aborting the update.
+
+    Installs made before the repository rename store the legacy URL; the
+    installer rewrites it (remote set-url) and proceeds with the refresh,
+    mirroring the legacy core.hooksPath migration.
+    """
+    stub_dir, log = git_stub
+
+    (sandbox / ".agent").mkdir()
+    result = run_installer(
+        sandbox,
+        stub_dir,
+        "--yes",
+        extra_env={
+            "REMOTE_URL": "https://github.com/daveonche/ai_assistant.git"
+        },
+    )
+    assert result.returncode == 0, result.stderr
+    assert (
+        "migrated legacy remote URL"
+        " https://github.com/daveonche/ai_assistant.git to"
+        " https://github.com/daveonche/dev-orchestrator.git"
+    ) in result.stdout
+
+    lines = log.read_text().splitlines()
+    # the existing remote was rewritten, never re-added
+    first_remote = lines.index("remote")
+    second_remote = lines.index("remote", first_remote + 1)
+    assert lines[second_remote:second_remote + 4] == [
+        "remote",
+        "set-url",
+        "ai-assistant",
+        "https://github.com/daveonche/dev-orchestrator.git",
+    ]
+    assert "add" not in lines
+    # the update proceeded past the remote check to the refresh commit
+    assert "commit" in lines
+
+
+def test_update_preserves_foreign_remote_url(sandbox, git_stub):
+    """A mismatched non-legacy remote URL still aborts the update.
+
+    A remote pointing somewhere else entirely (for example a fork) is
+    never rewritten: the installer fails naming both URLs, before any
+    mutation — no rewrite, no fetch, no checkout, no commit.
+    """
+    stub_dir, log = git_stub
+
+    (sandbox / ".agent").mkdir()
+    result = run_installer(
+        sandbox,
+        stub_dir,
+        "--yes",
+        extra_env={"REMOTE_URL": "https://example.com/fork.git"},
+    )
+    assert result.returncode != 0
+    assert (
+        "remote 'ai-assistant' exists but points to"
+        " https://example.com/fork.git"
+    ) in result.stderr
+    assert (
+        "expected https://github.com/daveonche/dev-orchestrator.git"
+    ) in result.stderr
+
+    lines = log.read_text().splitlines()
+    assert "set-url" not in lines
+    assert "add" not in lines
+    assert "fetch" not in lines
+    assert "checkout" not in lines
+    assert "commit" not in lines
+
+
+def test_update_keeps_canonical_remote_url(sandbox, git_stub):
+    """A remote already pointing at the canonical URL passes the check
+    untouched: no rewrite, no re-add, and the update completes."""
+    stub_dir, log = git_stub
+
+    (sandbox / ".agent").mkdir()
+    result = run_installer(
+        sandbox,
+        stub_dir,
+        "--yes",
+        extra_env={
+            "REMOTE_URL": "https://github.com/daveonche/dev-orchestrator.git"
+        },
+    )
+    assert result.returncode == 0, result.stderr
+    assert "migrated legacy remote URL" not in result.stdout
+
+    lines = log.read_text().splitlines()
+    assert "set-url" not in lines
+    assert "add" not in lines
+    assert "commit" in lines
+
+
 def test_update_enables_commit_gate_before_its_own_commit(sandbox, git_stub):
     """The gate is enabled before the refresh commit is recorded.
 
@@ -580,6 +683,60 @@ def test_update_records_one_scoped_revertable_commit(consumer_repo):
     assert not (consumer_repo / ".agent" / "githooks" / "commit-msg").exists()
     # the revert restores the removed customization as well
     assert (consumer_repo / ".agent" / "custom.txt").read_text() == "keep\n"
+
+
+@pytest.fixture
+def legacy_remote_consumer_repo(
+    tmp_path: Path, release_repo: Path, monkeypatch
+) -> Path:
+    """Consumer project whose ai-assistant remote still points at the
+    pre-rename legacy URL. insteadOf rewrites only the canonical URL to
+    the local release repo, so the pre-migration get-url reports the
+    stored legacy URL and the post-migration fetch stays offline."""
+    repo = tmp_path / "legacy-remote-project"
+    repo.mkdir()
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "test@example.com")
+    _git(repo, "config", "user.name", "Test User")
+    (repo / ".agent").mkdir()
+    (repo / ".agent" / "custom.txt").write_text("keep\n")
+    _git(repo, "add", ".agent")
+    _git(repo, "commit", "-m", "base")
+    _git(
+        repo,
+        "remote",
+        "add",
+        "ai-assistant",
+        "https://github.com/daveonche/ai_assistant.git",
+    )
+    git_config = tmp_path / "gitconfig-legacy-remote"
+    git_config.write_text(
+        f'[url "{release_repo}"]\n'
+        "\tinsteadOf = https://github.com/daveonche/dev-orchestrator.git\n"
+    )
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
+    return repo
+
+
+def test_update_migrates_legacy_remote_url_offline(legacy_remote_consumer_repo):
+    """Real git, fully offline: the legacy remote URL is rewritten to the
+    canonical URL and the refresh completes against the local release.
+
+    The stored URL is asserted through git config (raw value) because
+    `git remote get-url` expands insteadOf rewrites.
+    """
+    result = run_installer(legacy_remote_consumer_repo, None, "--yes")
+    assert result.returncode == 0, result.stderr
+    assert "migrated legacy remote URL" in result.stdout
+    assert "recorded the refresh as commit" in result.stdout
+
+    url = _git(
+        legacy_remote_consumer_repo,
+        "config",
+        "--get",
+        "remote.ai-assistant.url",
+    ).stdout.strip()
+    assert url == "https://github.com/daveonche/dev-orchestrator.git"
 
 
 @pytest.fixture
