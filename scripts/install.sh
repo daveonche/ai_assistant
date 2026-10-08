@@ -21,7 +21,7 @@
 set -euo pipefail
 
 readonly DEFAULT_REPO_URL="https://github.com/daveonche/dev-orchestrator.git"
-readonly DEFAULT_REF="v1.0.26"
+readonly DEFAULT_REF="v1.0.27"
 # Known-legacy ai-assistant remote URL from before the repository rename
 # to dev-orchestrator. Matched exactly in update mode and rewritten to
 # DEFAULT_REPO_URL; every other mismatched URL stays untouched and fails.
@@ -83,8 +83,8 @@ existing value is left untouched with a warning. Unset anytime with:
   git config --unset core.hooksPath
 
 Examples:
-  curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.26/scripts/install.sh | bash
-  curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.26/scripts/install.sh | bash -s -- --ref v1.0.0
+  curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.27/scripts/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/daveonche/dev-orchestrator/v1.0.27/scripts/install.sh | bash -s -- --ref v1.0.0
   ./scripts/install.sh --dry-run
   ./scripts/install.sh --ref v1.0.0 --debug
 EOF

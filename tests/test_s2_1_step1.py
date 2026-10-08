@@ -115,7 +115,7 @@ def test_piped_execution_reaches_main(sandbox, git_stub):
     lines = log.read_text().splitlines()
     assert lines[:2] == ["rev-parse", "--is-inside-work-tree"]
     assert lines[2] == "clone"
-    assert "--branch" in lines and "v1.0.26" in lines
+    assert "--branch" in lines and "v1.0.27" in lines
 
 
 def test_installer_completes_with_documented_prerequisites(sandbox, git_stub):
