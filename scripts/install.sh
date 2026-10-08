@@ -34,14 +34,11 @@ readonly LEGACY_HOOKS_PATH=".githooks"
 # as "path:blob-hash" pairs. A tracked file is removed only when its
 # content still hashes to the pinned value (the unmodified legacy
 # original); anything modified or untracked is left untouched with a
-# warning.
-# NOTE: the two hash values below are placeholders and MUST be replaced
-# with the blob hashes from the last release that shipped the legacy
-# layout; until then matching never succeeds and the fail-safe warning
-# path is taken.
+# warning. Hashes are the blob OIDs at v1.0.24, the last release that
+# shipped the legacy layout.
 readonly LEGACY_ARTIFACTS=(
-  ".githooks/commit-msg:<HASH1>"
-  "agent.sh:<HASH2>"
+  ".githooks/commit-msg:a025cbee9e8d8de27ddd1ad2696218261d404963"
+  "agent.sh:09de013a1ffeefea2b1170524b16c3c613053677"
 )
 
 # Globals: None

@@ -19,7 +19,11 @@ Two layers keep the suite hermetic:
   no network is touched) and prove the recorded commit is scoped to the
   assistant directory (.agent/, carrying the entry script and — when the
   release ships the gate — the commit-msg hook) and reverts cleanly,
-  including on a repository with no commits yet (unborn HEAD).
+  including on a repository with no commits yet (unborn HEAD). They also
+  cover the known-legacy root-artifact cleanup: artifacts still matching
+  their pinned v1.0.24 blob content are removed in the same refresh
+  commit, while modified or untracked look-alikes are kept with a
+  warning.
 """
 
 import os
@@ -580,6 +584,32 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
     )
 
 
+def _legacy_blob(path: str) -> bytes:
+    """Exact blob content of a v1.0.24 legacy artifact, read from this
+    repository's history. The pins in install.sh's LEGACY_ARTIFACTS are
+    that tag's blob OIDs, so byte-exact content makes the installer's
+    hash-object detection match and the removal branch fire."""
+    return subprocess.run(
+        ["git", "cat-file", "blob", f"v1.0.24:{path}"],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        check=True,
+    ).stdout
+
+
+def _track_legacy_artifacts(repo: Path) -> None:
+    """Write agent.sh and .githooks/commit-msg at their exact v1.0.24
+    content and commit them, mirroring a pre-relocation install."""
+    (repo / "agent.sh").write_bytes(_legacy_blob("agent.sh"))
+    githooks = repo / ".githooks"
+    githooks.mkdir()
+    hook = githooks / "commit-msg"
+    hook.write_bytes(_legacy_blob(".githooks/commit-msg"))
+    hook.chmod(0o755)
+    _git(repo, "add", "agent.sh", ".githooks")
+    _git(repo, "commit", "-m", "add legacy root artifacts")
+
+
 @pytest.fixture
 def release_repo(tmp_path: Path) -> Path:
     """Local release repository tagged v1.0.26 holding the consolidated
@@ -975,3 +1005,191 @@ def test_update_applies_upstream_directory_rename(renamed_consumer_repo):
         "M\t.agent/start.sh",
         "A\t.agent/githooks/commit-msg",
     }
+
+
+def test_update_removes_matching_legacy_artifacts_in_same_commit(
+    consumer_repo,
+):
+    """Legacy root artifacts matching the pinned v1.0.24 content are
+    removed as part of the same reviewable refresh commit.
+
+    The recorded commit must carry the .agent replacement and the legacy
+    deletions together, the worktree must lose the root artifacts, and
+    the subject must stay gate-conforming."""
+    repo = consumer_repo
+    _track_legacy_artifacts(repo)
+
+    result = run_installer(repo, None, "--yes")
+    assert result.returncode == 0, result.stderr
+    assert (
+        "removed legacy artifacts: .githooks/commit-msg agent.sh"
+        in result.stdout
+    )
+
+    # gone from the worktree
+    assert not (repo / "agent.sh").exists()
+    assert not (repo / ".githooks").exists()
+    # the commit carries the .agent replacement and the deletions together
+    files = set(
+        _git(
+            repo, "show", "--name-only", "--format=", "HEAD"
+        ).stdout.splitlines()
+    )
+    assert files == {
+        ".agent/release.txt",
+        ".agent/start.sh",
+        ".agent/githooks/commit-msg",
+        ".agent/custom.txt",
+        "agent.sh",
+        ".githooks/commit-msg",
+    }
+    assert (
+        _git(repo, "log", "-1", "--format=%s").stdout.strip()
+        == "chore(agent): update .agent files to v1.0.26"
+    )
+
+
+def test_update_keeps_modified_legacy_artifact_with_warning(consumer_repo):
+    """A legacy artifact whose content was customized no longer hashes to
+    the pinned value and is never removed.
+
+    The installer warns and leaves the file tracked and untouched, while
+    the still-matching hook artifact is removed in the same commit."""
+    repo = consumer_repo
+    _track_legacy_artifacts(repo)
+    (repo / "agent.sh").write_text("#!/usr/bin/env bash\n# customized\n")
+    _git(repo, "add", "agent.sh")
+    _git(repo, "commit", "-m", "customize agent.sh")
+
+    result = run_installer(repo, None, "--yes")
+    assert result.returncode == 0, result.stderr
+    assert "WARNING: agent.sh exists but does not match the" in result.stderr
+    assert "leaving it untouched" in result.stderr
+    # the customized file survives, tracked and unmodified by the run
+    assert (
+        (repo / "agent.sh").read_text()
+        == "#!/usr/bin/env bash\n# customized\n"
+    )
+    files = set(
+        _git(
+            repo, "show", "--name-only", "--format=", "HEAD"
+        ).stdout.splitlines()
+    )
+    assert "agent.sh" not in files
+    # the still-matching hook artifact is removed regardless
+    assert not (repo / ".githooks").exists()
+
+
+def test_update_keeps_untracked_legacy_artifact(consumer_repo):
+    """An untracked file at a legacy path is never removed.
+
+    Detection requires the path to be tracked; an untracked look-alike
+    stays in the worktree, gets the keep warning, and remains untracked
+    after the refresh."""
+    repo = consumer_repo
+    (repo / "agent.sh").write_bytes(_legacy_blob("agent.sh"))
+    # deliberately left untracked
+
+    result = run_installer(repo, None, "--yes")
+    assert result.returncode == 0, result.stderr
+    assert "WARNING: agent.sh exists but does not match the" in result.stderr
+    assert (repo / "agent.sh").read_bytes() == _legacy_blob("agent.sh")
+    assert "?? agent.sh" in _git(repo, "status", "--porcelain").stdout
+    # the refresh commit stays scoped to .agent
+    files = set(
+        _git(
+            repo, "show", "--name-only", "--format=", "HEAD"
+        ).stdout.splitlines()
+    )
+    assert "agent.sh" not in files
+
+
+def test_update_records_cleanup_only_commit_when_agent_is_current(
+    consumer_repo,
+):
+    """When .agent already matches the release, the legacy cleanup alone
+    justifies the refresh commit.
+
+    The no-op probe covers the extended pathspec, so the run records one
+    commit carrying only the legacy deletions instead of reporting
+    "already up to date" and silently skipping the cleanup."""
+    repo = consumer_repo
+    # mirror the release tree exactly (dropping the local-only file) so
+    # the .agent refresh itself is a no-op
+    _git(repo, "rm", "-q", ".agent/custom.txt")
+    (repo / ".agent" / "release.txt").write_text("release\n")
+    start = repo / ".agent" / "start.sh"
+    start.write_text("release\n")
+    start.chmod(0o755)
+    hook = repo / ".agent" / "githooks" / "commit-msg"
+    hook.parent.mkdir()
+    shutil.copy(PROJECT_ROOT / ".agent" / "githooks" / "commit-msg", hook)
+    hook.chmod(0o755)
+    _git(repo, "add", ".agent")
+    _git(repo, "commit", "-m", "sync agent files to the release tree")
+    _track_legacy_artifacts(repo)
+
+    result = run_installer(repo, None, "--yes")
+    assert result.returncode == 0, result.stderr
+    assert "already up to date" not in result.stdout
+    assert (
+        "removed legacy artifacts: .githooks/commit-msg agent.sh"
+        in result.stdout
+    )
+    assert "recorded the refresh as commit" in result.stdout
+    # the commit carries only the legacy deletions
+    files = set(
+        _git(
+            repo, "show", "--name-only", "--format=", "HEAD"
+        ).stdout.splitlines()
+    )
+    assert files == {"agent.sh", ".githooks/commit-msg"}
+    assert not (repo / "agent.sh").exists()
+    assert not (repo / ".githooks").exists()
+    # the mirrored .agent tree is untouched
+    assert (repo / ".agent" / "release.txt").read_text() == "release\n"
+
+
+def test_install_stages_legacy_removals_for_the_user_commit(
+    tmp_path, release_repo, monkeypatch
+):
+    """Install mode into a legacy-layout project stages the removals.
+
+    A consumer with root agent.sh/.githooks but no .agent/ takes the
+    install path; the installer places .agent/, stages the legacy
+    deletions for the user's own commit, and records no commit itself."""
+    repo = tmp_path / "legacy-install-project"
+    repo.mkdir()
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "test@example.com")
+    _git(repo, "config", "user.name", "Test User")
+    _track_legacy_artifacts(repo)
+    git_config = tmp_path / "gitconfig-legacy-install"
+    git_config.write_text(
+        f'[url "{release_repo}"]\n'
+        "\tinsteadOf = https://github.com/daveonche/dev-orchestrator.git\n"
+    )
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(git_config))
+    base = _git(repo, "rev-parse", "HEAD").stdout.strip()
+
+    result = run_installer(repo, None)
+    assert result.returncode == 0, result.stderr
+    assert "installer: install complete" in result.stdout
+    assert (
+        "removed legacy artifacts: .githooks/commit-msg agent.sh"
+        in result.stdout
+    )
+    # worktree: legacy files gone, .agent placed
+    assert not (repo / "agent.sh").exists()
+    assert not (repo / ".githooks").exists()
+    assert (repo / ".agent" / "start.sh").is_file()
+    # staged for the user's own commit; the installer recorded none
+    staged = set(
+        _git(repo, "diff", "--cached", "--name-only").stdout.splitlines()
+    )
+    assert staged == {
+        ".agent/start.sh",
+        "agent.sh",
+        ".githooks/commit-msg",
+    }
+    assert _git(repo, "rev-parse", "HEAD").stdout.strip() == base
